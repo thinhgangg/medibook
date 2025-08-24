@@ -1,3 +1,199 @@
-{% extends "base.html" %} {% block title %}Trang chủ{% endblock %} {% block content %}
-<h1>Trang chủ MediBook</h1>
-{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trang chủ - MediBook{% endblock title %}
+
+{% block content %}
+
+  <!-- ================= HERO ================= -->
+  <section class="ym-hero full-bleed">
+    <div class="ym-hero__inner">
+      <div class="ym-hero__copy">
+        <h1 class="ym-hero__title">Ứng dụng đặt khám</h1>
+        <p class="ym-hero__subtitle">
+          Đặt khám với hơn 1000 bác sĩ, 25 bệnh viện, 100 phòng khám trên MediBook
+          để có số thứ tự và khung giờ khám trước.
+        </p>
+
+        <form class="ym-search" id="searchForm" role="search" aria-label="Tìm kiếm">
+          <input
+            type="search"
+            class="ym-search__input"
+            id="searchInput"
+            placeholder="Triệu chứng, bác sĩ, bệnh viện…"
+            autocomplete="off"
+          />
+          <button class="ym-search__btn" type="submit" aria-label="Tìm kiếm">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M10 18a8 8 0 1 1 5.292-14.001A8 8 0 0 1 10 18Zm11 3-6-6"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="ym-hero__art" aria-hidden="true">
+        <div class="ym-hero__blob"></div>
+      </div>
+    </div>
+  </section>
+  <!-- =============== /HERO =============== -->
+
+
+  <!-- ========== ĐẶT LỊCH KHÁM TRỰC TUYẾN (BÁC SĨ) ========== -->
+  <section class="dm-doctors" id="doctors">
+    <div class="dm-doctors__head">
+      <div>
+        <h2 class="dm-title">Đặt lịch khám trực tuyến</h2>
+        <p class="dm-subtitle">Tìm Bác sĩ chính xác – Đặt lịch khám dễ dàng.</p>
+      </div>
+      <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
+    </div>
+
+    <div class="dm-doctors__rail">
+      <button class="dm-nav dm-nav--prev" aria-label="Trước" data-for="doctorRail" disabled>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="dm-doctors__list" id="doctorRail"><!-- main.js sẽ render danh sách bác sĩ --></div>
+
+      <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="doctorRail">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="dm-progress"><span class="dm-progress__bar" id="doctorProgress"></span></div>
+  </section>
+
+
+  <!-- ========== ĐẶT KHÁM BỆNH VIỆN ========== -->
+  <section class="dm-doctors" id="hospitals">
+    <div class="dm-doctors__head">
+      <div>
+        <h2 class="dm-title">Đặt khám bệnh viện</h2>
+        <p class="dm-subtitle">
+          Đặt khám và thanh toán để có phiếu khám (thời gian, số thứ tự) trước khi đi khám tại các bệnh viện kết nối.
+        </p>
+      </div>
+      <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
+    </div>
+
+    <div class="dm-doctors__rail">
+      <button class="dm-nav dm-nav--prev" aria-label="Trước" data-for="hospitalRail" disabled>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="dm-doctors__list" id="hospitalRail"><!-- main.js sẽ render danh sách bệnh viện --></div>
+
+      <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="hospitalRail">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="dm-progress"><span class="dm-progress__bar" id="hospitalProgress"></span></div>
+  </section>
+
+
+  <!-- ========== ĐẶT KHÁM PHÒNG KHÁM ========== -->
+  <section class="dm-doctors" id="clinics">
+    <div class="dm-doctors__head">
+      <div>
+        <h2 class="dm-title">Đặt khám phòng khám</h2>
+        <p class="dm-subtitle">
+          Đa dạng phòng khám với nhiều chuyên khoa như Sản‑Nhi, Tai Mũi Họng, Da Liễu, Tiêu Hoá…
+        </p>
+      </div>
+      <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
+    </div>
+
+    <div class="dm-doctors__rail">
+      <button class="dm-nav dm-nav--prev" aria-label="Trước" data-for="clinicRail" disabled>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="dm-doctors__list" id="clinicRail"><!-- main.js sẽ render phòng khám --></div>
+
+      <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="clinicRail">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="dm-progress"><span class="dm-progress__bar" id="clinicProgress"></span></div>
+  </section>
+
+
+  <!-- ========== ĐẶT LỊCH THEO CHUYÊN KHOA ========== -->
+  <section class="specs" id="specialties">
+    <div class="specs__head">
+      <div>
+        <h2 class="dm-title">Đặt lịch theo Chuyên khoa</h2>
+        <p class="dm-subtitle">Danh sách bác sĩ, bệnh viện, phòng khám theo chuyên khoa</p>
+      </div>
+    </div>
+
+    <ul class="specs__grid" id="specList"><!-- main.js sẽ render chuyên khoa --></ul>
+
+    <div class="specs__more">
+      <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
+    </div>
+  </section>
+
+
+  <!-- ========== TIN Y TẾ ========== -->
+  <section class="health-news full-bleed" id="health-news">
+    <div class="health-news__inner">
+      <h2 class="dm-title text-center">Tin Y tế</h2>
+      <p class="hn-sub text-center">Chính thống – Minh bạch – Trung lập</p>
+
+      <div class="hn-toolbar">
+        <div class="hn-tabs" role="tablist" aria-label="Danh mục">
+          <button class="hn-tab is-active" data-cat="thuoc" role="tab" aria-selected="true">Thuốc</button>
+          <button class="hn-tab" data-cat="duoclieu" role="tab" aria-selected="false">Dược liệu</button>
+          <button class="hn-tab" data-cat="benh" role="tab" aria-selected="false">Bệnh</button>
+          <button class="hn-tab" data-cat="cothe" role="tab" aria-selected="false">Cơ thể</button>
+        </div>
+
+        <form class="hn-search" id="hnSearchForm" role="search" aria-label="Tìm bài viết">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path d="M10 18a8 8 0 1 1 5.292-14.001A8 8 0 0 1 10 18Zm11 3-6-6"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input id="hnQuery" type="search" placeholder="Nhập tên thuốc..." autocomplete="off" />
+        </form>
+      </div>
+
+      <div class="dm-doctors__rail hn-rail">
+        <button class="dm-nav dm-nav--prev" aria-label="Trước" data-for="newsRail" disabled>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div class="dm-doctors__list hn-list" id="newsRail"><!-- main.js sẽ render tin y tế --></div>
+
+        <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="newsRail">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="dm-progress"><span class="dm-progress__bar" id="newsProgress"></span></div>
+    </div>
+  </section>
+
+{% endblock content %}

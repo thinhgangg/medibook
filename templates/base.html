@@ -1,16 +1,80 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>{% block title %}MediBook{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
-  </head>
-  <body>
-    {% include "includes/navbar.html" %}
-    <main class="container">{% block content %}{% endblock %}</main>
-    {% include "includes/footer.html" %}
-    <script src="{% static 'js/main.js' %}"></script>
-    {% block scripts %}{% endblock %}
-  </body>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MediBook{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+  <!-- ========== HEADER / NAVBAR ========== -->
+  <header class="site-header">
+    <div class="nav-wrap">
+      <div class="nav-brand">
+        <a href="/" class="nav-logo">Medi<span>Book</span></a>
+      </div>
+
+      <nav class="nav-links">
+        <div class="nav-item has-dropdown">
+          <button class="nav-link" aria-expanded="false">Đặt khám
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="dropdown">
+            <a href="#doctors">Bác sĩ</a>
+            <a href="#hospitals">Bệnh viện</a>
+            <a href="#clinics">Phòng khám</a>
+            <a href="#specialties">Chuyên khoa</a>
+          </div>
+        </div>
+        <div class="nav-item"><a class="nav-link" href="#consult">Tư vấn trực tuyến</a></div>
+        <div class="nav-item"><a class="nav-link" href="#health-news">Tin Y tế</a></div>
+        <div class="nav-item"><a class="nav-link" href="#assistant">Trợ lý y khoa</a></div>
+        <div class="nav-item"><a class="nav-link" href="#doctor">Dành cho Bác sĩ</a></div>
+      </nav>
+
+      <div class="nav-cta">
+        <a href="{#}" class="btn-outline">Đăng nhập</a>
+        <a href="{#}" class="btn-solid">Đăng ký</a>
+      </div>
+
+      <button id="navBurger" class="nav-burger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- Mobile Nav -->
+    <div class="mobile-nav" id="mobileNav">
+      <a class="mobile-link" href="#doctors">Đặt khám Bác sĩ</a>
+      <a class="mobile-link" href="#hospitals">Đặt khám Bệnh viện</a>
+      <a class="mobile-link" href="#clinics">Đặt khám Phòng khám</a>
+      <a class="mobile-link" href="#specialties">Theo Chuyên khoa</a>
+      <a class="mobile-link" href="#consult">Tư vấn trực tuyến</a>
+      <a class="mobile-link" href="#health-news">Tin Y tế</a>
+      <a class="mobile-link" href="#assistant">Trợ lý y khoa</a>
+      <a class="mobile-link" href="#doctor">Dành cho Bác sĩ</a>
+      <div class="mobile-cta">
+        <a href="#" class="btn-outline">Đăng nhập</a>
+        <a href="#" class="btn-solid">Đăng ký</a>
+      </div>
+    </div>
+  </header>
+  <!-- ========== /HEADER ========== -->
+
+  <!-- MAIN -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container text-center text-white py-4">
+      <p>&copy; 2025 MediBook. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
 </html>
