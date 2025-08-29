@@ -1,0 +1,95 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.auth-container {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Style cho Form */
+.auth-form {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    max-width: 100%;
+    text-align: center;
+}
+
+.auth-form h2 {
+    margin-bottom: 20px;
+    color: #101732;
+    font-size: 1.8rem;
+}
+
+.auth-form label {
+    text-align: left;
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #101732;
+    display: block;
+}
+
+.auth-form input,
+.auth-form select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #333;
+}
+
+.auth-form input:focus,
+.auth-form select:focus {
+    border-color: #0099cf;
+    outline: none;
+}
+
+.auth-form button {
+    background-color: #1040c5;
+    color: #fff;
+    padding: 12px 20px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.auth-form button:hover {
+    background-color: #0d74b1;
+}
+
+.auth-form p {
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.auth-form p a {
+    color: #1040c5;
+    text-decoration: none;
+}
+
+.auth-form p a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .auth-form {
+        width: 90%;
+    }
+}

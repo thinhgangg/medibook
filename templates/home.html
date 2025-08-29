@@ -1,3 +1,43 @@
-{% extends "base.html" %} {% block title %}Trang chủ{% endblock %} {% block content %}
-<h1>Trang chủ MediBook</h1>
+{% extends "base.html" %}
+
+{% block title %}Trang chủ{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Chào mừng đến với MediBook</h1>
+        <p>Đặt lịch khám bác sĩ nhanh chóng, tiện lợi và an toàn.</p>
+        <a href="/booking" class="btn-primary">Đặt lịch ngay</a>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <h2>Tại sao chọn MediBook?</h2>
+        <div class="feature-list">
+            <div class="feature-item">
+                <img src="https://via.placeholder.com/60" alt="Bác sĩ chuyên môn" />
+                <h3>Bác sĩ chuyên môn cao</h3>
+                <p>Đội ngũ bác sĩ giàu kinh nghiệm, tận tâm với bệnh nhân.</p>
+            </div>
+            <div class="feature-item">
+                <img src="https://via.placeholder.com/60" alt="Đặt lịch dễ dàng" />
+                <h3>Đặt lịch dễ dàng</h3>
+                <p>Chỉ với vài bước đơn giản, bạn đã có thể đặt lịch khám phù hợp.</p>
+            </div>
+            <div class="feature-item">
+                <img src="https://via.placeholder.com/60" alt="Hỗ trợ 24/7" />
+                <h3>Hỗ trợ 24/7</h3>
+                <p>Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc của bạn.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta">
+    <div class="container">
+        <h2>Bắt đầu hành trình chăm sóc sức khỏe của bạn ngay hôm nay!</h2>
+        <a href="/booking" class="btn-secondary">Đặt lịch khám</a>
+    </div>
+</section>
 {% endblock %}

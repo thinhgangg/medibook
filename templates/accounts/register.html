@@ -1,0 +1,38 @@
+{% extends "base.html" %} {% block title %}Đăng Ký{% endblock %} {% block content %} {% load static %}
+
+<div class="auth-container">
+    <form action="/register" method="POST" class="auth-form" id="registerForm">
+        <h2>Đăng Ký</h2>
+
+        <label for="name">Họ và tên</label>
+        <input type="text" id="name" name="name" required placeholder="Nhập họ và tên" />
+
+        <label for="dob">Ngày sinh</label>
+        <input type="date" id="dob" name="dob" required />
+
+        <label for="gender">Giới tính</label>
+        <select id="gender" name="gender" required>
+            <option value="male">Nam</option>
+            <option value="female">Nữ</option>
+            <option value="other">Khác</option>
+        </select>
+
+        <label for="phone">Số điện thoại</label>
+        <input type="tel" id="phone" name="phone" required placeholder="Nhập số điện thoại" />
+
+        <label for="password">Mật khẩu</label>
+        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu" />
+
+        <label for="confirm_password">Xác nhận mật khẩu</label>
+        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Xác nhận mật khẩu" />
+
+        <label for="terms"> <input type="checkbox" id="terms" name="terms" required /> Tôi đồng ý với các điều khoản và chính sách bảo mật </label>
+
+        <button type="submit">Đăng ký</button>
+
+        <p class="auth-switch">Đã có tài khoản? <a href="{% url 'accounts:login' %}" onclick="switchForm()">Đăng nhập</a></p>
+    </form>
+</div>
+{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+{% endblock %}
