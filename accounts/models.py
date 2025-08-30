@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
+    first_name = None
+    last_name = None
     # Các trường tùy chỉnh cho người dùng
     full_name = models.CharField(max_length=255, blank=True, null=True)  # Tên đầy đủ của người dùng
     phone_number = models.CharField(max_length=20, blank=True, null=True)  # Số điện thoại
