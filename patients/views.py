@@ -1,10 +1,7 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .models import Patient
+from .serializers import PatientSerializer
 
-def dashboard_view(request):
-    return render(request, 'patients/dashboard.html')
-
-def appointments_view(request):
-    return render(request, 'patients/appointments.html')
-
-def profile_view(request):
-    return render(request, 'patients/profile-setting.html')
+class PatientViewSet(viewsets.ModelViewSet):
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer

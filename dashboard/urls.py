@@ -1,11 +1,8 @@
 from django.urls import path
 from . import views
 
-app_name = 'dashboard'
-
 urlpatterns = [
-    path('', views.index_view, name='index'),
-    path('appointments/', views.appointments_view, name='appointments'),
-    path('doctors/', views.doctors_view, name='doctors'),
-    path('patients/', views.patients_view, name='patients'),
+    path('doctor/', views.doctor_dashboard, name='doctor_dashboard'),  # Dashboard cho bác sĩ
+    path('patient/', views.patient_dashboard, name='patient_dashboard'),  # Dashboard cho bệnh nhân
+    path('admin/', views.admin_dashboard, name='admin_dashboard'),  # Dashboard cho admin
 ]
