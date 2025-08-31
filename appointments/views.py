@@ -1,10 +1,13 @@
 from datetime import datetime
+from django.db.models import Q
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
 
 from .models import Appointment
@@ -15,54 +18,56 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Appointment.objects.all()
+        base = Appointment.objects.select_related("doctor", "patient").all()
 
-        # Quyền xem: admin thấy tất; bác sĩ/bệnh nhân thấy của mình
+        # Quyền xem
         if user.is_staff or user.is_superuser:
-            base = qs
+            qs = base
         elif hasattr(user, "doctor_profile"):
-            base = qs.filter(doctor=user.doctor_profile)
+            qs = base.filter(doctor=user.doctor_profile)
         elif hasattr(user, "patient_profile"):
-            base = qs.filter(patient=user.patient_profile)
+            qs = base.filter(patient=user.patient_profile)
         else:
             return Appointment.objects.none()
 
         # ----- Filters -----
-        params = self.request.query_params
-        status_q = params.get("status")          
-        doctor_id = params.get("doctor_id")      
-        patient_id = params.get("patient_id")    
-        date_from = params.get("date_from")     
-        date_to   = params.get("date_to")      
+        p = self.request.query_params
+        status_q  = p.get("status")
+        doctor_id = p.get("doctor_id")
+        patient_id= p.get("patient_id")
+        date_from = p.get("date_from")
+        date_to   = p.get("date_to")
 
         if status_q:
-            base = base.filter(status=status_q)
+            qs = qs.filter(status=status_q)
 
-        if doctor_id:
-            base = base.filter(doctor_id=doctor_id)
+        if doctor_id and doctor_id.isdigit():
+            qs = qs.filter(doctor_id=int(doctor_id))
 
-        if patient_id:
-            base = base.filter(patient_id=patient_id)
+        if patient_id and patient_id.isdigit():
+            qs = qs.filter(patient_id=int(patient_id))
 
-        # Lọc theo khoảng ngày (đụng vào start_at)
-        def to_aware(dt):
-            return timezone.make_aware(datetime.combine(dt.date(), datetime.min.time()), timezone.get_currentTimezone())  # not strictly needed
+        # Lọc theo ngày (YYYY-MM-DD) – dựa vào start_at__date
+        from datetime import date as date_cls
+        try:
+            if date_from:
+                df = date_cls.fromisoformat(date_from)
+                qs = qs.filter(start_at__date__gte=df)
+        except ValueError:
+            pass
+        try:
+            if date_to:
+                dt = date_cls.fromisoformat(date_to)
+                qs = qs.filter(start_at__date__lte=dt)
+        except ValueError:
+            pass
 
-        if date_from:
-            try:
-                df = datetime.fromisoformat(date_from)
-                base = base.filter(start_at__date__gte=df.date())
-            except ValueError:
-                pass
-
-        if date_to:
-            try:
-                dt = datetime.fromisoformat(date_to)
-                base = base.filter(start_at__date__lte=dt.date())
-            except ValueError:
-                pass
-
-        return base.order_by("-start_at")
+        return qs.order_by("-start_at")
+    
+    def _normalize_dt(self, dt):
+        if dt is None:
+            return None
+        return timezone.make_aware(dt, timezone.get_current_timezone()) if timezone.is_naive(dt) else dt
 
     def get_serializer_class(self):
         return AppointmentCreateSerializer if self.action == "create" else AppointmentSerializer
@@ -71,7 +76,27 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not hasattr(user, "patient_profile"):
             raise PermissionDenied("Chỉ bệnh nhân mới được đặt lịch.")
-        self._created_instance = serializer.save(patient=user.patient_profile)
+
+        start = self._normalize_dt(serializer.validated_data["start_at"])
+        end   = self._normalize_dt(serializer.validated_data["end_at"])
+        doctor= serializer.validated_data["doctor"]
+
+        if end <= start:
+            raise ValidationError("end_at phải lớn hơn start_at.")
+
+        with transaction.atomic():
+            clash = (Appointment.objects
+                    .select_for_update()
+                    .filter(doctor=doctor)
+                    .exclude(status=Appointment.Status.CANCELLED)
+                    .filter(start_at__lt=end, end_at__gt=start)
+                    .exists())
+            if clash:
+                raise ValidationError("Khung giờ đã có người đặt.")
+
+            self._created_instance = serializer.save(patient=user.patient_profile, 
+                                                     start_at=start, end_at=end)
+
 
     def create(self, request, *args, **kwargs):
         ser = self.get_serializer(data=request.data)
@@ -82,26 +107,86 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return Response(detail, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=["post"])
-    def cancel(self, request, pk=None):
-        appt = get_object_or_404(self.get_queryset(), pk=pk)
-        appt.status = Appointment.Status.CANCELLED
-        appt.save()
-        return Response(AppointmentSerializer(appt).data)
-
-    @action(detail=True, methods=["post"])
     def confirm(self, request, pk=None):
-        if not hasattr(request.user, "doctor_profile"):
-            return Response({"detail": "Chỉ bác sĩ được xác nhận."}, status=403)
         appt = get_object_or_404(self.get_queryset(), pk=pk)
-        appt.status = Appointment.Status.CONFIRMED
-        appt.save()
+        if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
+            return Response({"detail": "Chỉ bác sĩ của lịch được xác nhận."}, status=403)
+        if appt.status in (Appointment.Status.CANCELLED, Appointment.Status.COMPLETED):
+            return Response({"detail": "Không thể xác nhận ở trạng thái hiện tại."}, status=400)
+        if appt.status != Appointment.Status.CONFIRMED:
+            appt.status = Appointment.Status.CONFIRMED
+            appt.save()
         return Response(AppointmentSerializer(appt).data)
 
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
-        if not hasattr(request.user, "doctor_profile"):
-            return Response({"detail": "Chỉ bác sĩ được đánh dấu hoàn tất."}, status=403)
         appt = get_object_or_404(self.get_queryset(), pk=pk)
-        appt.status = Appointment.Status.COMPLETED
-        appt.save()
+        if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
+            return Response({"detail": "Chỉ bác sĩ của lịch được đánh dấu hoàn tất."}, status=403)
+        if appt.status == Appointment.Status.CANCELLED:
+            return Response({"detail": "Lịch đã bị hủy."}, status=400)
+        if appt.status != Appointment.Status.COMPLETED:
+            appt.status = Appointment.Status.COMPLETED
+            appt.save()
+        return Response(AppointmentSerializer(appt).data)
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        appt = get_object_or_404(self.get_queryset(), pk=pk)
+        u = request.user
+        is_party = (hasattr(u, "patient_profile") and appt.patient_id == u.patient_profile.id) or \
+                (hasattr(u, "doctor_profile")  and appt.doctor_id  == u.doctor_profile.id) or \
+                u.is_staff or u.is_superuser
+        if not is_party:
+            return Response({"detail": "Không có quyền hủy."}, status=403)
+        if appt.status == Appointment.Status.COMPLETED:
+            return Response({"detail": "Không thể hủy lịch đã hoàn tất."}, status=400)
+        if appt.status != Appointment.Status.CANCELLED:
+            appt.status = Appointment.Status.CANCELLED
+            appt.save()
+        return Response(AppointmentSerializer(appt).data)
+
+
+    @action(detail=True, methods=["post"])
+    def reschedule(self, request, pk=None):
+        appt = get_object_or_404(self.get_queryset(), pk=pk)
+
+        start = request.data.get("start_at")
+        end   = request.data.get("end_at")
+        if not start or not end:
+            return Response({"detail": "Thiếu start_at/end_at"}, status=400)
+
+        new_start = self._normalize_dt(parse_datetime(start))
+        new_end   = self._normalize_dt(parse_datetime(end))
+        if not new_start or not new_end or new_end <= new_start:
+            return Response({"detail": "Thời gian không hợp lệ"}, status=400)
+
+        # Chỉ đc dời khi chưa COMPLETED/CANCELLED
+        if appt.status in (Appointment.Status.COMPLETED, Appointment.Status.CANCELLED):
+            return Response({"detail": "Không thể dời lịch ở trạng thái hiện tại."}, status=400)
+
+        # Quyền: là bệnh nhân/bác sĩ của lịch (hoặc admin)
+        u = request.user
+        is_party = (hasattr(u, "patient_profile") and appt.patient_id == u.patient_profile.id) or \
+                (hasattr(u, "doctor_profile")  and appt.doctor_id  == u.doctor_profile.id) or \
+                u.is_staff or u.is_superuser
+        if not is_party:
+            return Response({"detail": "Không có quyền"}, status=403)
+
+        with transaction.atomic():
+            clash = (Appointment.objects
+                    .select_for_update()
+                    .filter(doctor=appt.doctor)
+                    .exclude(pk=appt.pk)
+                    .exclude(status=Appointment.Status.CANCELLED)
+                    .filter(start_at__lt=new_end, end_at__gt=new_start)
+                    .exists())
+            if clash:
+                return Response({"detail": "Khung giờ đã bận"}, status=400)
+
+            appt.start_at = new_start
+            appt.end_at   = new_end
+            appt.status   = Appointment.Status.PENDING  # rule: dời lịch -> cần xác nhận lại
+            appt.save()
+
         return Response(AppointmentSerializer(appt).data)
