@@ -4,6 +4,7 @@ from .views import (
     CustomTokenObtainPairView,
     PatientRegisterView,
     DoctorRegisterView,
+    MeView,
 )
 
 urlpatterns = [
@@ -12,4 +13,6 @@ urlpatterns = [
 
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('me/', MeView.as_view()),
 ]

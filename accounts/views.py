@@ -13,6 +13,11 @@ from doctors.models import Doctor
 from patients.serializers import PatientSerializer
 from doctors.serializers import DoctorSerializer
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import UserPublicSerializer, UserUpdateSerializer
+
 User = get_user_model()
 
 def issue_tokens(user):
@@ -142,3 +147,15 @@ class DoctorRegisterView(APIView):
             "refresh": refresh,
             "access": access
         }, status=status.HTTP_201_CREATED)
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(UserPublicSerializer(request.user).data)
+
+    def patch(self, request):
+        ser = UserUpdateSerializer(request.user, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        return Response(UserPublicSerializer(request.user).data)
