@@ -117,19 +117,23 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            return DoctorAvailability.objects.all()
-        if hasattr(user, "doctor_profile"):
-            return DoctorAvailability.objects.filter(doctor=user.doctor_profile)
-        return DoctorAvailability.objects.none()
+        u = self.request.user
+        if u.is_staff or u.is_superuser:
+            base = DoctorAvailability.objects.all()
+        elif hasattr(u, 'doctor_profile'):
+            base = DoctorAvailability.objects.filter(doctor=u.doctor_profile)
+        else:
+            return DoctorAvailability.objects.none()
+
+        wd = self.request.query_params.get("weekday")
+        return base.filter(weekday=wd) if wd is not None else base
 
     def perform_create(self, serializer):
-        if not hasattr(self.request.user, "doctor_profile"):
+        if not hasattr(self.request.user, 'doctor_profile'):
             raise PermissionDenied("Chỉ bác sĩ mới thiết lập lịch làm việc.")
         serializer.save(doctor=self.request.user.doctor_profile)
 
     def perform_update(self, serializer):
-        if not hasattr(self.request.user, "doctor_profile"):
+        if not hasattr(self.request.user, 'doctor_profile'):
             raise PermissionDenied("Chỉ bác sĩ mới sửa lịch làm việc.")
         serializer.save(doctor=self.request.user.doctor_profile)
