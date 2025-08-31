@@ -1,30 +1,26 @@
 from django.db import models
-from doctors.models import Doctor  # Liên kết với model bác sĩ
-from patients.models import Patient  # Liên kết với model bệnh nhân
+from django.utils import timezone
+
+from doctors.models import Doctor
+from patients.models import Patient
 
 class Appointment(models.Model):
-    # Liên kết với bác sĩ và bệnh nhân
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    
-    # Thông tin cuộc hẹn
-    appointment_time = models.DateTimeField()  # Thời gian cuộc hẹn
-    status = models.CharField(max_length=20, choices=[
-        ('PENDING', 'Pending'),
-        ('CONFIRMED', 'Confirmed'),
-        ('COMPLETED', 'Completed'),
-        ('CANCELLED', 'Cancelled')
-    ], default='PENDING')  # Trạng thái cuộc hẹn
-    reason = models.CharField(max_length=255, blank=True, null=True)  # Lý do cuộc hẹn
-    notes = models.TextField(blank=True, null=True)  # Ghi chú thêm
-    
-    # Thời gian tạo và cập nhật
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    class Status(models.TextChoices):
+        PENDING   = "PENDING", "Pending"
+        CONFIRMED = "CONFIRMED", "Confirmed"
+        COMPLETED = "COMPLETED", "Completed"
+        CANCELLED = "CANCELLED", "Cancelled"
 
-    def __str__(self):
-        return f"Appointment #{self.id} - {self.patient.user.full_name} with {self.doctor.user.full_name} on {self.appointment_time}"
+    doctor     = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointments")
+    patient    = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments")
+    start_at = models.DateTimeField(null=True, blank=True)
+    end_at   = models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(max_length=255, blank=True, null=True)
+    status     = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        verbose_name = 'Appointment'
-        verbose_name_plural = 'Appointments'
+        ordering = ["-start_at"]
+
+    def __str__(self):
+        return f"{self.patient.user.full_name} with {self.doctor.user.full_name} on {self.start_at:%Y-%m-%d %H:%M}"
