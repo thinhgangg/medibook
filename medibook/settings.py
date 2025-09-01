@@ -154,3 +154,5 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+APPOINTMENT_BUFFER_MINUTES = 10  # hoặc 0 nếu chưa muốn dùng buffer
