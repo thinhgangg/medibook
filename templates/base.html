@@ -9,59 +9,59 @@
 </head>
 <body>
   <!-- ========== HEADER / NAVBAR ========== -->
-  <header class="site-header">
-    <div class="nav-wrap">
-      <div class="nav-brand">
-        <a href="/" class="nav-logo">Medi<span>Book</span></a>
-      </div>
+<header class="site-header">
+  <div class="nav-wrap">
+    <div class="nav-brand">
+      <a href="/" class="nav-logo">Medi<span>Book</span></a>
+    </div>
 
-      <nav class="nav-links">
-        <div class="nav-item has-dropdown">
-          <button class="nav-link" aria-expanded="false">Đặt khám
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="dropdown">
-            <a href="#doctors">Bác sĩ</a>
-            <a href="#hospitals">Bệnh viện</a>
-            <a href="#clinics">Phòng khám</a>
-            <a href="#specialties">Chuyên khoa</a>
-          </div>
+    <nav class="nav-links">
+      <div class="nav-item has-dropdown">
+        <button class="nav-link" aria-expanded="false">Đặt khám
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="dropdown">
+          <a href="#doctors">Bác sĩ</a>
+          <a href="#hospitals">Bệnh viện</a>
+          <a href="#clinics">Phòng khám</a>
+          <a href="#specialties">Chuyên khoa</a>
         </div>
-        <div class="nav-item"><a class="nav-link" href="#consult">Tư vấn trực tuyến</a></div>
-        <div class="nav-item"><a class="nav-link" href="#health-news">Tin Y tế</a></div>
-        <div class="nav-item"><a class="nav-link" href="#assistant">Trợ lý y khoa</a></div>
-        <div class="nav-item"><a class="nav-link" href="#doctor">Dành cho Bác sĩ</a></div>
-      </nav>
-
-      <div class="nav-cta">
-        <a href="{#}" class="btn-outline">Đăng nhập</a>
-        <a href="{#}" class="btn-solid">Đăng ký</a>
       </div>
+      <div class="nav-item"><a class="nav-link" href="#consult">Tư vấn trực tuyến</a></div>
+      <div class="nav-item"><a class="nav-link" href="#health-news">Tin Y tế</a></div>
+      <div class="nav-item"><a class="nav-link" href="#assistant">Trợ lý y khoa</a></div>
+      <div class="nav-item"><a class="nav-link" href="#doctor">Dành cho Bác sĩ</a></div>
+    </nav>
 
-      <button id="navBurger" class="nav-burger" aria-label="Menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+    <div class="nav-cta">
+      <a href="{% url 'accounts:login' %}" class="btn-outline">Đăng nhập</a>
+      <a href="{% url 'accounts:register' %}" class="btn-solid">Đăng ký</a>
     </div>
 
-    <!-- Mobile Nav -->
-    <div class="mobile-nav" id="mobileNav">
-      <a class="mobile-link" href="#doctors">Đặt khám Bác sĩ</a>
-      <a class="mobile-link" href="#hospitals">Đặt khám Bệnh viện</a>
-      <a class="mobile-link" href="#clinics">Đặt khám Phòng khám</a>
-      <a class="mobile-link" href="#specialties">Theo Chuyên khoa</a>
-      <a class="mobile-link" href="#consult">Tư vấn trực tuyến</a>
-      <a class="mobile-link" href="#health-news">Tin Y tế</a>
-      <a class="mobile-link" href="#assistant">Trợ lý y khoa</a>
-      <a class="mobile-link" href="#doctor">Dành cho Bác sĩ</a>
-      <div class="mobile-cta">
-        <a href="#" class="btn-outline">Đăng nhập</a>
-        <a href="#" class="btn-solid">Đăng ký</a>
-      </div>
+    <button id="navBurger" class="nav-burger" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-nav" id="mobileNav">
+    <a class="mobile-link" href="#doctors">Đặt khám Bác sĩ</a>
+    <a class="mobile-link" href="#hospitals">Đặt khám Bệnh viện</a>
+    <a class="mobile-link" href="#clinics">Đặt khám Phòng khám</a>
+    <a class="mobile-link" href="#specialties">Theo Chuyên khoa</a>
+    <a class="mobile-link" href="#consult">Tư vấn trực tuyến</a>
+    <a class="mobile-link" href="#health-news">Tin Y tế</a>
+    <a class="mobile-link" href="#assistant">Trợ lý y khoa</a>
+    <a class="mobile-link" href="#doctor">Dành cho Bác sĩ</a>
+    <div class="mobile-cta">
+      <a href="#" class="btn-outline">Đăng nhập</a>
+      <a href="#" class="btn-solid">Đăng ký</a>
     </div>
-  </header>
-  <!-- ========== /HEADER ========== -->
+  </div>
+</header>
+<!-- ========== /HEADER ========== -->
 
   <!-- MAIN -->
   <main>
