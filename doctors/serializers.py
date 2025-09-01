@@ -1,6 +1,6 @@
 # doctors/serializers.py
 from rest_framework import serializers
-from .models import Doctor, DoctorAvailability
+from .models import DoctorAvailability, DoctorDayOff, Doctor
 
 class DoctorSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(source='user.id', read_only=True)
@@ -39,4 +39,19 @@ class DoctorAvailabilitySerializer(serializers.ModelSerializer):
         if qs.filter(start_time__lt=end, end_time__gt=start).exists():
             raise serializers.ValidationError("Khung giờ bị chồng lấp với availability khác.")
 
+        return data
+    
+class DoctorDayOffSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorDayOff
+        fields = ['id', 'date', 'start_time', 'end_time', 'reason']
+
+    def validate(self, data):
+        s = data.get('start_time')
+        e = data.get('end_time')
+        # Cả hai null -> nghỉ cả ngày (ok)
+        if (s is None) ^ (e is None):
+            raise serializers.ValidationError("Nếu nghỉ theo khung giờ, cần có cả start_time và end_time.")
+        if s and e and e <= s:
+            raise serializers.ValidationError("end_time phải lớn hơn start_time.")
         return data

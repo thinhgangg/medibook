@@ -7,8 +7,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime, timedelta, date as date_cls
 
-from .models import Doctor, DoctorAvailability
-from .serializers import DoctorSerializer, DoctorAvailabilitySerializer
+from .models import Doctor, DoctorAvailability, DoctorDayOff
+from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer
 
 class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
@@ -110,6 +110,26 @@ class DoctorViewSet(viewsets.ModelViewSet):
                     })
                 cur += slot_len
 
+        # lấy day-off của ngày đó
+        offs = doctor.day_offs.filter(date=target_date)
+        # Nếu nghỉ cả ngày -> không có slot
+        if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
+            return Response([])
+
+        # Biến day-off sang khoảng thời gian aware để kiểm tra overlap
+        tz = timezone.get_current_timezone()
+        off_intervals = []
+        for off in offs:
+            if off.start_time and off.end_time:
+                off_start = timezone.make_aware(datetime.combine(target_date, off.start_time), tz)
+                off_end   = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
+                off_intervals.append((off_start, off_end))
+        # ...
+        # Trong vòng while tạo slot, thêm điều kiện loại bỏ nếu trùng interval nghỉ:
+        overlap_off = any((slot_start < o_end and slot_end > o_start) for o_start, o_end in off_intervals)
+        if not overlap and not overlap_off:
+            slots.append({"start_at": slot_start.isoformat(), "end_at": slot_end.isoformat()})
+
         return Response(slots)
 
 class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
@@ -137,3 +157,46 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
         if not hasattr(self.request.user, 'doctor_profile'):
             raise PermissionDenied("Chỉ bác sĩ mới sửa lịch làm việc.")
         serializer.save(doctor=self.request.user.doctor_profile)
+
+class DoctorDayOffViewSet(viewsets.ModelViewSet):
+    serializer_class = DoctorDayOffSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        u = self.request.user
+        if u.is_staff or u.is_superuser:
+            qs = DoctorDayOff.objects.all()
+        elif hasattr(u, 'doctor_profile'):
+            qs = DoctorDayOff.objects.filter(doctor=u.doctor_profile)
+        else:
+            return DoctorDayOff.objects.none()
+
+        # optional filter: ?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD
+        p = self.request.query_params
+        df = p.get('date_from')
+        dt = p.get('date_to')
+        if df:
+            from datetime import date as date_cls
+            try:
+                qs = qs.filter(date__gte=date_cls.fromisoformat(df))
+            except ValueError:
+                pass
+        if dt:
+            from datetime import date as date_cls
+            try:
+                qs = qs.filter(date__lte=date_cls.fromisoformat(dt))
+            except ValueError:
+                pass
+        return qs.order_by('date', 'start_time')
+
+    def perform_create(self, serializer):
+        u = self.request.user
+        if not hasattr(u, 'doctor_profile'):
+            raise PermissionDenied("Chỉ bác sĩ mới tạo ngày nghỉ.")
+        serializer.save(doctor=u.doctor_profile)
+
+    def perform_update(self, serializer):
+        u = self.request.user
+        if not hasattr(u, 'doctor_profile'):
+            raise PermissionDenied("Chỉ bác sĩ mới sửa ngày nghỉ.")
+        serializer.save(doctor=u.doctor_profile)

@@ -60,7 +60,21 @@ def _ensure_within_availability_and_grid(doctor, start_at, end_at):
     offset = _mins(s_time) - _mins(match.start_time)
     if offset % slot != 0:
         raise serializers.ValidationError(f"Giờ bắt đầu phải khớp lưới {slot} phút từ {match.start_time}.")
+    
+    # Chặn day-off:
+    offs = doctor.day_offs.filter(date=s.date())
+    # nghỉ cả ngày
+    if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
+        raise serializers.ValidationError("Bác sĩ nghỉ cả ngày.")
 
+    # nghỉ theo khung
+    def _mins(t): return t.hour * 60 + t.minute
+    s_m = _mins(s.time()); e_m = _mins(e.time())
+    for off in offs:
+        if off.start_time and off.end_time:
+            o_s = _mins(off.start_time); o_e = _mins(off.end_time)
+            if s_m < o_e and e_m > o_s:
+                raise serializers.ValidationError("Khung giờ trùng với thời gian bác sĩ nghỉ.")
 
 class AppointmentCreateSerializer(serializers.ModelSerializer):
     doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
