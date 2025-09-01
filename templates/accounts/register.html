@@ -1,237 +1,289 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Đăng ký | MediBook</title>
-  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="auth-body">
-  <main class="auth-wrap">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Đăng ký | MediBook</title>
+        <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </head>
+    <body class="auth-body">
+        <main class="auth-wrap">
+            <section class="auth-card" data-auth-group>
+                <div class="bg-med-icons">
+                    <svg class="med1" viewBox="0 0 100 100">
+                        <rect x="42" y="12" width="16" height="76" rx="8"></rect>
+                        <rect x="12" y="42" width="76" height="16" rx="8"></rect>
+                    </svg>
+                    <svg class="med2" viewBox="0 0 24 24">
+                        <path d="M12 21s-7.5-4.3-7.5-10.2A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 7.5 3.5C19.5 16.7 12 21 12 21z" />
+                    </svg>
+                    <svg class="med3" viewBox="0 0 24 24"><path d="M8 3a5 5 0 0 0 0 10h0l8-8A5 5 0 1 0 8 3Zm8 8-5 5a5 5 0 1 0 5-5Z" /></svg>
+                    <svg class="med4" viewBox="0 0 24 24"><path d="M3 12h4l2-4 3 8 2-4h7" /></svg>
+                </div>
 
-    <section class="auth-card" data-auth-group>
-      <div class="bg-med-icons">
-        <svg class="med1" viewBox="0 0 100 100"><rect x="42" y="12" width="16" height="76" rx="8"></rect><rect x="12" y="42" width="76" height="16" rx="8"></rect></svg>
-        <svg class="med2" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.3-7.5-10.2A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 7.5 3.5C19.5 16.7 12 21 12 21z"/></svg>
-        <svg class="med3" viewBox="0 0 24 24"><path d="M8 3a5 5 0 0 0 0 10h0l8-8A5 5 0 1 0 8 3Zm8 8-5 5a5 5 0 1 0 5-5Z"/></svg>
-        <svg class="med4" viewBox="0 0 24 24"><path d="M3 12h4l2-4 3 8 2-4h7"/></svg>
-      </div>
+                <div class="brand">
+                    <a href="/" class="logo">Medi<span>Book</span></a>
+                </div>
 
-      <div class="brand">
-        <a href="/" class="logo">Medi<span>Book</span></a>
-        <p class="brand-sub">Tạo tài khoản</p>
-      </div>
+                <ul class="django-messages"></ul>
 
-      <ul class="django-messages"></ul>
+                <div data-view="patient">
+                    <h1 class="auth-title">Đăng ký</h1>
+                    <form id="patient-register-form" class="auth-form" method="post" action="#">
+                        {% csrf_token %}
 
-      <!-- ===== Patient Register (default) ===== -->
-      <div data-view="patient">
-        <h1 class="auth-title">Đăng ký (Bệnh nhân)</h1>
-        <form id="patient-register-form" class="auth-form" method="post" action="#">
-          {% csrf_token %}
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="pr_username">Tài khoản</label>
+                                <div class="input-wrap">
+                                    <input id="pr_username" name="username" type="text" placeholder="" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pr_email">Email</label>
+                                <div class="input-wrap">
+                                    <input id="pr_email" name="email" type="email" placeholder="" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 13 2 6.76V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6.76Zm10-7.24V6l-10 6L2 6V5.76A2 2 0 0 1 3.94 4h16.12A2 2 0 0 1 22 5.76Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="pr_username">Tài khoản (username)</label>
-              <div class="input-wrap">
-                <input id="pr_username" name="username" type="text" placeholder="patient02" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg></span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="pr_email">Email</label>
-              <div class="input-wrap">
-                <input id="pr_email" name="email" type="email" placeholder="patient02@example.com" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 13 2 6.76V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6.76Zm10-7.24V6l-10 6L2 6V5.76A2 2 0 0 1 3.94 4h16.12A2 2 0 0 1 22 5.76Z"/></svg></span>
-              </div>
-            </div>
-          </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="pr_password">Mật khẩu</label>
+                                <div class="input-wrap">
+                                    <input id="pr_password" name="password" type="password" placeholder="" required />
+                                    <button class="toggle-eye" type="button" data-target="#pr_password">
+                                        <svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pr_full_name">Họ và tên</label>
+                                <div class="input-wrap">
+                                    <input id="pr_full_name" name="full_name" type="text" placeholder="" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="pr_password">Mật khẩu</label>
-              <div class="input-wrap">
-                <input id="pr_password" name="password" type="password" placeholder="your_password" required>
-                <button class="toggle-eye" type="button" data-target="#pr_password">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="pr_full_name">Họ & tên</label>
-              <div class="input-wrap">
-                <input id="pr_full_name" name="full_name" type="text" placeholder="Nguyễn Văn A" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg></span>
-              </div>
-            </div>
-          </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="pr_dob">Ngày sinh</label>
+                                <div class="input-wrap">
+                                    <input id="pr_dob" name="dob" type="date" required />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="pr_phone">Số điện thoại</label>
+                                <div class="input-wrap">
+                                    <input id="pr_phone" name="phone_number" type="tel" placeholder="" pattern="^(0|\\+84)\\d{8,10}$" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24 11 11 0 0 0 3.46.55 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 7a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .55 3.46 1 1 0 0 1-.24 1.05Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="pr_dob">Ngày sinh</label>
-              <div class="input-wrap">
-                <input id="pr_dob" name="dob" type="date" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="pr_phone">Số điện thoại</label>
-              <div class="input-wrap">
-                <input id="pr_phone" name="phone_number" type="tel" placeholder="0901234567" pattern="^(0|\\+84)\\d{8,10}$" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24 11 11 0 0 0 3.46.55 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 7a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .55 3.46 1 1 0 0 1-.24 1.05Z"/></svg></span>
-              </div>
-            </div>
-          </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Giới tính</label>
+                                <div class="segmented" role="group" aria-label="Giới tính">
+                                    <label class="seg">
+                                        <input type="radio" name="gender" value="male" required />
+                                        <span>Nam</span>
+                                    </label>
+                                    <label class="seg">
+                                        <input type="radio" name="gender" value="female" />
+                                        <span>Nữ</span>
+                                    </label>
+                                </div>
+                            </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Giới tính</label>
-              <div class="segmented" role="group" aria-label="Giới tính">
-                <label class="seg">
-                  <input type="radio" name="gender" value="male" required>
-                  <span>Nam</span>
-                </label>
-                <label class="seg">
-                  <input type="radio" name="gender" value="female">
-                  <span>Nữ</span>
-                </label>
-              </div>
-            </div>
+                            <div class="form-group">
+                                <label for="pr_insurance">Số BHYT</label>
+                                <div class="input-wrap">
+                                    <input id="pr_insurance" name="insurance_no" type="text" placeholder="" required />
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="form-group">
-              <label for="pr_insurance">Số BHYT</label>
-              <div class="input-wrap">
-                <input id="pr_insurance" name="insurance_no" type="text" placeholder="BH12345678" required>
-              </div>
-            </div>
-          </div>
+                        <button class="btn btn-primary" type="submit">Đăng ký</button>
 
-          <button class="btn btn-primary" type="submit">Đăng ký</button>
+                        <p class="switch-auth">Đã có tài khoản? <a class="link" href="{% url 'accounts:login' %}">Đăng nhập</a></p>
+                        <p class="switch-auth">Bạn là bác sĩ? <a href="#" class="link" data-switch="doctor">Chuyển sang đăng ký bác sĩ</a></p>
+                    </form>
+                </div>
 
-          <p class="switch-auth">
-            Đã có tài khoản? <a class="link" href="{% url 'accounts:login' %}">Đăng nhập bệnh nhân</a>
-          </p>
-          <p class="switch-auth">
-            Bạn là bác sĩ? <a href="#" class="link" data-switch="doctor">Chuyển sang đăng ký bác sĩ</a>
-          </p>
-        </form>
-      </div>
+                <!-- ===== Doctor Register (hidden until switch) ===== -->
+                <div data-view="doctor" class="hidden">
+                    <h1 class="auth-title">Đăng ký</h1>
+                    <form id="doctor-register-form" class="auth-form" method="post" action="#">
+                        {% csrf_token %}
 
-      <!-- ===== Doctor Register (hidden until switch) ===== -->
-      <div data-view="doctor" class="hidden">
-        <h1 class="auth-title">Đăng ký (Bác sĩ)</h1>
-        <form id="doctor-register-form" class="auth-form" method="post" action="#">
-          {% csrf_token %}
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="dr_username">Tài khoản</label>
+                                <div class="input-wrap">
+                                    <input id="dr_username" name="username" type="text" placeholder="" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dr_email">Email</label>
+                                <div class="input-wrap">
+                                    <input id="dr_email" name="email" type="email" placeholder="" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 13 2 6.76V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6.76Zm10-7.24V6l-10 6L2 6V5.76A2 2 0 0 1 3.94 4h16.12A2 2 0 0 1 22 5.76Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="dr_username">Tài khoản (username)</label>
-              <div class="input-wrap">
-                <input id="dr_username" name="username" type="text" placeholder="dr_nguyen" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg></span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="dr_email">Email</label>
-              <div class="input-wrap">
-                <input id="dr_email" name="email" type="email" placeholder="drnguyen@example.com" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 13 2 6.76V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6.76Zm10-7.24V6l-10 6L2 6V5.76A2 2 0 0 1 3.94 4h16.12A2 2 0 0 1 22 5.76Z"/></svg></span>
-              </div>
-            </div>
-          </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="dr_password">Mật khẩu</label>
+                                <div class="input-wrap">
+                                    <input id="dr_password" name="password" type="password" placeholder="" required />
+                                    <button class="toggle-eye" type="button" data-target="#dr_password">
+                                        <svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dr_full_name">Họ và tên</label>
+                                <div class="input-wrap">
+                                    <input id="dr_full_name" name="full_name" type="text" placeholder="" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="dr_password">Mật khẩu</label>
-              <div class="input-wrap">
-                <input id="dr_password" name="password" type="password" placeholder="your_password" required>
-                <button class="toggle-eye" type="button" data-target="#dr_password">
-                  <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="dr_full_name">Họ & tên</label>
-              <div class="input-wrap">
-                <input id="dr_full_name" name="full_name" type="text" placeholder="BS. Nguyễn Văn B" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg></span>
-              </div>
-            </div>
-          </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="dr_phone">Số điện thoại</label>
+                                <div class="input-wrap">
+                                    <input id="dr_phone" name="phone_number" type="tel" placeholder="" pattern="^(0|\\+84)\\d{8,10}$" required />
+                                    <span class="input-icon"
+                                        ><svg viewBox="0 0 24 24" width="20" height="20">
+                                            <path
+                                                fill="currentColor"
+                                                d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24 11 11 0 0 0 3.46.55 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 7a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .55 3.46 1 1 0 0 1-.24 1.05Z"
+                                            /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Giới tính</label>
+                                <div class="segmented" role="group" aria-label="Giới tính">
+                                    <label class="seg">
+                                        <input type="radio" name="gender" value="male" required />
+                                        <span>Nam</span>
+                                    </label>
+                                    <label class="seg">
+                                        <input type="radio" name="gender" value="female" />
+                                        <span>Nữ</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="dr_phone">Số điện thoại</label>
-              <div class="input-wrap">
-                <input id="dr_phone" name="phone_number" type="tel" placeholder="0911222333" pattern="^(0|\\+84)\\d{8,10}$" required>
-                <span class="input-icon"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M6.62 10.79a15.91 15.91 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24 11 11 0 0 0 3.46.55 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 7a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .55 3.46 1 1 0 0 1-.24 1.05Z"/></svg></span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Giới tính</label>
-              <div class="segmented" role="group" aria-label="Giới tính">
-                <label class="seg">
-                  <input type="radio" name="gender" value="male" required>
-                  <span>Nam</span>
-                </label>
-                <label class="seg">
-                  <input type="radio" name="gender" value="female">
-                  <span>Nữ</span>
-                </label>
-              </div>
-            </div>
-          </div>
+                        <div class="form-group">
+                            <label for="dr_specialty">Chuyên khoa</label>
+                            <div class="input-wrap">
+                                <input id="dr_specialty" name="specialty" type="text" placeholder="" required />
+                            </div>
+                        </div>
 
-          <div class="form-group">
-            <label for="dr_specialty">Chuyên khoa</label>
-            <div class="input-wrap">
-              <input id="dr_specialty" name="specialty" type="text" placeholder="Nội tiết" required>
-            </div>
-          </div>
+                        <div class="form-group">
+                            <label for="dr_hospital">Bệnh viện/Cơ sở</label>
+                            <div class="input-wrap">
+                                <input id="dr_hospital" name="hospital" type="text" placeholder="" required />
+                            </div>
+                        </div>
 
-          <div class="form-group">
-            <label for="dr_hospital">Bệnh viện/Cơ sở</label>
-            <div class="input-wrap">
-              <input id="dr_hospital" name="hospital" type="text" placeholder="Bệnh viện Trung Ương" required>
-            </div>
-          </div>
+                        <div class="form-group">
+                            <label for="dr_hospital">Giới thiệu về chuyên môn và kinh nghiệm</label>
+                            <div class="input-wrap">
+                                <textarea id="dr_bio" name="bio" rows="4" aria-label="Giới thiệu" placeholder="" required></textarea>
+                            </div>
+                        </div>
 
-          <div class="form-group">
-            <!-- chỉ khung textarea, không chữ ‘bio’ -->
-            <div class="input-wrap">
-              <textarea id="dr_bio" name="bio" rows="4"
-                aria-label="Giới thiệu"
-                placeholder="Giới thiệu về chuyên môn và kinh nghiệm..." required></textarea>
-            </div>
-          </div>
+                        <button class="btn btn-primary" type="submit">Đăng ký</button>
 
-          <button class="btn btn-primary" type="submit">Đăng ký bác sĩ</button>
+                        <p class="switch-auth">Bạn là bệnh nhân? <a href="#" class="link" data-switch="patient">Chuyển sang đăng ký bệnh nhân</a></p>
+                    </form>
+                </div>
+            </section>
 
-          <p class="switch-auth">
-            Bạn là bệnh nhân? <a href="#" class="link" data-switch="patient">Chuyển sang đăng ký bệnh nhân</a>
-          </p>
-        </form>
-      </div>
-    </section>
+            <!-- ASIDE SLIDER -->
+            <aside class="auth-aside">
+                <div class="slider" data-slider>
+                    <div class="slides">
+                        <div class="slide is-active"><img src="/static/img/auth/bac-si.png" alt="" /></div>
+                        <div class="slide"><img src="/static/img/auth/benh-vien.png" alt="" /></div>
+                        <div class="slide"><img src="/static/img/auth/tu-van.png" alt="" /></div>
+                        <div class="slide"><img src="/static/img/auth/cff9d497-f8ff-405a-81c9-f594f5590398.png" alt="" /></div>
+                    </div>
+                    <button class="nav prev" aria-label="Ảnh trước" data-prev>‹</button>
+                    <button class="nav next" aria-label="Ảnh sau" data-next>›</button>
+                    <div class="dots" data-dots></div>
+                </div>
+            </aside>
+        </main>
 
-    <!-- ASIDE SLIDER -->
-    <aside class="auth-aside">
-      <div class="slider" data-slider>
-        <div class="slides">
-          <div class="slide is-active"><img src="/static/img/auth/bac-si.png" alt=""></div>
-          <div class="slide"><img src="/static/img/auth/benh-vien.png" alt=""></div>
-          <div class="slide"><img src="/static/img/auth/tu-van.png" alt=""></div>
-          <div class="slide"><img src="/static/img/auth/cff9d497-f8ff-405a-81c9-f594f5590398.png" alt=""></div>
-        </div>
-        <button class="nav prev" aria-label="Ảnh trước" data-prev>‹</button>
-        <button class="nav next" aria-label="Ảnh sau" data-next>›</button>
-        <div class="dots" data-dots></div>
-      </div>
-    </aside>
-  </main>
-
-  <script src="{% static 'js/auth.js' %}"></script>
-</body>
+        <script src="{% static 'js/auth.js' %}"></script>
+    </body>
 </html>

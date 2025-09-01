@@ -1,121 +1,94 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Đăng nhập | MediBook</title>
-  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="auth-body">
-  <main class="auth-wrap">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Đăng nhập | MediBook</title>
+        <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </head>
+    <body class="auth-body">
+        <main class="auth-wrap">
+            <section class="auth-card" data-auth-group>
+                <!-- BG y tế mờ -->
+                <div class="bg-med-icons">
+                    <svg class="med1" viewBox="0 0 100 100">
+                        <rect x="42" y="12" width="16" height="76" rx="8"></rect>
+                        <rect x="12" y="42" width="76" height="16" rx="8"></rect>
+                    </svg>
+                    <svg class="med2" viewBox="0 0 24 24">
+                        <path d="M12 21s-7.5-4.3-7.5-10.2A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 7.5 3.5C19.5 16.7 12 21 12 21z" />
+                    </svg>
+                    <svg class="med3" viewBox="0 0 24 24"><path d="M8 3a5 5 0 0 0 0 10h0l8-8A5 5 0 1 0 8 3Zm8 8-5 5a5 5 0 1 0 5-5Z" /></svg>
+                    <svg class="med4" viewBox="0 0 24 24"><path d="M3 12h4l2-4 3 8 2-4h7" /></svg>
+                </div>
 
-    <section class="auth-card" data-auth-group>
-      <!-- BG y tế mờ -->
-      <div class="bg-med-icons">
-        <svg class="med1" viewBox="0 0 100 100"><rect x="42" y="12" width="16" height="76" rx="8"></rect><rect x="12" y="42" width="76" height="16" rx="8"></rect></svg>
-        <svg class="med2" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.3-7.5-10.2A4.8 4.8 0 0 1 12 7.3a4.8 4.8 0 0 1 7.5 3.5C19.5 16.7 12 21 12 21z"/></svg>
-        <svg class="med3" viewBox="0 0 24 24"><path d="M8 3a5 5 0 0 0 0 10h0l8-8A5 5 0 1 0 8 3Zm8 8-5 5a5 5 0 1 0 5-5Z"/></svg>
-        <svg class="med4" viewBox="0 0 24 24"><path d="M3 12h4l2-4 3 8 2-4h7"/></svg>
-      </div>
+                <div class="brand">
+                    <a href="/" class="logo">Medi<span>Book</span></a>
+                </div>
 
-      <div class="brand">
-        <a href="/" class="logo">Medi<span>Book</span></a>
-        <p class="brand-sub">Đăng nhập tài khoản</p>
-      </div>
+                <ul class="django-messages"></ul>
 
-      <ul class="django-messages"></ul>
+                <div data-view="patient">
+                    <h1 class="auth-title">Đăng nhập</h1>
 
-      <!-- ===== Patient Login (default) ===== -->
-      <div data-view="patient">
-        <h1 class="auth-title">Đăng nhập (Bệnh nhân)</h1>
+                    <form id="patient-login-form" class="auth-form" method="post" action="#">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="pl_username">Tài khoản</label>
+                            <div class="input-wrap">
+                                <input id="pl_username" name="username" type="text" placeholder="" required />
+                                <span class="input-icon">
+                                    <svg viewBox="0 0 24 24" width="20" height="20">
+                                        <path
+                                            fill="currentColor"
+                                            d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"
+                                        />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
 
-        <form id="patient-login-form" class="auth-form" method="post" action="#">
-          {% csrf_token %}
-          <div class="form-group">
-            <label for="pl_username">Tài khoản (username)</label>
-            <div class="input-wrap">
-              <input id="pl_username" name="username" type="text" placeholder="patient02" required>
-              <span class="input-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg>
-              </span>
-            </div>
-          </div>
+                        <div class="form-group">
+                            <label for="pl_password">Mật khẩu</label>
+                            <div class="input-wrap">
+                                <input id="pl_password" name="password" type="password" placeholder="" required />
+                                <button class="toggle-eye" type="button" data-target="#pl_password">
+                                    <svg viewBox="0 0 24 24" width="20" height="20">
+                                        <path
+                                            fill="currentColor"
+                                            d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-          <div class="form-group">
-            <label for="pl_password">Mật khẩu</label>
-            <div class="input-wrap">
-              <input id="pl_password" name="password" type="password" placeholder="••••••••" required>
-              <button class="toggle-eye" type="button" data-target="#pl_password">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"/></svg>
-              </button>
-            </div>
-          </div>
+                        <button class="btn btn-primary" type="submit">Đăng nhập</button>
 
-          <button class="btn btn-primary" type="submit">Đăng nhập</button>
+                        <p class="switch-auth">Chưa có tài khoản? <a class="link" href="{% url 'accounts:register' %}">Đăng ký ngay</a></p>
+                    </form>
+                </div>
+            </section>
 
-          <p class="switch-auth">
-            Chưa có tài khoản? <a class="link" href="{% url 'accounts:register' %}">Đăng ký bệnh nhân</a>
-          </p>
-          <p class="switch-auth">
-            Bạn là bác sĩ? <a href="#" class="link" data-switch="doctor">Chuyển sang đăng nhập bác sĩ</a>
-          </p>
-        </form>
-      </div>
+            <!-- ASIDE SLIDER -->
+            <aside class="auth-aside">
+                <div class="slider" data-slider>
+                    <div class="slides">
+                        <div class="slide is-active"><img src="/static/img/auth/bac-si.png" alt="" /></div>
+                        <div class="slide"><img src="/static/img/auth/benh-vien.png" alt="" /></div>
+                        <div class="slide"><img src="/static/img/auth/tu-van.png" alt="" /></div>
+                        <div class="slide"><img src="/static/img/auth/cff9d497-f8ff-405a-81c9-f594f5590398.png" alt="" /></div>
+                    </div>
+                    <button class="nav prev" aria-label="Ảnh trước" data-prev>‹</button>
+                    <button class="nav next" aria-label="Ảnh sau" data-next>›</button>
+                    <div class="dots" data-dots></div>
+                </div>
+            </aside>
+        </main>
 
-      <!-- ===== Doctor Login (hidden until switch) ===== -->
-      <div data-view="doctor" class="hidden">
-        <h1 class="auth-title">Đăng nhập (Bác sĩ)</h1>
-
-        <form id="doctor-login-form" class="auth-form" method="post" action="#">
-          {% csrf_token %}
-          <div class="form-group">
-            <label for="dl_username">Tài khoản (username)</label>
-            <div class="input-wrap">
-              <input id="dl_username" name="username" type="text" placeholder="dr_nguyen" required>
-              <span class="input-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg>
-              </span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="dl_password">Mật khẩu</label>
-            <div class="input-wrap">
-              <input id="dl_password" name="password" type="password" placeholder="your_password" required>
-              <button class="toggle-eye" type="button" data-target="#dl_password">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 11a4 4 0 1 1 4-4 4 4 0 0 1-4 4Z"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <button class="btn btn-primary" type="submit">Đăng nhập</button>
-
-          <p class="switch-auth">
-            Bạn là bệnh nhân? <a href="#" class="link" data-switch="patient">Quay lại đăng nhập bệnh nhân</a>
-          </p>
-        </form>
-      </div>
-    </section>
-
-    <!-- ASIDE SLIDER -->
-    <aside class="auth-aside">
-      <div class="slider" data-slider>
-        <div class="slides">
-          <div class="slide is-active"><img src="/static/img/auth/bac-si.png" alt=""></div>
-        <div class="slide"><img src="/static/img/auth/benh-vien.png" alt=""></div>
-        <div class="slide"><img src="/static/img/auth/tu-van.png" alt=""></div>
-        <div class="slide"><img src="/static/img/auth/cff9d497-f8ff-405a-81c9-f594f5590398.png" alt=""></div>
-        </div>
-        <button class="nav prev" aria-label="Ảnh trước" data-prev>‹</button>
-        <button class="nav next" aria-label="Ảnh sau" data-next>›</button>
-        <div class="dots" data-dots></div>
-      </div>
-    </aside>
-  </main>
-
-  <script src="{% static 'js/auth.js' %}"></script>
-</body>
+        <script src="{% static 'js/auth.js' %}"></script>
+    </body>
 </html>
