@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 
 from .models import Appointment
 from .serializers import AppointmentSerializer, AppointmentCreateSerializer
+from appointments.serializers import _ensure_within_availability_and_grid
 
 class AppointmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -160,6 +161,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         new_end   = self._normalize_dt(parse_datetime(end))
         if not new_start or not new_end or new_end <= new_start:
             return Response({"detail": "Thời gian không hợp lệ"}, status=400)
+
+        if new_start < timezone.now():  # optional nhưng nên có
+            return Response({"detail": "Không được dời lịch vào thời điểm quá khứ."}, status=400)
+
+        _ensure_within_availability_and_grid(appt.doctor, new_start, new_end)
 
         # Chỉ đc dời khi chưa COMPLETED/CANCELLED
         if appt.status in (Appointment.Status.COMPLETED, Appointment.Status.CANCELLED):
