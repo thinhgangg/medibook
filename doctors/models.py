@@ -38,3 +38,18 @@ class DoctorAvailability(models.Model):
 
     def __str__(self):
         return f"Avail D#{self.doctor_id} wd={self.weekday} {self.start_time}-{self.end_time}"
+    
+class DoctorDayOff(models.Model):
+    doctor = models.ForeignKey('doctors.Doctor', on_delete=models.CASCADE, related_name='day_offs')
+    date = models.DateField()
+    # Nếu nghỉ cả ngày: để cả hai là NULL
+    start_time = models.TimeField(null=True, blank=True)
+    end_time   = models.TimeField(null=True, blank=True)
+    reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ['doctor_id', 'date', 'start_time']
+
+    def __str__(self):
+        rng = "full-day" if self.start_time is None else f"{self.start_time}-{self.end_time}"
+        return f"DayOff D#{self.doctor_id} {self.date} {rng}"
