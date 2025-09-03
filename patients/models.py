@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import CustomUser
+from doctors.validators import validate_avatar
 
 class Patient(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='patient_profile')
@@ -12,6 +13,7 @@ class Patient(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)  # Giới tính
     dob = models.DateField()  # Ngày sinh
     insurance_no = models.CharField(max_length=100)  # Số bảo hiểm
+    profile_picture = models.ImageField(upload_to="doctors/", blank=True, null=True, validators=[validate_avatar],)
     
     def __str__(self):
         return self.user.full_name 

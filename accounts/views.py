@@ -160,12 +160,74 @@ class DoctorRegisterView(APIView):
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     def get(self, request):
-        return Response(UserPublicSerializer(request.user).data)
+        user = request.user
+        data = UserPublicSerializer(user).data
+        if hasattr(user, "doctor_profile"):
+            data["doctor"] = DoctorSerializer(user.doctor_profile).data
+        if hasattr(user, "patient_profile"):
+            data["patient"] = PatientSerializer(user.patient_profile).data
+        return Response(data)
 
     def patch(self, request):
-        ser = UserUpdateSerializer(request.user, data=request.data, partial=True)
-        ser.is_valid(raise_exception=True)
-        ser.save()
-        return Response(UserPublicSerializer(request.user).data)
+        user = request.user
+
+        # 1) Cập nhật thông tin user
+        user_ser = UserUpdateSerializer(user, data=request.data, partial=True)
+        user_ser.is_valid(raise_exception=True)
+        user_ser.save()
+
+        # 2) Cập nhật avatar cho doctor/patient (nếu có)
+        has_file = "profile_picture" in request.FILES or "profile_picture" in request.data
+        want_remove = str(request.data.get("remove_profile_picture", "")).lower() in ("1", "true", "yes")
+
+        updated_doctor = None
+        updated_patient = None
+
+        if has_file or want_remove:
+            # Nếu 1 user vừa là doctor vừa là patient (hiếm), cho phép chỉ định `profile_owner=doctor|patient`
+            target = str(request.data.get("profile_owner", "")).lower()
+            obj = None
+
+            if target == "doctor" and hasattr(user, "doctor_profile"):
+                obj = user.doctor_profile
+            elif target == "patient" and hasattr(user, "patient_profile"):
+                obj = user.patient_profile
+            else:
+                # nếu không chỉ định, tự suy ra
+                if hasattr(user, "doctor_profile") and not hasattr(user, "patient_profile"):
+                    obj = user.doctor_profile
+                elif hasattr(user, "patient_profile") and not hasattr(user, "doctor_profile"):
+                    obj = user.patient_profile
+                elif hasattr(user, "doctor_profile") and hasattr(user, "patient_profile"):
+                    return Response(
+                        {"detail": "Vui lòng chỉ định 'profile_owner' = 'doctor' hoặc 'patient'."},
+                        status=400
+                    )
+                else:
+                    return Response({"detail": "Chỉ bác sĩ hoặc bệnh nhân mới cập nhật avatar."}, status=403)
+
+            if want_remove:
+                if getattr(obj, "profile_picture", None):
+                    obj.profile_picture = None
+            else:
+                file_obj = request.FILES.get("profile_picture") or request.data.get("profile_picture")
+                if not file_obj:
+                    return Response({"detail": "Thiếu file profile_picture."}, status=400)
+                obj.profile_picture = file_obj
+
+            obj.save()
+            if obj is getattr(user, "doctor_profile", None):
+                updated_doctor = obj
+            if obj is getattr(user, "patient_profile", None):
+                updated_patient = obj
+
+        # 3) Response gồm user + profile
+        resp = UserPublicSerializer(user).data
+        if hasattr(user, "doctor_profile"):
+            resp["doctor"] = DoctorSerializer(updated_doctor or user.doctor_profile).data
+        if hasattr(user, "patient_profile"):
+            resp["patient"] = PatientSerializer(updated_patient or user.patient_profile).data
+        return Response(resp, status=status.HTTP_200_OK)
