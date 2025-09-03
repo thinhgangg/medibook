@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 
+from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -87,7 +88,7 @@ class PatientRegisterView(APIView):
 
 
 class DoctorRegisterView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAdminUser]
     parser_classes = [JSONParser, FormParser, MultiPartParser]
 
     @transaction.atomic
@@ -132,6 +133,7 @@ class DoctorRegisterView(APIView):
             full_name=data.get("full_name"),
             phone_number=data.get("phone_number"),
             role="DOCTOR",
+            is_active=True,  
         )
         user.set_password(data["password"])
         user.save()
@@ -142,23 +144,19 @@ class DoctorRegisterView(APIView):
             gender=gender,
             specialty=spec,
             bio=data.get("bio"),
-            profile_picture=data.get("profile_picture"),  # hỗ trợ multipart
+            profile_picture=data.get("profile_picture"),
             is_active=True,
         )
 
         # 6) Token & response
-        refresh, access = issue_tokens(user)
         return Response(
             {
                 "message": "Register doctor success",
                 "user": UserSerializer(user).data,
                 "doctor": DoctorSerializer(doctor).data,
-                "refresh": refresh,
-                "access": access,
             },
             status=status.HTTP_201_CREATED,
         )
-
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]

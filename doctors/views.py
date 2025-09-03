@@ -20,8 +20,10 @@ class DoctorViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
     
     def get_queryset(self):
-        # Public directory
-        return Doctor.objects.all()
+        qs = Doctor.objects.select_related("user", "specialty")
+        if self.action in ("list", "retrieve"):
+            qs = qs.filter(is_active=True)  # công khai chỉ thấy active
+        return qs
 
     def perform_create(self, serializer):
         if Doctor.objects.filter(user=self.request.user).exists():
