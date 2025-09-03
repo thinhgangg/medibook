@@ -9,5 +9,5 @@ class PatientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Patient
-        fields = ['id', 'user_id', 'dob', 'gender', 'insurance_no', 'phone_number']
-        read_only_fields = ['id', 'user_id', 'phone_number']
+        fields = ['id', 'user_id', 'dob', 'phone_number', 'gender', 'insurance_no', 'profile_picture']
+        read_only_fields = ['id', 'user_id']
