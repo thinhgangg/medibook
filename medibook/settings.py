@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     "patients",
     'rest_framework',
     'rest_framework_simplejwt',
+    "cloudinary",
+    "cloudinary_storage",
+    "django_cleanup.apps.CleanupConfig", 
 ]
 
 MIDDLEWARE = [
@@ -153,3 +156,14 @@ REST_FRAMEWORK = {
 }
 
 APPOINTMENT_BUFFER_MINUTES = 10  # hoặc 0 nếu chưa muốn dùng buffer
+
+CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+
+STORAGES = {
+    "default": { 
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
