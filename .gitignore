@@ -17,6 +17,8 @@ env/
 # Django stuff
 *.sqlite3
 db.sqlite3
+media/*
+!media/utils.py
 staticfiles/
 *.pot
 *.pyc
