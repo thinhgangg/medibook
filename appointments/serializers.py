@@ -92,6 +92,10 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Không được đặt lịch trong quá khứ.")
 
         doctor = data["doctor"]
+        if not doctor.is_active:
+            raise serializers.ValidationError("Bác sĩ hiện không nhận lịch (inactive).")
+        if not doctor.user.is_active:
+            raise serializers.ValidationError("Tài khoản bác sĩ đang bị khóa.")
 
         # 1) Nằm trong availability + đúng lưới slot
         _ensure_within_availability_and_grid(doctor, start, end)

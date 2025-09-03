@@ -1,15 +1,37 @@
 # doctors/serializers.py
 from rest_framework import serializers
-from .models import DoctorAvailability, DoctorDayOff, Doctor
+from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
+from accounts.serializers import UserSerializer
+
+class SpecialtySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specialty
+        fields = ["id", "name", "description", "is_active"]
 
 class DoctorSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    user = UserSerializer(read_only=True)
     phone_number = serializers.CharField(source='user.phone_number', read_only=True)
+
+    specialty = SpecialtySerializer(read_only=True)
+    specialty_id = serializers.PrimaryKeyRelatedField(
+        source="specialty",
+        queryset=Specialty.objects.filter(is_active=True),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Doctor
-        fields = ['id', 'user_id', 'specialty', 'bio', 'hospital', 'gender', 'phone_number']
-        read_only_fields = ['id', 'user_id', 'phone_number']
+        fields = [
+            "id", "user", "phone_number",
+            "gender",
+            "specialty", "specialty_id",
+            "bio",
+            "profile_picture",   
+            "is_active",
+        ]
+        read_only_fields = ["id", "user", "phone_number"]
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:

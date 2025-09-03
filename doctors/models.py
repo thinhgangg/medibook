@@ -1,29 +1,49 @@
 from django.db import models
 from accounts.models import CustomUser  
+from .validators import validate_avatar
 
 class Doctor(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='doctor_profile')
-    
+
     GENDER_CHOICES = [
         ('MALE', 'Male'),
         ('FEMALE', 'Female'),
     ]
-    
-    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)  # Giới tính
-    specialty = models.CharField(max_length=100)  # Chuyên khoa
-    bio = models.TextField(blank=True, null=True)  # Tiểu sử
-    hospital = models.CharField(max_length=255)  # Bệnh viện công tác
-    
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
+
+    specialty = models.ForeignKey(
+        "doctors.Specialty",
+        on_delete=models.PROTECT,    
+        related_name="doctors",
+        null=True, blank=True         
+    )
+
+    bio = models.TextField(blank=True, null=True)
+
+    profile_picture = models.ImageField(upload_to="doctors/", blank=True, null=True, validators=[validate_avatar],)
+    is_active = models.BooleanField(default=True, db_index=True)  # dễ filter danh bạ bác sĩ
+
     def __str__(self):
-        return self.user.full_name 
-    
+        return self.user.full_name or self.user.username
+
     @property
     def phone_number(self):
-        return self.user.phone_number 
+        return self.user.phone_number
 
     class Meta:
         verbose_name = 'Doctor'
         verbose_name_plural = 'Doctors'
+
+class Specialty(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 class DoctorAvailability(models.Model):
     doctor = models.ForeignKey('doctors.Doctor', on_delete=models.CASCADE, related_name='availabilities')
