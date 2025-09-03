@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
 from accounts.serializers import UserSerializer
+from media.utils import cloud_thumbs
 
 class SpecialtySerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +22,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
+    profile_picture_thumbs = serializers.SerializerMethodField()
+
     class Meta:
         model = Doctor
         fields = [
@@ -29,9 +32,17 @@ class DoctorSerializer(serializers.ModelSerializer):
             "specialty", "specialty_id",
             "bio",
             "profile_picture",   
+            "profile_picture_thumbs",
             "is_active",
         ]
-        read_only_fields = ["id", "user", "phone_number"]
+        read_only_fields = ["id", "user", "phone_number", "profile_picture"]
+
+    def get_specialty(self, obj):
+        s = obj.specialty
+        return {"id": s.id, "name": s.name} if s else None
+
+    def get_profile_picture_thumbs(self, obj):
+        return cloud_thumbs(obj.profile_picture, sizes={"small": (64, 64), "large": (400, 400)})
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
