@@ -44,9 +44,9 @@ class PatientRegisterView(APIView):
     def post(self, request):
         data = request.data
 
-        # YÊU CẦU: có phone_number nhưng sẽ lưu trên User
+        # Validate user fields
         required_user = ["username", "email", "password", "phone_number"]
-        required_patient = ["dob", "gender"]  # KHÔNG có 'phone_number' ở đây nữa
+        required_patient = ["dob", "gender"]
 
         for f in required_user + required_patient:
             if not data.get(f):
@@ -57,7 +57,7 @@ class PatientRegisterView(APIView):
         if User.objects.filter(email=data["email"]).exists():
             return Response({"detail": "Email already exists"}, status=400)
 
-        # 1) Tạo user và LƯU PHONE TẠI ĐÂY
+        # Create user
         user = User(
             username=data["username"],
             email=data["email"],
@@ -65,16 +65,17 @@ class PatientRegisterView(APIView):
         if hasattr(user, "full_name") and data.get("full_name"):
             user.full_name = data["full_name"]
         if hasattr(user, "phone_number") and data.get("phone_number"):
-            user.phone_number = data["phone_number"]  # <<<<<<<<<<<<<< gán ở user
+            user.phone_number = data["phone_number"]
         user.set_password(data["password"])
         user.save()
 
-        # 2) Tạo Patient (KHÔNG truyền phone_number vào đây)
+        # Create patient 
         patient = Patient.objects.create(
             user=user,
             dob=data["dob"],
             gender=data["gender"],
             insurance_no=data.get("insurance_no", ""),
+            address=data.get("address", ""),
         )
 
         refresh, access = issue_tokens(user)
@@ -95,7 +96,7 @@ class DoctorRegisterView(APIView):
     def post(self, request):
         data = request.data
 
-        # 1) Validate user cơ bản
+        # Validate user fields
         required_user = ["username", "email", "password", "phone_number"]
         for f in required_user:
             if not data.get(f):
@@ -106,7 +107,7 @@ class DoctorRegisterView(APIView):
         if User.objects.filter(email=data["email"]).exists():
             return Response({"detail": "Email already exists"}, status=400)
 
-        # 2) Lấy specialty: ưu tiên specialty_id, fallback theo tên 'specialty'
+        # Handle specialty
         spec = None
         spec_id = data.get("specialty_id")
         spec_name = data.get("specialty")
@@ -117,7 +118,7 @@ class DoctorRegisterView(APIView):
         else:
             return Response({"detail": "Missing field: specialty_id (or 'specialty' name)."}, status=400)
 
-        # 3) Chuẩn hoá gender -> MALE/FEMALE (optional)
+        # Handle gender
         gender = data.get("gender")
         if gender:
             gender = str(gender).upper()
@@ -126,7 +127,7 @@ class DoctorRegisterView(APIView):
         else:
             gender = None
 
-        # 4) Tạo user (role=DOCTOR)
+        # Create user
         user = User(
             username=data["username"],
             email=data["email"],
@@ -138,12 +139,14 @@ class DoctorRegisterView(APIView):
         user.set_password(data["password"])
         user.save()
 
-        # 5) Tạo Doctor (KHÔNG còn 'hospital')
+        # Create doctor
         doctor = Doctor.objects.create(
             user=user,
-            gender=gender,
+            gender=data["gender"],
             specialty=spec,
-            bio=data.get("bio"),
+            bio=data.get("bio", "Bác sĩ chưa cập nhật tiểu sử."),
+            dob=data.get("dob"),
+            address=data.get("address", ""),
             profile_picture=data.get("profile_picture"),
             is_active=True,
         )

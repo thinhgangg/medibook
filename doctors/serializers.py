@@ -22,18 +22,18 @@ class DoctorSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
+    dob = serializers.DateField(required=False, allow_null=True)
+    address = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    bio = serializers.CharField(default="Bác sĩ chưa cập nhật tiểu sử", required=False)
     profile_picture_thumbs = serializers.SerializerMethodField()
 
     class Meta:
         model = Doctor
         fields = [
             "id", "user", "phone_number",
-            "gender",
-            "specialty", "specialty_id",
-            "bio",
-            "profile_picture",   
-            "profile_picture_thumbs",
-            "is_active",
+            "gender", "specialty", "specialty_id",
+            "bio", "dob", "address", "profile_picture",
+            "profile_picture_thumbs", "is_active"
         ]
         read_only_fields = ["id", "user", "phone_number", "profile_picture"]
 
@@ -42,7 +42,10 @@ class DoctorSerializer(serializers.ModelSerializer):
         return {"id": s.id, "name": s.name} if s else None
 
     def get_profile_picture_thumbs(self, obj):
-        return cloud_thumbs(obj.profile_picture, sizes={"small": (64, 64), "large": (400, 400)})
+        return cloud_thumbs(
+            obj.profile_picture, 
+            sizes={"small": (64, 64), "large": (400, 400)}
+        )
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
