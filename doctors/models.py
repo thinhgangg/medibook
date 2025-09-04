@@ -11,6 +11,8 @@ class Doctor(models.Model):
     ]
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
 
+    dob = models.DateField(blank=True, null=True)
+
     specialty = models.ForeignKey(
         "doctors.Specialty",
         on_delete=models.PROTECT,    
@@ -18,7 +20,9 @@ class Doctor(models.Model):
         null=True, blank=True         
     )
 
-    bio = models.TextField(blank=True, null=True)
+    bio = models.TextField(default="Bác sĩ chưa cập nhật tiểu sử", blank=True, null=True)
+    
+    address = models.TextField(blank=True, null=True)
 
     profile_picture = models.ImageField(upload_to="doctors/", blank=True, null=True, validators=[validate_avatar],)
     is_active = models.BooleanField(default=True, db_index=True)  # dễ filter danh bạ bác sĩ
