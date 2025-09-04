@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ENDPOINTS = {
     login:    "/api/login/patient/",
     register: "/api/register/patient/"
-  };
+  };  
   const REDIRECTS = {
     afterLogin:    "/dashboard/",
     afterRegister: "/accounts/login/"
@@ -87,7 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
         dob:           regForm.dob.value,
         phone_number:  regForm.phone_number.value.trim(),
         gender:        genderVal,   // "male" | "female"
-        insurance_no:  regForm.insurance_no.value.trim()
+        insurance_no:  regForm.insurance_no.value.trim(),
+        address:       regForm.address.value.trim() // New address field added
       };
       const { ok, data } = await postJSON(ENDPOINTS.register, payload);
       btn.disabled = false;
