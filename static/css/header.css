@@ -6,14 +6,14 @@
     right: 0;
     z-index: 1000;
     background: #fff;
-    border-bottom: 1px solid #eaeaea;
+    border-bottom: 1px solid #ccc;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 }
 
 .nav-wrap {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 8px 20px;
+    padding: 9px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;

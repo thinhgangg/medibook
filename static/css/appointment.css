@@ -11,6 +11,23 @@
     --notice: #fff6ea;
 }
 
+* {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -o-text-size-adjust: 100%;
+    word-break: break-word;
+    -webkit-tap-highlight-color: transparent;
+}
+
 .container {
     max-width: 1000px;
     margin: 0 auto;

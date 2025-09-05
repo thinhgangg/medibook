@@ -11,3 +11,6 @@ def appointment_list_view(request):
 
 def appointment_success_view(request):
     return render(request, 'appointments/appointment-success.html')
+
+def search(request):
+    return render(request, 'appointments/search.html')

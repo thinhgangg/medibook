@@ -1,0 +1,52 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Đặt lịch khám - MediBook{% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/search.css' %}" />
+
+<!-- Tìm kiếm -->
+<section class="search-section">
+    <form method="get" action="#" class="search-bar">
+        <input type="text" style="border:none" name="q" placeholder="Tìm theo triệu chứng, bác sĩ, bệnh viện..." />
+        <button>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </button>
+    </form>
+    <div class="filters">
+        <span class="filter">Nơi khám: <strong>Bác sĩ</strong></span>
+        <span class="filter">Chọn chuyên khoa</span>
+        <span class="filter">Khu vực</span>
+        <span class="filter">Gần nhất</span>
+    </div>
+</section>
+
+<!-- Danh sách bác sĩ -->
+<div class="doctor-list-container">
+    <section class="doctor-list">
+        <p class="result-count">Tìm thấy 517 kết quả.</p>
+
+        <div class="doctor-card">
+            <img src="https://via.placeholder.com/80" alt="BS 1" class="doctor-avatar" />
+            <div class="doctor-info">
+                <h3>TS. BS Đào Bùi Quý Quyền</h3>
+                <div class="specialty">Nội thận | Ngoại tiết niệu</div>
+                <div class="address">242 Nguyễn Chí Thanh, Quận 10, Hồ Chí Minh</div>
+            </div>
+            <button class="book-btn">Đặt khám</button>
+        </div>
+
+        <div class="doctor-card">
+            <img src="https://via.placeholder.com/80" alt="BS 2" class="doctor-avatar" />
+            <div class="doctor-info">
+                <h3>PGS. TS. BS Nguyễn Thị Bích Đào</h3>
+                <div class="specialty">Nội tiết</div>
+                <div class="address">215F Nguyễn Trãi, Quận 1, Hồ Chí Minh</div>
+            </div>
+            <button class="book-btn">Đặt khám</button>
+        </div>
+
+        <!-- Thêm các bác sĩ khác tương tự -->
+    </section>
+</div>
+
+{% endblock %}
