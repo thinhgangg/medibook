@@ -20,7 +20,9 @@
 
                 <!-- Menu -->
                 <nav class="nav-links">
-                    <a class="nav-item {% if request.path == '/appointment/' %}active{% endif %}" href="#appointment">Đặt khám</a>
+                    <a class="nav-item {% if request.path == '/appointments/' %}active{% endif %}" href="{% url 'appointments:appointment' %}"
+                        >Đặt khám</a
+                    >
                     <a class="nav-item {% if request.path == '/consult/' %}active{% endif %}" href="#consult">Tư vấn trực tuyến</a>
                     <a class="nav-item {% if request.path == '/health-news/' %}active{% endif %}" href="#health-news">Tin Y tế</a>
                     <a class="nav-item {% if request.path == '/assistant/' %}active{% endif %}" href="#about">Giới thiệu</a>
