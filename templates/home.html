@@ -1,173 +1,179 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block title %}Trang chủ - MediBook{% endblock title %} {% block content %}
 
-{% block title %}Trang chủ - MediBook{% endblock title %}
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-content">
+            <h1>Ứng dụng đặt khám</h1>
+            <p>
+                Đặt khám với hơn <b>1000 bác sĩ</b>, <b>25 bệnh viện</b>, <b>100 phòng khám</b> trên YouMed <br />
+                để có số thứ tự và khung giờ khám trước.
+            </p>
+            <div class="search-box">
+                <input type="text" placeholder="Triệu chứng, bác sĩ, bệnh viện..." />
+                <button>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
 
-{% block content %}
-
-<!-- ================= HERO ================= -->
-<section class="ym-hero full-bleed">
-  <div class="ym-hero__inner">
-    <div class="ym-hero__copy">
-      <h1 class="ym-hero__title">Ứng dụng đặt lịch khám</h1>
-      <p class="ym-hero__subtitle">
-        Đặt lịch khám với hơn 1000 bác sĩ, 25 bệnh viện, 100 phòng khám trên MediBook để có số thứ tự và khung giờ khám trước.
-      </p>
-
-      <form class="ym-search" id="searchForm" role="search" aria-label="Tìm kiếm">
-        <input type="search" class="ym-search__input" id="searchInput" placeholder="Triệu chứng, bác sĩ, bệnh viện…" autocomplete="off" />
-        <button class="ym-search__btn" type="submit" aria-label="Tìm kiếm">
-          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M10 18a8 8 0 1 1 5.292-14.001A8 8 0 0 1 10 18Zm11 3-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </form>
+        <div class="hero-image">
+            <img src="/static/img/family.png" alt="Gia đình" />
+        </div>
     </div>
-
-    <div class="ym-hero__art" aria-hidden="true">
-      <div class="ym-hero__blob">
-        <img src="/static/img/news/anh-bac-si-6.jpg.webp" alt="Your Image" class="hero-image" />
-      </div>
-    </div>
-  </div>
 </section>
-<!-- =============== /HERO =============== -->
 
-<!-- ========== ĐẶT LỊCH KHÁM TRỰC TUYẾN (BÁC SĨ) ========== -->
+<section class="dm-header">
+    <h1 class="dm-main-title">Đặt lịch khám trực tuyến</h1>
+    <p class="dm-subtitle">Tìm Bác sĩ chính xác - Đặt lịch khám dễ dàng</p>
+</section>
+
+<!-- Đặt khám bác sĩ -->
 <section class="dm-doctors" id="doctors">
-  <div class="dm-doctors__head">
-    <div>
-      <h2 class="dm-title">Đặt lịch khám trực tuyến</h2>
-      <p class="dm-subtitle">Tìm Bác sĩ chính xác – Đặt lịch khám dễ dàng.</p>
+    <div class="dm-doctors__head">
+        <div>
+            <h2 class="dm-title">Đặt khám bác sĩ</h2>
+            <p class="dm-subtitle">Tìm Bác sĩ chính xác – Đặt lịch khám dễ dàng.</p>
+        </div>
+        <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
     </div>
-    <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
-  </div>
 
-  <div class="dm-doctors__rail">
-    <button class="dm-nav dm-nav--prev" aria-label="Trước" data-for="doctorRail" disabled>
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-      </svg>
-    </button>
+    <div class="dm-doctors__rail">
+        <button class="dm-nav dm-nav--prev" aria-label="Trước" data-for="doctorRail" disabled>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
 
-    <div class="dm-doctors__list" id="doctorRail"><!-- main.js render --></div>
+        <div class="dm-doctors__list" id="doctorRail">
+            <!-- main.js render -->
+        </div>
 
-    <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="doctorRail">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-      </svg>
-    </button>
-  </div>
+        <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="doctorRail">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </button>
+    </div>
 
-  <div class="dm-progress"><span class="dm-progress__bar" id="doctorProgress"></span></div>
+    <div class="dm-progress">
+        <span class="dm-progress__bar" id="doctorProgress"></span>
+    </div>
 </section>
 
-<!-- ========== ĐẶT LỊCH THEO CHUYÊN KHOA ========== -->
+<!-- Đặt lịch theo chuyên khoa -->
 <section class="specs" id="specialties">
-  <div class="specs__head">
-    <div>
-      <h2 class="dm-title">Đặt lịch theo Chuyên khoa</h2>
-      <p class="dm-subtitle">Danh sách bác sĩ, bệnh viện, phòng khám theo chuyên khoa</p>
+    <div class="specs__head">
+        <div>
+            <h2 class="dm-title">Đặt lịch theo Chuyên khoa</h2>
+            <p class="dm-subtitle">Danh sách bác sĩ, bệnh viện, phòng khám theo chuyên khoa</p>
+        </div>
     </div>
-  </div>
 
-  <ul class="specs__grid" id="specList"><!-- main.js render --></ul>
-
-  <div class="specs__more">
-    <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
-  </div>
+    <ul class="specs__grid" id="specList">
+        <!-- main.js render -->
+    </ul>
+    <div class="specs__more">
+        <a href="#" class="dm-btn dm-btn--pill spec-link">Xem thêm</a>
+    </div>
 </section>
 
-<!-- ================= News ================= -->
+<!-- Tin y tế -->
 <section class="news-section">
-  <div class="news-container">
-    <!-- Tin chính -->
-    <article class="news-card news-card--main"
-      data-url="https://benhvienungbuouhungviet.vn/kien-thuc-tam-soat-ung-thu/tim-hieu-quy-trinh-tam-soat-ung-thu-tai-benh-vien-ung-buou-hung-viet.html">
-      <img class="news-card__img" src="/static/img/bang-tin/083943-review-benh-vien-hung-viet-3.webp"
-           alt="Review tầm soát ung thư tại BV Ung bướu Hưng Việt" loading="lazy"/>
-      <div class="news-card__body">
-        <h3 class="news-card__title">Review chi tiết tầm soát ung thư tại BV Ung bướu Hưng Việt</h3>
-        <p class="news-card__desc">Tìm hiểu thế mạnh chuyên khoa ung bướu tại BV Hưng Việt, đặt lịch tầm soát qua Medpro để tiết kiệm thời gian.</p>
-        <div class="news-card__meta"><span>25/08/2025, 11:45</span></div>
-      </div>
-    </article>
-
-    <!-- 4 tin phụ -->
-    <div class="news-grid">
-      <article class="news-card" data-url="https://bookingcare.vn/cam-nang/7-dia-chi-dieu-tri-viem-nang-long-uy-tin-tai-tphcm-p2930.html">
-        <img class="news-card__img" src="/static/img/bang-tin/viem-nang-long.webp" alt="Điều trị viêm nang lông ở đâu?" loading="lazy" />
-        <div class="news-card__body">
-          <h4 class="news-card__title">Điều trị viêm nang lông ở đâu?</h4>
-          <p class="news-card__desc">Chi phí & Top 5 địa chỉ uy tín tại TPHCM cho điều trị viêm nang lông.</p>
-          <div class="news-card__meta"><span>26/08/2025, 01:58</span></div>
-        </div>
-      </article>
-
-      <article class="news-card" data-url="https://tambinh.vn/thoat-vi-dia-dem-kham-o-dau/">
-        <img class="news-card__img" src="/static/img/bang-tin/20230327_mo-thoat-vi-dia-dem-o-dau-tot-nhat-la-thac-mac-cua-nguoi-benh.webp"
-             alt="Mổ thoát vị đĩa đệm ở đâu tốt?" loading="lazy" />
-        <div class="news-card__body">
-          <h4 class="news-card__title">Mổ thoát vị đĩa đệm ở đâu tốt?</h4>
-          <p class="news-card__desc">Cơ sở uy tín tại TPHCM & mức chi phí tham khảo khi phẫu thuật.</p>
-          <div class="news-card__meta"><span>25/08/2025, 04:37</span></div>
-        </div>
-      </article>
-
-      <article class="news-card" data-url="https://tamanhhospital.vn/viem-duong-ho-hap-o-tre-em/">
-        <img class="news-card__img" src="/static/img/bang-tin/tre-co-cac-dau-hieu-viem-phoi-can-duoc-dua-den-benh-vien.webp"
-             alt="Bệnh viêm hô hấp ở trẻ em" loading="lazy" />
-        <div class="news-card__body">
-          <h4 class="news-card__title">Bệnh viêm hô hấp ở trẻ em</h4>
-          <p class="news-card__desc">Dấu hiệu nhận biết & nguyên nhân thường gặp ở trẻ.</p>
-          <div class="news-card__meta"><span>30/10/2024, 10:30</span></div>
-        </div>
-      </article>
-
-      <article class="news-card" data-url="https://tamanhhospital.vn/buou-mau-co-nguy-hiem-khong/">
-        <img class="news-card__img" src="/static/img/bang-tin/25zc6W24tjEcaSfCHby0c5GDv0Jcpt6qHvkEphgJ.webp"
-             alt="Bướu máu ở trẻ sơ sinh" loading="lazy" />
-        <div class="news-card__body">
-          <h4 class="news-card__title">Bướu máu ở trẻ sơ sinh</h4>
-          <p class="news-card__desc">Từ nguyên nhân cho đến cách điều trị hiện nay.</p>
-          <div class="news-card__meta"><span>29/10/2024, 04:23</span></div>
-        </div>
-      </article>
+    <div class="dm-header">
+        <h1 class="dm-main-title">Tin y tế</h1>
+        <p class="dm-subtitle">Chính thống - Minh bạch - Trung lập</p>
     </div>
-  </div>
-</section>
 
-<!-- ===== Contact Banner ===== -->
-<section class="contact-banner">
-  <!-- icons nền mờ -->
-  <svg class="cb-icon cb-icon--stetho" viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M20 6v16a8 8 0 1 1-16 0V6M4 22c0 9 7 16 16 16s16-7 16-16M36 38v6a10 10 0 0 0 20 0v-9a5 5 0 0 0-10 0v6"
-          fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-  </svg>
-  <svg class="cb-icon cb-icon--pulse" viewBox="0 0 100 28" aria-hidden="true">
-    <path d="M2 14h18l4-10 8 20 6-12h18l6-8 6 12h24" fill="none" stroke="currentColor" stroke-width="3"
-          stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <svg class="cb-icon cb-icon--cross" viewBox="0 0 64 64" aria-hidden="true"><path d="M26 6h12v20h20v12H38v20H26V38H6V26h20z" fill="currentColor"/></svg>
-  <svg class="cb-icon cb-icon--capsule" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="26" width="44" height="12" rx="6" fill="currentColor"/></svg>
+    <div class="news-container">
+        <!-- Tin chính -->
+        <article
+            class="news-card news-card--main"
+            data-url="https://benhvienungbuouhungviet.vn/kien-thuc-tam-soat-ung-thu/tim-hieu-quy-trinh-tam-soat-ung-thu-tai-benh-vien-ung-buou-hung-viet.html"
+        >
+            <img
+                class="news-card__img"
+                src="/static/img/bang-tin/083943-review-benh-vien-hung-viet-3.webp"
+                alt="Review tầm soát ung thư tại BV Ung bướu Hưng Việt"
+                loading="lazy"
+            />
+            <div class="news-card__body">
+                <h3 class="news-card__title">Review chi tiết tầm soát ung thư tại BV Ung bướu Hưng Việt</h3>
+                <p class="news-card__desc">
+                    Tìm hiểu thế mạnh chuyên khoa ung bướu tại BV Hưng Việt, đặt lịch tầm soát qua Medpro để tiết kiệm thời gian.
+                </p>
+                <div class="news-card__meta"><span>25/08/2025, 11:45</span></div>
+            </div>
+        </article>
 
-  <div class="contact-banner__inner">
-    <div class="cb-block">
-      <div class="cb-info">
-        <div class="cb-title"><span class="cb-callicon">📞</span><span>THÔNG TIN LIÊN HỆ</span></div>
-        <div class="cb-phones">
-          <a href="tel:0779503687" class="cb-phone">0779503687</a>
-          <a href="tel:0377527726" class="cb-phone">0377527726</a>
+        <!-- 4 tin phụ -->
+        <div class="news-grid">
+            <article class="news-card" data-url="https://bookingcare.vn/cam-nang/7-dia-chi-dieu-tri-viem-nang-long-uy-tin-tai-tphcm-p2930.html">
+                <img class="news-card__img" src="/static/img/bang-tin/viem-nang-long.webp" alt="Điều trị viêm nang lông ở đâu?" loading="lazy" />
+                <div class="news-card__body">
+                    <h4 class="news-card__title">Điều trị viêm nang lông ở đâu?</h4>
+                    <p class="news-card__desc">Chi phí & Top 5 địa chỉ uy tín tại TPHCM cho điều trị viêm nang lông.</p>
+                    <div class="news-card__meta"><span>26/08/2025, 01:58</span></div>
+                </div>
+            </article>
+
+            <article class="news-card" data-url="https://tambinh.vn/thoat-vi-dia-dem-kham-o-dau/">
+                <img
+                    class="news-card__img"
+                    src="/static/img/bang-tin/20230327_mo-thoat-vi-dia-dem-o-dau-tot-nhat-la-thac-mac-cua-nguoi-benh.webp"
+                    alt="Mổ thoát vị đĩa đệm ở đâu tốt?"
+                    loading="lazy"
+                />
+                <div class="news-card__body">
+                    <h4 class="news-card__title">Mổ thoát vị đĩa đệm ở đâu tốt?</h4>
+                    <p class="news-card__desc">Cơ sở uy tín tại TPHCM & mức chi phí tham khảo khi phẫu thuật.</p>
+                    <div class="news-card__meta"><span>25/08/2025, 04:37</span></div>
+                </div>
+            </article>
+
+            <article class="news-card" data-url="https://tamanhhospital.vn/viem-duong-ho-hap-o-tre-em/">
+                <img
+                    class="news-card__img"
+                    src="/static/img/bang-tin/tre-co-cac-dau-hieu-viem-phoi-can-duoc-dua-den-benh-vien.webp"
+                    alt="Bệnh viêm hô hấp ở trẻ em"
+                    loading="lazy"
+                />
+                <div class="news-card__body">
+                    <h4 class="news-card__title">Bệnh viêm hô hấp ở trẻ em</h4>
+                    <p class="news-card__desc">Dấu hiệu nhận biết & nguyên nhân thường gặp ở trẻ.</p>
+                    <div class="news-card__meta"><span>30/10/2024, 10:30</span></div>
+                </div>
+            </article>
+
+            <article class="news-card" data-url="https://tamanhhospital.vn/buou-mau-co-nguy-hiem-khong/">
+                <img
+                    class="news-card__img"
+                    src="/static/img/bang-tin/25zc6W24tjEcaSfCHby0c5GDv0Jcpt6qHvkEphgJ.webp"
+                    alt="Bướu máu ở trẻ sơ sinh"
+                    loading="lazy"
+                />
+                <div class="news-card__body">
+                    <h4 class="news-card__title">Bướu máu ở trẻ sơ sinh</h4>
+                    <p class="news-card__desc">Từ nguyên nhân cho đến cách điều trị hiện nay.</p>
+                    <div class="news-card__meta"><span>29/10/2024, 04:23</span></div>
+                </div>
+            </article>
         </div>
-      </div>
-
-      <div class="cb-qrs">
-        <div class="qr-decor"><span class="icon-med">⚕</span><span class="icon-heart">❤</span><span class="icon-pill">💊</span></div>
-        <div class="qr-card"><img src="/static/img/news/540497280_1076793204655382_6917905017539599667_n.jpg" alt="QR Zalo" /><span>Zalo</span></div>
-        <div class="qr-card"><img src="/static/img/news/frame.png" alt="QR Facebook" /><span>Facebook</span></div>
-      </div>
     </div>
-  </div>
+    <div class="news__more">
+        <a href="#" class="dm-btn dm-btn--pill spec-link">Xem thêm</a>
+    </div>
 </section>
 
 {% endblock content %}

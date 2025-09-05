@@ -1,5 +1,5 @@
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     margin: 0;
     padding: 0;
     background: linear-gradient(135deg, #0d74b1, #1040c5); /* Nền gradient xanh */
@@ -145,7 +145,8 @@ body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 .edit-panel[style*="display: flex"] {
-    visibility: visible;}
+    visibility: visible;
+}
 .panel-head {
     display: flex;
     justify-content: space-between;
