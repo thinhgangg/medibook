@@ -1,7 +1,7 @@
 # accounts/views.py
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
@@ -21,14 +21,14 @@ from doctors.serializers import DoctorSerializer
 from patients.models import Patient
 from patients.serializers import PatientSerializer
 
-from django.shortcuts import render
-
+# Django views for rendering templates
 def login_view(request):
     return render(request, 'accounts/login.html')
 
 def register_view(request):
     return render(request, 'accounts/register.html')
 
+# API Views for handling authentication and registration
 User = get_user_model()
 
 def issue_tokens(user):
@@ -74,8 +74,6 @@ class PatientRegisterView(APIView):
             user.full_name = data["full_name"]
         if hasattr(user, "phone_number") and data.get("phone_number"):
             user.phone_number = data["phone_number"]
-        if hasattr(user, "address") and data.get("address"):
-            user.address = data["address"] 
         user.set_password(data["password"])
         user.save()
 
@@ -85,6 +83,7 @@ class PatientRegisterView(APIView):
             dob=data["dob"],
             gender=data["gender"],
             insurance_no=data.get("insurance_no", ""),
+            address=data.get("address", ""),
         )
 
         refresh, access = issue_tokens(user)
@@ -143,7 +142,7 @@ class DoctorRegisterView(APIView):
             full_name=data.get("full_name"),
             phone_number=data.get("phone_number"),
             role="DOCTOR",
-            is_active=True,  
+            is_active=True,
         )
         user.set_password(data["password"])
         user.save()
@@ -243,3 +242,15 @@ class MeView(APIView):
         if hasattr(user, "patient_profile"):
             resp["patient"] = PatientSerializer(updated_patient or user.patient_profile).data
         return Response(resp, status=status.HTTP_200_OK)
+    
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)

@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ENDPOINTS = {
         login: "/api/accounts/login/",
         register: "/api/accounts/register/patient/",
+        logout: "/api/accounts/logout/", // Thêm đường dẫn API logout
     };
     const REDIRECTS = {
         afterLogin: "/dashboard/",
@@ -13,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
+
         if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
     }
     const csrfToken = getCookie("csrftoken");
@@ -26,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ====== Alerts ======
+    // ====== Alerts (Toast message) ======
     const showAlert = (type, text) => {
         let box = document.querySelector(".django-messages");
         if (!box) {
@@ -69,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const btn = loginForm.querySelector("button[type=submit]");
-            btn.disabled = true; 
+            btn.disabled = true;
 
             const payload = {
                 username: loginForm.username.value.trim(),
@@ -77,22 +79,21 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             const { ok, data } = await postJSON(ENDPOINTS.login, payload);
 
-            btn.disabled = false; 
-            btn.textContent = "Đăng nhập"; 
+            btn.disabled = false;
+            btn.textContent = "Đăng nhập";
 
             if (ok) {
-                if (ok) {
-                    const { access, refresh, user } = data;
+                const { access, refresh, user } = data;
 
-                    // Lưu token
-                    localStorage.setItem("access", access);
-                    localStorage.setItem("refresh", refresh);
+                // Lưu token
+                localStorage.setItem("access", access);
+                localStorage.setItem("refresh", refresh);
 
-                    // Redirect
-                    window.location.href = "/";
-                }
+                // Redirect
+                window.location.href = "/dashboard/"; // Redirect to dashboard after login
             } else {
-                showAlert("error", data?.detail || "Đăng nhập thất bại.");
+                // Hiển thị Toast message khi đăng nhập thất bại
+                showAlert("error", data?.detail || "Sai tài khoản hoặc mật khẩu.");
             }
         });
     }
@@ -113,88 +114,43 @@ document.addEventListener("DOMContentLoaded", () => {
                 full_name: regForm.full_name.value.trim(),
                 dob: regForm.dob.value,
                 phone_number: regForm.phone_number.value.trim(),
-                gender: genderVal, 
+                gender: genderVal,
                 insurance_no: regForm.insurance_no.value.trim(),
                 address: regForm.address.value.trim(),
             };
             const { ok, data } = await postJSON(ENDPOINTS.register, payload);
-            btn.disabled = false; 
-            btn.textContent = "Đăng ký"; 
+            btn.disabled = false;
+
+            btn.textContent = "Đăng ký";
 
             if (ok) {
                 showAlert("success", "Đăng ký thành công! Đăng nhập nhé.");
-                window.location.href = REDIRECTS.afterRegister;
+                window.location.href = "/accounts/login/"; // Redirect to login after registration
             } else {
+                // Hiển thị Toast message khi đăng ký thất bại
                 showAlert("error", data?.detail || Object.values(data || {}).join(" • ") || "Đăng ký thất bại.");
             }
         });
     }
 
-    // ====== Aside Slider ======
-    (function initSlider(scope = document) {
-        scope.querySelectorAll("[data-slider]").forEach((slider) => {
-            const slides = slider.querySelectorAll(".slide");
-            const dotsBox = slider.querySelector("[data-dots]");
-            let i = 0,
-                timer;
+    // ====== Logout ======
+    const logoutBtn = document.querySelector("#logoutButton");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+            // Gửi yêu cầu POST tới API logout
+            const { ok, data } = await postJSON(ENDPOINTS.logout, {});
 
-            function renderDots() {
-                if (!dotsBox) return;
-                dotsBox.innerHTML = Array.from(slides, (_, k) => `<button aria-label="Ảnh ${k + 1}"></button>`).join("");
-                dotsBox.querySelectorAll("button").forEach((b, idx) => {
-                    b.addEventListener("click", () => {
-                        go(idx);
-                        reset();
-                    });
-                });
-            }
-            function markActive() {
-                slides.forEach((s, idx) => s.classList.toggle("is-active", idx === i));
-                if (dotsBox) dotsBox.querySelectorAll("button").forEach((b, idx) => b.classList.toggle("active", idx === i));
-            }
-            function go(n) {
-                i = (n + slides.length) % slides.length;
-                markActive();
-            }
-            function next() {
-                go(i + 1);
-            }
-            function prev() {
-                go(i - 1);
-            }
-            function reset() {
-                clearInterval(timer);
-                timer = setInterval(next, 4000);
-            }
+            if (ok) {
+                // Xóa token khỏi localStorage
+                localStorage.removeItem("access");
+                localStorage.removeItem("refresh");
 
-            slider.querySelector("[data-next]")?.addEventListener("click", () => {
-                next();
-                reset();
-            });
-            slider.querySelector("[data-prev]")?.addEventListener("click", () => {
-                prev();
-                reset();
-            });
-
-            let startX = 0;
-            slider.addEventListener(
-                "touchstart",
-                (e) => {
-                    startX = e.touches[0].clientX;
-                },
-                { passive: true }
-            );
-            slider.addEventListener("touchend", (e) => {
-                const dx = e.changedTouches[0].clientX - startX;
-                if (Math.abs(dx) > 40) {
-                    dx < 0 ? next() : prev();
-                    reset();
-                }
-            });
-
-            renderDots();
-            markActive();
-            reset();
+                // Redirect về trang đăng nhập hoặc trang chủ
+                window.location.href = "/accounts/login/";
+            } else {
+                // Hiển thị thông báo lỗi nếu đăng xuất không thành công
+                showAlert("error", data?.detail || "Có lỗi xảy ra khi đăng xuất.");
+            }
         });
-    })();
+    }
 });

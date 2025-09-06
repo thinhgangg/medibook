@@ -172,9 +172,63 @@ function renderSpecialties(list) {
     });
 }
 
+/* ===== Dropdown for avatar ===== */
+function setupDropdown() {
+    const avatarTrigger = document.getElementById('avatarTrigger');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const logoutLink = document.getElementById('logoutLink');
+    if (avatarTrigger && dropdownMenu) {
+        avatarTrigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            dropdownMenu.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!avatarTrigger.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+    }
+
+    // Handle logout
+    if (logoutLink) {
+        logoutLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const refreshToken = localStorage.getItem('refresh_token'); // Giả sử token được lưu trong localStorage
+                if (!refreshToken) {
+                    console.error('No refresh token found');
+                    window.location.href = '/'; // Vẫn chuyển hướng nếu không có token
+                    return;
+                }
+                const response = await fetch('/api/logout/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                    },
+                    body: JSON.stringify({ refresh: refreshToken }),
+                });
+                if (response.ok) {
+                    localStorage.removeItem('refresh_token');
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/'; // Chuyển hướng về trang chủ
+                } else {
+                    console.error('Logout failed:', await response.json());
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+                window.location.href = '/'; // Chuyển hướng ngay cả khi có lỗi
+            }
+        });
+    }
+}
+
 /* ===== Init ===== */
 document.addEventListener("DOMContentLoaded", () => {
     renderDoctors(DOCTORS);
     setupRail("doctorRail", "doctorProgress");
     renderSpecialties(SPECIALTIES);
+    setupDropdown();
 });
