@@ -21,6 +21,14 @@ from doctors.serializers import DoctorSerializer
 from patients.models import Patient
 from patients.serializers import PatientSerializer
 
+from django.shortcuts import render
+
+def login_view(request):
+    return render(request, 'accounts/login.html')
+
+def register_view(request):
+    return render(request, 'accounts/register.html')
+
 User = get_user_model()
 
 def issue_tokens(user):
@@ -66,6 +74,8 @@ class PatientRegisterView(APIView):
             user.full_name = data["full_name"]
         if hasattr(user, "phone_number") and data.get("phone_number"):
             user.phone_number = data["phone_number"]
+        if hasattr(user, "address") and data.get("address"):
+            user.address = data["address"] 
         user.set_password(data["password"])
         user.save()
 
@@ -75,7 +85,6 @@ class PatientRegisterView(APIView):
             dob=data["dob"],
             gender=data["gender"],
             insurance_no=data.get("insurance_no", ""),
-            address=data.get("address", ""),
         )
 
         refresh, access = issue_tokens(user)

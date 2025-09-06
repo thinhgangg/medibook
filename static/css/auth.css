@@ -1,0 +1,484 @@
+:root {
+    --bg: #0d74b1;
+    --bg-deep: #101732;
+    --pri: #1040c5;
+    --pri-2: #0d74b1;
+    --accent: #b8acaa;
+    --text: #0f172a;
+    --white: #fff;
+    --muted: #6b7280;
+    --ring: rgba(16, 64, 197, 0.28);
+    --shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+    --control-h: 48px; /* chiều cao chuẩn cho mọi control 1 dòng */
+}
+
+* {
+    box-sizing: border-box;
+}
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    color: var(--text);
+    background: radial-gradient(1200px 600px at 20% 0%, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0)),
+        linear-gradient(160deg, var(--bg-deep) 0%, var(--pri) 40%, var(--pri-2) 100%);
+}
+
+a {
+    color: var(--pri);
+    text-decoration: none;
+}
+a.link {
+    font-weight: 600;
+}
+a.link:hover {
+    text-decoration: underline;
+}
+
+.auth-body {
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+.auth-wrap {
+    width: 100%;
+    max-width: 1100px;
+    min-height: min(88vh, 900px);
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+}
+
+.auth-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: saturate(160%) blur(8px);
+    border-radius: 24px;
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+    align-self: stretch;
+    overflow: hidden;
+}
+.auth-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--bg-deep);
+}
+.logo span {
+    color: var(--pri);
+}
+.brand-sub {
+    color: var(--muted);
+    margin: 0;
+}
+
+.auth-title {
+    margin: 0.25rem 0 14px;
+    font-size: 26px;
+}
+.auth-subtitle {
+    margin: 0 0 18px;
+    color: var(--muted);
+}
+
+/* Message */
+.django-messages {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+}
+.django-messages .msg {
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+.msg.success {
+    background: #ecfdf5;
+    color: #065f46;
+}
+.msg.error {
+    background: #fef2f2;
+    color: #991b1b;
+}
+.msg.warning {
+    background: #fffbeb;
+    color: #92400e;
+}
+.msg.info {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+/* ===== UNIFORM CONTROL HEIGHT ===== */
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: var(--control-h); /* cố định 48px */
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 0 12px; /* không padding dọc để khỏi đội cao */
+    transition: 0.2s border-color, 0.2s box-shadow;
+}
+.input-wrap:focus-within {
+    border-color: var(--pri);
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
+.input-wrap input,
+.input-wrap select {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%; /* fill wrapper */
+    padding: 0; /* bỏ padding dọc mặc định */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 15px;
+    color: #111827;
+    line-height: 1;
+}
+input[type="date"] {
+    line-height: 1;
+} /* tránh lệch giữa trình duyệt */
+
+.input-icon {
+    color: #9ca3af;
+    display: inline-flex;
+}
+
+/* nút mắt password đúng bằng ô nhập */
+.toggle-eye {
+    flex: 0 0 auto;
+    height: 100%;
+    width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    border-radius: 10px;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+}
+.toggle-eye:hover {
+    background: #f3f4f6;
+}
+
+.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.btn-primary {
+    background: linear-gradient(180deg, var(--pri), #0c39b4);
+    color: var(--white);
+    box-shadow: 0 10px 24px rgba(16, 64, 197, 0.35);
+}
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.btn-primary:hover {
+    filter: brightness(1.03);
+}
+
+.switch-auth {
+    margin: 6px 0 0;
+    color: #374151;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* ===== Giới tính (segmented) cũng cao 48px ===== */
+.segmented {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: var(--control-h);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 4px;
+}
+.seg {
+    position: relative;
+    height: 100%;
+}
+.seg input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+.seg span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(var(--control-h) - 8px);
+    padding: 0 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    color: #374151;
+}
+.seg input:checked + span {
+    background: linear-gradient(180deg, var(--pri), #0c39b4);
+    color: #fff;
+}
+
+/* ===== Aside Slider ===== */
+.auth-aside {
+    padding: 0;
+    display: flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #eef2ff;
+    border-radius: 24px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), var(--shadow);
+}
+.slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 24px;
+}
+.slides {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+.slide.is-active {
+    opacity: 1;
+}
+.slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 38px;
+}
+.nav.prev {
+    left: 10px;
+}
+.nav.next {
+    right: 10px;
+}
+.dots {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    display: flex;
+    gap: 8px;
+}
+.dots button {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: 0;
+    background: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+}
+.dots button.active {
+    background: #fff;
+    width: 24px;
+    border-radius: 6px;
+}
+
+/* medical icons mờ trong form */
+.bg-med-icons {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+.bg-med-icons svg {
+    position: absolute;
+    opacity: 0.06;
+    fill: #0b2967;
+    filter: blur(0.2px);
+}
+.bg-med-icons .med1 {
+    width: 220px;
+    height: 220px;
+    left: -20px;
+    top: -20px;
+    transform: rotate(8deg);
+}
+.bg-med-icons .med2 {
+    width: 180px;
+    height: 180px;
+    right: -10px;
+    top: 28%;
+    transform: rotate(-18deg);
+}
+.bg-med-icons .med3 {
+    width: 240px;
+    height: 240px;
+    left: 10%;
+    bottom: -30px;
+    transform: rotate(25deg);
+}
+.bg-med-icons .med4 {
+    width: 160px;
+    height: 160px;
+    right: 14%;
+    bottom: 8%;
+    transform: rotate(-10deg);
+}
+
+/* helpers */
+.hidden {
+    display: none !important;
+}
+
+/* responsive */
+@media (max-width: 960px) {
+    .auth-wrap {
+        grid-template-columns: 1fr;
+    }
+    .auth-aside {
+        order: -1;
+        min-height: 280px;
+    }
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* PNG/SVG trong suốt ở slider */
+.slide img.contain {
+    object-fit: contain;
+    padding: 24px 28px;
+    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.25));
+}
+@media (max-width: 960px) {
+    .slide img.contain {
+        padding: 16px;
+    }
+}
+/* Địa chỉ */
+.form-group label {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: var(--control-h);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 0 12px;
+    transition: 0.2s border-color, 0.2s box-shadow;
+}
+
+.input-wrap:focus-within {
+    border-color: var(--pri);
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
+.input-wrap input,
+.input-wrap select {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 15px;
+    color: #111827;
+    line-height: 1;
+}
+
+.input-wrap input::placeholder {
+    color: #9ca3af;
+}
+
+.input-icon {
+    color: #9ca3af;
+    display: inline-flex;
+}
+
+.toggle-eye {
+    flex: 0 0 auto;
+    height: 100%;
+    width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    border-radius: 10px;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+}

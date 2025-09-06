@@ -13,7 +13,6 @@ class Patient(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
     dob = models.DateField(blank=True, null=True)
     insurance_no = models.CharField(max_length=100)
-    address = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to="patients/", blank=True, null=True, validators=[validate_avatar],)
     
     def __str__(self):
