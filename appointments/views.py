@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -17,18 +17,30 @@ from .models import Appointment
 from .serializers import (
     AppointmentSerializer,
     AppointmentCreateSerializer,
-    _ensure_within_availability_and_grid,  # helper kiểm tra ca + lưới slot
+    _ensure_within_availability_and_grid,
 )
 
+# Django views for rendering templates
+def appointment_view(request):
+    return render(request, 'appointments/appointment.html')
 
+def appointment_invoice_view(request):
+    return render(request, 'appointments/appointment-invoice.html')
+
+def appointment_list_view(request):
+    return render(request, 'appointments/appointment-list.html')
+
+def appointment_success_view(request):
+    return render(request, 'appointments/appointment-success.html')
+
+def search(request):
+    return render(request, 'appointments/search.html')
+
+# API ViewSet for Appointment
 class AppointmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
-    # ---------------- Helpers ----------------
     def _normalize_dt(self, dt):
-        """
-        Nếu dt là naive -> make_aware theo timezone hiện tại; nếu aware -> giữ nguyên.
-        """
         if dt is None:
             return None
         return timezone.make_aware(dt, timezone.get_current_timezone()) if timezone.is_naive(dt) else dt

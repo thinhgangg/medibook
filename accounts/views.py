@@ -1,7 +1,7 @@
 # accounts/views.py
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
@@ -21,6 +21,14 @@ from doctors.serializers import DoctorSerializer
 from patients.models import Patient
 from patients.serializers import PatientSerializer
 
+# Django views for rendering templates
+def login_view(request):
+    return render(request, 'accounts/login.html')
+
+def register_view(request):
+    return render(request, 'accounts/register.html')
+
+# API Views for handling authentication and registration
 User = get_user_model()
 
 def issue_tokens(user):

@@ -1,9 +1,3 @@
-from rest_framework.routers import DefaultRouter
-from .views import DoctorViewSet, DoctorAvailabilityViewSet, DoctorDayOffViewSet
+from django.urls import path
 
-router = DefaultRouter()
-router.register(r'availability', DoctorAvailabilityViewSet, basename='doctor-availability')
-router.register(r'days-off', DoctorDayOffViewSet, basename='doctor-dayoff')
-router.register(r'', DoctorViewSet, basename='doctor')
-
-urlpatterns = router.urls
+urlpatterns = []
