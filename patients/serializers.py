@@ -9,13 +9,15 @@ class PatientSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(source='user.phone_number', read_only=True)
     profile_picture_thumbs = serializers.SerializerMethodField()
     dob = serializers.DateField(required=False, allow_null=True)
+    address = serializers.CharField(source="user.address", required=False, allow_blank=True, allow_null=True)
     insurance_no = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Patient
         fields = [
             "id", "user", "phone_number",
-            "dob", "gender", "insurance_no",
+            "gender", "dob", 
+            "insurance_no", "address",
             "profile_picture", "profile_picture_thumbs"
         ]
         read_only_fields = ["id", "user", "phone_number", "profile_picture"]
