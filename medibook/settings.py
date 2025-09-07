@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "cloudinary",
     "cloudinary_storage",
     "django_cleanup.apps.CleanupConfig", 
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [

@@ -1,7 +1,7 @@
 # accounts/views.py
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
@@ -21,14 +21,14 @@ from doctors.serializers import DoctorSerializer
 from patients.models import Patient
 from patients.serializers import PatientSerializer
 
-from django.shortcuts import render
-
+# Django views for rendering templates
 def login_view(request):
     return render(request, 'accounts/login.html')
 
 def register_view(request):
     return render(request, 'accounts/register.html')
 
+# API Views for handling authentication and registration
 User = get_user_model()
 
 def issue_tokens(user):
@@ -243,3 +243,15 @@ class MeView(APIView):
         if hasattr(user, "patient_profile"):
             resp["patient"] = PatientSerializer(updated_patient or user.patient_profile).data
         return Response(resp, status=status.HTTP_200_OK)
+    
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)

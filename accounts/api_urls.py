@@ -5,6 +5,7 @@ from .views import (
     PatientRegisterView,
     DoctorRegisterView,
     MeView,
+    LogoutView,
 )
 
 app_name = 'accounts_api'
@@ -14,7 +15,8 @@ urlpatterns = [
     path('register/doctor/', DoctorRegisterView.as_view(), name='register-doctor'),
 
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    
+
     path('me/', MeView.as_view()),
 ]
