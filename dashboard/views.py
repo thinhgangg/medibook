@@ -1,12 +1,23 @@
 from django.shortcuts import render
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
+from .decorators import role_required
 from doctors.models import Doctor
 from patients.models import Patient
 from appointments.models import Appointment
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .decorators import role_required
+
+# Dashboard view to redirect based on role
+@login_required
+def dashboard_view(request):
+    user = request.user
+    if user.role == 'DOCTOR':
+        return doctor_dashboard(request)
+    elif user.role == 'PATIENT':
+        return patient_dashboard(request)
+    elif user.role == 'ADMIN':
+        return admin_dashboard(request)
+    else:
+        return render(request, 'dashboard/error.html', {'message': 'Không có dashboard phù hợp cho vai trò của bạn.'})
 
 # Dashboard dành cho bác sĩ
 @login_required

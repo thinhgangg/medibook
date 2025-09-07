@@ -25,6 +25,7 @@ class DoctorSerializer(serializers.ModelSerializer):
     dob = serializers.DateField(required=False, allow_null=True)
     address = serializers.CharField(source="user.address", required=False, allow_blank=True, allow_null=True)
     bio = serializers.CharField(default="Bác sĩ chưa cập nhật tiểu sử", required=False)
+    profile_picture = serializers.ImageField(required=False, allow_null=True)
     profile_picture_thumbs = serializers.SerializerMethodField()
 
     class Meta:
@@ -43,10 +44,12 @@ class DoctorSerializer(serializers.ModelSerializer):
         return {"id": s.id, "name": s.name} if s else None
 
     def get_profile_picture_thumbs(self, obj):
-        return cloud_thumbs(
-            obj.profile_picture, 
-            sizes={"small": (64, 64), "large": (400, 400)}
-        )
+        if obj.profile_picture:
+            return cloud_thumbs(
+                obj.profile_picture, 
+                sizes={"small": (64, 64), "large": (400, 400)}
+            )
+        return None
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:

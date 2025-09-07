@@ -1,13 +1,14 @@
-from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
+from functools import wraps
 
-def role_required(required_role):
-    """
-    Decorator to check the user's role. Only allows users with the required role to access the view.
-    """
+def role_required(role):
     def decorator(view_func):
-        def _wrapped_view(request, *args, **kwargs):
-            if request.user.role != required_role:
-                return HttpResponseForbidden("You do not have permission to view this page.")
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise PermissionDenied("Bạn cần đăng nhập để truy cập.")
+            if request.user.role != role:
+                raise PermissionDenied(f"Chỉ có vai trò {role} mới được truy cập.")
             return view_func(request, *args, **kwargs)
-        return _wrapped_view
+        return wrapper
     return decorator
