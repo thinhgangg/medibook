@@ -1,15 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // ====== API ENDPOINTS cho bệnh nhân ======
+    // API ENDPOINTS
     const ENDPOINTS = {
         login: "/api/accounts/login/",
         register: "/api/accounts/register/patient/",
+        logout: "/api/accounts/logout/",
+        me: "/api/accounts/me/",
     };
     const REDIRECTS = {
-        afterLogin: "/dashboard/",
+        afterLogin: "/",
         afterRegister: "/accounts/login/",
+        afterLogout: "/",
+        dashboard: "/dashboard/",
     };
 
-    // ====== CSRF for Django ======
+    // CSRF Token
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -17,7 +21,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const csrfToken = getCookie("csrftoken");
 
-    // ====== Toggle password eye ======
+    // Check if user is logged in
+    function checkAuthStatus() {
+        const accessToken = localStorage.getItem("access");
+        if (accessToken) {
+            fetch(ENDPOINTS.me, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.id) {
+                        document.getElementById("guest-buttons").style.display = "none";
+                        const avatarContainer = document.getElementById("user-avatar");
+                        avatarContainer.style.display = "block";
+                        const avatarImg = avatarContainer.querySelector(".user-avatar");
+                        avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                    }
+                })
+                .catch(() => {
+                    localStorage.removeItem("access");
+                    localStorage.removeItem("refresh");
+                    document.getElementById("guest-buttons").style.display = "block";
+                    document.getElementById("user-avatar").style.display = "none";
+                });
+        }
+    }
+
+    // Toggle password eye
     document.querySelectorAll(".toggle-eye").forEach((btn) => {
         const input = document.querySelector(btn.getAttribute("data-target"));
         if (!input) return;
@@ -26,7 +59,128 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ====== Alerts ======
+    // ====== POST JSON ======
+    async function postJSON(url, payload, includeAuth = false) {
+        const headers = {
+            "Content-Type": "application/json",
+            ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+        };
+        if (includeAuth) {
+            const accessToken = localStorage.getItem("access");
+            if (accessToken) {
+                headers["Authorization"] = `Bearer ${accessToken}`;
+            } else {
+                console.error("No access token found in localStorage");
+            }
+        }
+        console.log("Request Headers:", headers);
+        console.log("Request Payload:", payload);
+        const res = await fetch(url, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(payload),
+        });
+        let data = null;
+        try {
+            data = await res.json();
+            console.log("API Response:", data);
+        } catch (_e) {}
+        return { ok: res.ok, status: res.status, data };
+    }
+
+    // ====== Login ======
+    const loginForm = document.querySelector("#patient-login-form");
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = loginForm.querySelector("button[type=submit]");
+            btn.disabled = true;
+
+            const payload = {
+                username: loginForm.username.value.trim(),
+                password: loginForm.password.value,
+            };
+            const { ok, data } = await postJSON(ENDPOINTS.login, payload);
+
+            btn.disabled = false;
+            btn.textContent = "Đăng nhập";
+
+            if (ok) {
+                const { access, refresh, user } = data;
+
+                localStorage.setItem("access", access);
+                localStorage.setItem("refresh", refresh);
+
+                window.location.href = "/";
+            } else {
+                showAlert("error", data?.detail || "Đăng nhập thất bại.");
+            }
+        });
+    }
+
+    // ====== Register ======
+    const regForm = document.querySelector("#patient-register-form");
+    if (regForm) {
+        const btn = regForm.querySelector("button[type=submit]");
+        regForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.textContent = "Đang xử lý...";
+
+            const genderVal = regForm.querySelector("input[name='gender']:checked")?.value || "";
+            const payload = {
+                username: regForm.username.value.trim(),
+                email: regForm.email.value.trim(),
+                password: regForm.password.value,
+                full_name: regForm.full_name.value.trim(),
+                dob: regForm.dob.value,
+                phone_number: regForm.phone_number.value.trim(),
+                gender: genderVal,
+                insurance_no: regForm.insurance_no.value.trim(),
+                address: regForm.address.value.trim(),
+            };
+            const { ok, data } = await postJSON(ENDPOINTS.register, payload);
+            btn.disabled = false;
+            btn.textContent = "Đăng ký";
+
+            if (ok) {
+                showAlert("success", "Đăng ký thành công! Đăng nhập nhé.");
+                window.location.href = REDIRECTS.afterRegister;
+            } else {
+                showAlert("error", data?.detail || Object.values(data || {}).join(" • ") || "Đăng ký thất bại.");
+            }
+        });
+    }
+
+    // ====== Logout ======
+    const logoutLink = document.querySelector("#logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const refreshToken = localStorage.getItem("refresh");
+            console.log("Refresh Token:", refreshToken);
+            if (!refreshToken) {
+                showAlert("error", "Không tìm thấy refresh token. Vui lòng đăng nhập lại.");
+                return;
+            }
+
+            const payload = { refresh: refreshToken };
+            const { ok, data } = await postJSON(ENDPOINTS.logout, payload, true);
+
+            if (ok) {
+                localStorage.removeItem("access");
+                localStorage.removeItem("refresh");
+                document.getElementById("guest-buttons").style.display = "block";
+                document.getElementById("user-avatar").style.display = "none";
+                window.location.href = REDIRECTS.afterLogout;
+            } else {
+                showAlert("error", data?.detail || "Đăng xuất thất bại.");
+            }
+        });
+    }
+
+    // Function to show alert messages
     const showAlert = (type, text) => {
         let box = document.querySelector(".django-messages");
         if (!box) {
@@ -45,90 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
             li.remove();
         }, 5200);
     };
-
-    // ====== POST JSON ======
-    async function postJSON(url, payload) {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
-            },
-            body: JSON.stringify(payload),
-        });
-        let data = null;
-        try {
-            data = await res.json();
-        } catch (_e) {}
-        return { ok: res.ok, status: res.status, data };
-    }
-
-    // ====== Login (patient) ======
-    const loginForm = document.querySelector("#patient-login-form");
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const btn = loginForm.querySelector("button[type=submit]");
-            btn.disabled = true; 
-
-            const payload = {
-                username: loginForm.username.value.trim(),
-                password: loginForm.password.value,
-            };
-            const { ok, data } = await postJSON(ENDPOINTS.login, payload);
-
-            btn.disabled = false; 
-            btn.textContent = "Đăng nhập"; 
-
-            if (ok) {
-                if (ok) {
-                    const { access, refresh, user } = data;
-
-                    // Lưu token
-                    localStorage.setItem("access", access);
-                    localStorage.setItem("refresh", refresh);
-
-                    // Redirect
-                    window.location.href = "/";
-                }
-            } else {
-                showAlert("error", data?.detail || "Đăng nhập thất bại.");
-            }
-        });
-    }
-
-    // ====== Register (patient) ======
-    const regForm = document.querySelector("#patient-register-form");
-    if (regForm) {
-        const btn = regForm.querySelector("button[type=submit]");
-        regForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            btn.disabled = true;
-
-            const genderVal = regForm.querySelector("input[name='gender']:checked")?.value || "";
-            const payload = {
-                username: regForm.username.value.trim(),
-                email: regForm.email.value.trim(),
-                password: regForm.password.value,
-                full_name: regForm.full_name.value.trim(),
-                dob: regForm.dob.value,
-                phone_number: regForm.phone_number.value.trim(),
-                gender: genderVal, 
-                insurance_no: regForm.insurance_no.value.trim(),
-                address: regForm.address.value.trim(),
-            };
-            const { ok, data } = await postJSON(ENDPOINTS.register, payload);
-            btn.disabled = false; 
-            btn.textContent = "Đăng ký"; 
-
-            if (ok) {
-                showAlert("success", "Đăng ký thành công! Đăng nhập nhé.");
-                window.location.href = REDIRECTS.afterRegister;
-            } else {
-                showAlert("error", data?.detail || Object.values(data || {}).join(" • ") || "Đăng ký thất bại.");
-            }
-        });
-    }
 
     // ====== Aside Slider ======
     (function initSlider(scope = document) {
@@ -197,4 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
             reset();
         });
     })();
+
+    checkAuthStatus();
 });

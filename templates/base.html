@@ -28,10 +28,20 @@
                     <a class="nav-item {% if request.path == '/doctorworkspace/' %}active{% endif %}" href="#contact">Liên hệ</a>
                 </nav>
 
-                <!-- CTA -->
+                <!-- User Profile -->
                 <div class="nav-cta">
-                    <a href="{% url 'accounts:login' %}" class="btn-outline">Đăng nhập</a>
-                    <a href="{% url 'accounts:register' %}" class="btn-solid">Đăng ký</a>
+                    <div id="user-avatar" class="avatar-container" style="display: none">
+                        <img src="" alt="User Avatar" class="user-avatar" />
+                        <div id="avatar-dropdown" class="dropdown-content">
+                            <a href="#">Hồ sơ</a>
+                            <a href="#" id="logoutLink">Đăng xuất</a>
+                        </div>
+                    </div>
+
+                    <div id="guest-buttons">
+                        <a href="{% url 'accounts:login' %}" class="btn-outline">Đăng nhập</a>
+                        <a href="{% url 'accounts:register' %}" class="btn-solid">Đăng ký</a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -194,7 +204,9 @@
                 <p>&copy; 2025 Công ty TNHH MediBook Việt Nam. All rights reserved.</p>
             </div>
         </footer>
-
+        
         <script src="{% static 'js/main.js' %}"></script>
+        <script src="{% static 'js/auth.js' %}"></script>
+        <script src="{% static 'js/dropdown.js' %}"></script>
     </body>
 </html>

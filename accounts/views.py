@@ -1,21 +1,17 @@
-# accounts/views.py
+from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
-
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from accounts.serializers import UserSerializer
 from .serializers import UserPublicSerializer, UserUpdateSerializer
-
 from doctors.models import Doctor, Specialty
 from doctors.serializers import DoctorSerializer
 from patients.models import Patient
@@ -43,7 +39,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         user = serializer.user
         resp.data["user"] = UserSerializer(user).data
         return resp
-
 
 class PatientRegisterView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -95,7 +90,6 @@ class PatientRegisterView(APIView):
             "refresh": refresh,
             "access": access
         }, status=status.HTTP_201_CREATED)
-
 
 class DoctorRegisterView(APIView):
     permission_classes = [IsAdminUser]
@@ -199,7 +193,7 @@ class MeView(APIView):
         updated_patient = None
 
         if has_file or want_remove:
-            # Nếu 1 user vừa là doctor vừa là patient (hiếm), cho phép chỉ định `profile_owner=doctor|patient`
+            # Nếu 1 user vừa là doctor vừa là patient (hiếm), cho phép chỉ định profile_owner=doctor|patient
             target = str(request.data.get("profile_owner", "")).lower()
             obj = None
 
