@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
+from django.core.mail import send_mail
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated
@@ -10,12 +11,18 @@ from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import UntypedToken
+from rest_framework.permissions import AllowAny
 from accounts.serializers import UserSerializer
 from .serializers import UserPublicSerializer, UserUpdateSerializer
+from .serializers import SendOTPSerializer, VerifyOTPSerializer
+from .models import OTPVerification
 from doctors.models import Doctor, Specialty
 from doctors.serializers import DoctorSerializer
 from patients.models import Patient
 from patients.serializers import PatientSerializer
+from datetime import timedelta
+from medibook.settings import DEFAULT_FROM_EMAIL
 
 # Django views for rendering templates
 def login_register_view(request):
@@ -43,42 +50,50 @@ class PatientRegisterView(APIView):
 
     @transaction.atomic
     def post(self, request):
+        temp_token = request.data.get('temp_token')
+        if not temp_token:
+            return Response({"detail": "Thiếu temp_token từ verify OTP."}, status=400)
+        try:
+            UntypedToken(temp_token)
+        except Exception:
+            return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=400)
+
         data = request.data
 
-        # Validate user fields
-        required_user = ["username", "email", "password", "phone_number"]
+        required_user = ["email", "password", "phone_number", "full_name"]
         required_patient = ["dob", "gender"]
 
         for f in required_user + required_patient:
             if not data.get(f):
                 return Response({"detail": f"Missing field: {f}"}, status=400)
 
-        if User.objects.filter(username=data["username"]).exists():
-            return Response({"detail": "Username already exists"}, status=400)
         if User.objects.filter(email=data["email"]).exists():
             return Response({"detail": "Email already exists"}, status=400)
 
-        # Create user
         user = User(
-            username=data["username"],
             email=data["email"],
+            full_name=data.get("full_name"),
+            phone_number=data.get("phone_number"),
+            dob=data.get("dob"),
+            gender=data.get("gender"),
+            address_detail=data.get("address_detail"),
+            ward=data.get("ward"),
+            city=data.get("city"),
+            id_number=data.get("id_number"),
+            ethnicity=data.get("ethnicity"),
+            role="PATIENT",
         )
-        if hasattr(user, "full_name") and data.get("full_name"):
-            user.full_name = data["full_name"]
-        if hasattr(user, "phone_number") and data.get("phone_number"):
-            user.phone_number = data["phone_number"]
-        if hasattr(user, "address") and data.get("address"):
-            user.address = data["address"] 
         user.set_password(data["password"])
         user.save()
 
-        # Create patient 
         patient = Patient.objects.create(
             user=user,
-            dob=data["dob"],
-            gender=data["gender"],
             insurance_no=data.get("insurance_no", ""),
+            occupation=data.get("occupation"),
+            profile_picture=data.get("profile_picture"),
         )
+
+        OTPVerification.objects.filter(email=data['email']).delete()
 
         refresh, access = issue_tokens(user)
         return Response({
@@ -97,18 +112,14 @@ class DoctorRegisterView(APIView):
     def post(self, request):
         data = request.data
 
-        # Validate user fields
-        required_user = ["username", "email", "password", "phone_number"]
+        required_user = ["email", "password", "full_name", "phone_number", "gender", "specialty_id"]
         for f in required_user:
             if not data.get(f):
                 return Response({"detail": f"Missing field: {f}"}, status=400)
 
-        if User.objects.filter(username=data["username"]).exists():
-            return Response({"detail": "Username already exists"}, status=400)
         if User.objects.filter(email=data["email"]).exists():
             return Response({"detail": "Email already exists"}, status=400)
 
-        # Handle specialty
         spec = None
         spec_id = data.get("specialty_id")
         spec_name = data.get("specialty")
@@ -119,7 +130,6 @@ class DoctorRegisterView(APIView):
         else:
             return Response({"detail": "Missing field: specialty_id (or 'specialty' name)."}, status=400)
 
-        # Handle gender
         gender = data.get("gender")
         if gender:
             gender = str(gender).upper()
@@ -128,31 +138,30 @@ class DoctorRegisterView(APIView):
         else:
             gender = None
 
-        # Create user
         user = User(
-            username=data["username"],
             email=data["email"],
             full_name=data.get("full_name"),
             phone_number=data.get("phone_number"),
+            dob=data.get("dob"),
+            gender=data.get("gender"),
+            address_detail=data.get("address_detail"),
+            ward=data.get("ward"),
+            city=data.get("city"),
+            id_number=data.get("id_number"),
+            ethnicity=data.get("ethnicity"),
             role="DOCTOR",
-            is_active=True,  
         )
         user.set_password(data["password"])
         user.save()
 
-        # Create doctor
         doctor = Doctor.objects.create(
             user=user,
-            gender=data["gender"],
             specialty=spec,
             bio=data.get("bio", "Bác sĩ chưa cập nhật tiểu sử."),
-            dob=data.get("dob"),
-            address=data.get("address", ""),
             profile_picture=data.get("profile_picture"),
             is_active=True,
         )
 
-        # 6) Token & response
         return Response(
             {
                 "message": "Register doctor success",
@@ -247,3 +256,51 @@ class LogoutView(APIView):
             return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class SendOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        OTPVerification.objects.filter(email=email).delete()
+
+        otp_obj = OTPVerification(email=email)
+        otp_obj.save()
+
+        subject = 'Mã OTP Đăng Ký MediBook'
+        message = f'Mã OTP của bạn là: {otp_obj.otp}. Mã hết hạn sau 5 phút.'
+        send_mail(subject, message, DEFAULT_FROM_EMAIL, [email])
+
+        return Response({"message": "OTP đã gửi đến email của bạn."}, status=status.HTTP_200_OK)
+
+class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, otp=otp)
+            if otp_obj.is_expired():
+                return Response({"detail": "OTP đã hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+            if otp_obj.is_verified:
+                return Response({"detail": "OTP đã được sử dụng."}, status=status.HTTP_400_BAD_REQUEST)
+
+            otp_obj.is_verified = True
+            otp_obj.save()
+
+            temp_token = RefreshToken()
+            temp_token.set_exp(lifetime=timedelta(minutes=10)) 
+            return Response({
+                "message": "Xác thực OTP thành công.",
+                "temp_token": str(temp_token)
+            }, status=status.HTTP_200_OK)
+
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP không đúng."}, status=status.HTTP_400_BAD_REQUEST)

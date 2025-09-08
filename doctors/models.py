@@ -5,14 +5,6 @@ from .validators import validate_avatar
 class Doctor(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='doctor_profile')
 
-    GENDER_CHOICES = [
-        ('MALE', 'Male'),
-        ('FEMALE', 'Female'),
-    ]
-    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
-
-    dob = models.DateField(blank=True, null=True)
-
     specialty = models.ForeignKey(
         "doctors.Specialty",
         on_delete=models.PROTECT,    
