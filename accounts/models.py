@@ -32,7 +32,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    address = models.CharField(max_length=255, blank=True, null=True)
+    dob = models.DateField(blank=True, null=True)
+
+    GENDER_CHOICES = [
+        ('MALE', 'Male'),
+        ('FEMALE', 'Female'),
+    ]
+    gender = models.CharField(max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
+
+    address_detail = models.CharField(max_length=255, blank=True, null=True)  
+    ward = models.CharField(max_length=100, blank=True, null=True)            
+    city = models.CharField(max_length=100, blank=True, null=True)            
 
     ROLE_CHOICES = (
         ("PATIENT", "Patient"),
@@ -40,6 +50,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ("ADMIN", "Admin"),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="PATIENT")
+
+    id_number = models.CharField(max_length=20, blank=True, null=True)
+    ethnicity = models.CharField(max_length=50, blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -52,6 +65,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    @property
+    def full_address(self):
+        parts = [self.address_detail, self.ward, self.city]
+        return ", ".join([p for p in parts if p])
 
 class OTPVerification(models.Model):
     email = models.EmailField(unique=True)
