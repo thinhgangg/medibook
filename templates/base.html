@@ -5,8 +5,9 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{% block title %}MediBook{% endblock %}</title>
-        <link rel="stylesheet" href="{% static 'css/header.css' %}" />
-        <link rel="stylesheet" href="{% static 'css/footer.css' %}" />
+        <!-- <link rel="stylesheet" href="{% static 'css/header.css' %}" />
+        <link rel="stylesheet" href="{% static 'css/footer.css' %}" /> -->
+        <link rel="stylesheet" href="{% static 'css/base.css' %}?v=7" />
     </head>
     <body>
         <!-- HEADER -->
@@ -39,8 +40,8 @@
                     </div>
 
                     <div id="guest-buttons">
-                        <a href="{% url 'accounts:login' %}" class="btn-outline">Đăng nhập</a>
-                        <a href="{% url 'accounts:register' %}" class="btn-solid">Đăng ký</a>
+                        <a href="{% url 'accounts:login' %}?action=login" class="btn-outline">Đăng nhập</a>
+                        <a href="{% url 'accounts:login' %}?action=register" class="btn-solid">Đăng ký</a>
                     </div>
                 </div>
             </div>
@@ -51,120 +52,6 @@
 
         <!-- FOOTER -->
         <footer class="site-footer">
-            <section class="security-info">
-                <h2>Bảo mật dữ liệu</h2>
-                <p class="subtitle">An toàn dữ liệu của bạn là ưu tiên hàng đầu của chúng tôi</p>
-
-                <div class="security-items">
-                    <div class="item">
-                        <div class="icon">
-                            <!-- ISO -->
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M19 9C19 10.45 18.57 11.78 17.83 12.89C16.75 14.49 15.04 15.62 13.05 15.91C12.71 15.97 12.36 16 12 16C11.64 16 11.29 15.97 10.95 15.91C8.96 15.62 7.25 14.49 6.17 12.89C5.43 11.78 5 10.45 5 9C5 5.13 8.13 2 12 2C15.87 2 19 5.13 19 9Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M21.25 18.47L19.6 18.86C19.23 18.95 18.94 19.23 18.86 19.6L18.51 21.07C18.32 21.87 17.3 22.11 16.77 21.48L12 16L7.23 21.49C6.7 22.12 5.68 21.88 5.49 21.08L5.14 19.61C5.05 19.24 4.76 18.95 4.4 18.87L2.75 18.48C1.99 18.3 1.72 17.35 2.27 16.8L6.17 12.9C7.25 14.5 8.96 15.63 10.95 15.92C11.29 15.98 11.64 16.01 12 16.01C12.36 16.01 12.71 15.98 13.05 15.92C15.04 15.63 16.75 14.5 17.83 12.9L21.73 16.8C22.28 17.34 22.01 18.29 21.25 18.47Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                            </svg>
-                        </div>
-                        <p>Hạ tầng đạt tiêu chuẩn<br />ISO 27001:2013</p>
-                    </div>
-
-                    <div class="item">
-                        <div class="icon">
-                            <!-- HIPAA -->
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M11.74 17.75H17.66C17.57 17.83 17.48 17.9 17.39 17.98L13.12 21.18C11.71 22.23 9.41 22.23 7.99 21.18L3.71 17.98C2.77 17.28 2 15.73 2 14.56V7.15C2 5.93 2.93 4.58 4.07 4.15L9.05 2.28C9.87 1.97 11.23 1.97 12.05 2.28L17.02 4.15C17.97 4.51 18.78 5.51 19.03 6.53H11.73C9.27 6.65 8.79 7.32 8.79 9.43V14.86C8.8 17.16 9.39 17.75 11.74 17.75Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M8.8 11.22H22M11.32 15.26H12.65M14.75 15.26H18.02"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                            </svg>
-                        </div>
-                        <p>
-                            Thông tin sức khỏe được<br />bảo mật theo quy chuẩn<br />
-                            HIPAA
-                        </p>
-                    </div>
-
-                    <div class="item">
-                        <div class="icon">
-                            <!-- VNISA -->
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M10.49 2.23L5.5 4.1C4.35 4.53 3.41 5.89 3.41 7.12V14.55C3.41 15.73 4.19 17.28 5.14 17.99L9.44 21.2C10.85 22.26 13.17 22.26 14.58 21.2L18.88 17.99C19.83 17.28 20.61 15.73 20.61 14.55V7.12C20.61 5.89 19.67 4.53 18.52 4.1L13.53 2.23C12.68 1.92 11.32 1.92 10.49 2.23Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M12 10.92C11.01 10.89 10.18 10.11 10.18 9.16C10.18 8.19 10.97 7.4 11.94 7.4C12.91 7.4 13.7 8.19 13.7 9.16C13.69 10.12 12.94 10.89 12 10.92Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M10.01 13.72C9.05 14.36 9.05 15.41 10.01 16.05C11.1 16.78 12.89 16.78 13.98 16.05C14.94 15.41 14.94 14.36 13.98 13.72C12.9 12.99 11.11 12.99 10.01 13.72Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                            </svg>
-                        </div>
-                        <p>Thành viên<br />VNISA</p>
-                    </div>
-
-                    <div class="item">
-                        <div class="icon">
-                            <!-- Pentest -->
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                                <path
-                                    d="M20.59 10.55V7.12C20.59 5.89 19.65 4.53 18.5 4.1L13.51 2.23C12.68 1.92 11.32 1.92 10.49 2.23L5.5 4.11C4.35 4.54 3.41 5.9 3.41 7.12V14.55C3.41 15.73 4.19 17.28 5.14 17.99L9.44 21.2C10.14 21.74 11.07 22 12 22"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M16 20C18.21 20 20 18.21 20 16C20 13.79 18.21 12 16 12C13.79 12 12 13.79 12 16C12 18.21 13.79 20 16 20Z"
-                                    stroke="white"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                            </svg>
-                        </div>
-                        <p>Pentest định kì<br />hằng năm</p>
-                    </div>
-                </div>
-
-                <p class="desc">
-                    Với nhiều năm kinh nghiệm trong lĩnh vực Y tế, chúng tôi hiểu rằng, dữ liệu sức khỏe của bạn chỉ thuộc về bạn, MediBook tuân thủ
-                    các chính sách bảo mật dữ liệu cao nhất trên thế giới.
-                </p>
-            </section>
-
             <section class="footer-main">
                 <div class="container">
                     <div class="footer-col">
@@ -204,7 +91,7 @@
                 <p>&copy; 2025 Công ty TNHH MediBook Việt Nam. All rights reserved.</p>
             </div>
         </footer>
-        
+
         <script src="{% static 'js/main.js' %}"></script>
         <script src="{% static 'js/auth.js' %}"></script>
         <script src="{% static 'js/dropdown.js' %}"></script>

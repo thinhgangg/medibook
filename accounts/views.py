@@ -18,11 +18,9 @@ from patients.models import Patient
 from patients.serializers import PatientSerializer
 
 # Django views for rendering templates
-def login_view(request):
-    return render(request, 'accounts/login.html')
-
-def register_view(request):
-    return render(request, 'accounts/register.html')
+def login_register_view(request):
+    action = request.GET.get("action", "login")
+    return render(request, "accounts/login.html", {"action": action})
 
 # API Views for handling authentication and registration
 User = get_user_model()
