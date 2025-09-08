@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ====== Login ======
-    const loginForm = document.querySelector("#patient-login-form");
+    const loginForm = document.querySelector("#login-form");
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.disabled = true;
 
             const payload = {
-                username: loginForm.username.value.trim(),
+                email: loginForm.email.value.trim(),
                 password: loginForm.password.value,
             };
             const { ok, data } = await postJSON(ENDPOINTS.login, payload);
@@ -199,74 +199,5 @@ document.addEventListener("DOMContentLoaded", () => {
             li.remove();
         }, 5200);
     };
-
-    // ====== Aside Slider ======
-    (function initSlider(scope = document) {
-        scope.querySelectorAll("[data-slider]").forEach((slider) => {
-            const slides = slider.querySelectorAll(".slide");
-            const dotsBox = slider.querySelector("[data-dots]");
-            let i = 0,
-                timer;
-
-            function renderDots() {
-                if (!dotsBox) return;
-                dotsBox.innerHTML = Array.from(slides, (_, k) => `<button aria-label="Ảnh ${k + 1}"></button>`).join("");
-                dotsBox.querySelectorAll("button").forEach((b, idx) => {
-                    b.addEventListener("click", () => {
-                        go(idx);
-                        reset();
-                    });
-                });
-            }
-            function markActive() {
-                slides.forEach((s, idx) => s.classList.toggle("is-active", idx === i));
-                if (dotsBox) dotsBox.querySelectorAll("button").forEach((b, idx) => b.classList.toggle("active", idx === i));
-            }
-            function go(n) {
-                i = (n + slides.length) % slides.length;
-                markActive();
-            }
-            function next() {
-                go(i + 1);
-            }
-            function prev() {
-                go(i - 1);
-            }
-            function reset() {
-                clearInterval(timer);
-                timer = setInterval(next, 4000);
-            }
-
-            slider.querySelector("[data-next]")?.addEventListener("click", () => {
-                next();
-                reset();
-            });
-            slider.querySelector("[data-prev]")?.addEventListener("click", () => {
-                prev();
-                reset();
-            });
-
-            let startX = 0;
-            slider.addEventListener(
-                "touchstart",
-                (e) => {
-                    startX = e.touches[0].clientX;
-                },
-                { passive: true }
-            );
-            slider.addEventListener("touchend", (e) => {
-                const dx = e.changedTouches[0].clientX - startX;
-                if (Math.abs(dx) > 40) {
-                    dx < 0 ? next() : prev();
-                    reset();
-                }
-            });
-
-            renderDots();
-            markActive();
-            reset();
-        });
-    })();
-
     checkAuthStatus();
 });
