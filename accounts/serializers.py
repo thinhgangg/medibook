@@ -22,8 +22,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ["id", "email", "full_name", "phone_number", "address", "role", "password"]
+        fields = [
+            "id", "email", "full_name", "phone_number",
+            "dob", "gender", "id_number", "ethnicity",
+            "address_detail", "ward", "city",
+            "full_address", "role", "password"
+        ]        
         extra_kwargs = {"password": {"write_only": True}}
+    
+    def get_full_address(self, obj):
+        parts = [obj.address_detail, obj.ward, obj.city]
+        return ", ".join([p for p in parts if p])
 
     def create(self, validated_data):
         password = validated_data.pop("password", None)
@@ -35,15 +44,29 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserPublicSerializer(serializers.ModelSerializer):
+    full_address = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = CustomUser
-        fields = ("id", "email", "full_name", "phone_number", "address", "role")
+        fields = [
+            "id", "email", "full_name", "phone_number",
+            "dob", "gender", "id_number", "ethnicity",
+            "full_address", "role"
+        ]
 
+    def get_full_address(self, obj):
+        parts = [obj.address_detail, obj.ward, obj.city]
+        return ", ".join([p for p in parts if p])
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ("full_name", "phone_number", "address", "role", "email")
+        fields = [
+            "full_name", "phone_number",
+            "dob", "gender", "id_number", "ethnicity",
+            "address_detail", "ward", "city",
+            "role", "email"
+        ]
         extra_kwargs = {"email": {"required": False}}
 
 class SendOTPSerializer(serializers.Serializer):

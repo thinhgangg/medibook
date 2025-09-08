@@ -21,19 +21,17 @@ class DoctorSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
-    dob = serializers.DateField(required=False, allow_null=True)
-    bio = serializers.CharField(default="Bác sĩ chưa cập nhật tiểu sử", required=False)
+    address = serializers.ReadOnlyField(source='user.get_full_address')
+
     profile_picture = serializers.ImageField(required=False, allow_null=True)
     profile_picture_thumbs = serializers.SerializerMethodField()
 
     class Meta:
         model = Doctor
         fields = [
-            "id", "user",
-            "gender", "dob",
-            "specialty", "specialty_id",
-            "bio", "profile_picture",
-            "profile_picture_thumbs", "is_active"
+            "id", "user", "specialty", "specialty_id",
+            "bio", "profile_picture", "profile_picture_thumbs", 
+            "address", "is_active"
         ]
         read_only_fields = ["id", "user", "profile_picture"]
 
