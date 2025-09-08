@@ -59,42 +59,38 @@ class PatientRegisterView(APIView):
             UntypedToken(temp_token)
         except Exception:
             return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=400)
-        
+
         data = request.data
 
-        # Validate user fields
-        required_user = ["username", "email", "password", "phone_number"]
+        required_user = ["email", "password", "phone_number", "full_name"]
         required_patient = ["dob", "gender"]
 
         for f in required_user + required_patient:
             if not data.get(f):
                 return Response({"detail": f"Missing field: {f}"}, status=400)
 
-        if User.objects.filter(username=data["username"]).exists():
-            return Response({"detail": "Username already exists"}, status=400)
         if User.objects.filter(email=data["email"]).exists():
             return Response({"detail": "Email already exists"}, status=400)
 
-        # Create user
         user = User(
-            username=data["username"],
             email=data["email"],
+            full_name=data.get("full_name"),
+            phone_number=data.get("phone_number"),
+            dob=data.get("dob"),
+            gender=data.get("gender"),
+            address_detail=data.get("address_detail"),
+            ward=data.get("ward"),
+            city=data.get("city"),
+            id_number=data.get("id_number"),
+            ethnicity=data.get("ethnicity"),
         )
-        if hasattr(user, "full_name") and data.get("full_name"):
-            user.full_name = data["full_name"]
-        if hasattr(user, "phone_number") and data.get("phone_number"):
-            user.phone_number = data["phone_number"]
-        if hasattr(user, "address") and data.get("address"):
-            user.address = data["address"] 
         user.set_password(data["password"])
         user.save()
 
-        # Create patient 
         patient = Patient.objects.create(
             user=user,
-            dob=data["dob"],
-            gender=data["gender"],
             insurance_no=data.get("insurance_no", ""),
+            occupation=data.get("occupation"),
         )
 
         OTPVerification.objects.filter(email=data['email']).delete()
