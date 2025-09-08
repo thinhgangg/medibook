@@ -83,6 +83,7 @@ class PatientRegisterView(APIView):
             city=data.get("city"),
             id_number=data.get("id_number"),
             ethnicity=data.get("ethnicity"),
+            role="PATIENT",
         )
         user.set_password(data["password"])
         user.save()
@@ -91,6 +92,7 @@ class PatientRegisterView(APIView):
             user=user,
             insurance_no=data.get("insurance_no", ""),
             occupation=data.get("occupation"),
+            profile_picture=data.get("profile_picture"),
         )
 
         OTPVerification.objects.filter(email=data['email']).delete()
@@ -112,18 +114,14 @@ class DoctorRegisterView(APIView):
     def post(self, request):
         data = request.data
 
-        # Validate user fields
-        required_user = ["username", "email", "password", "phone_number"]
+        required_user = ["email", "password", "full_name", "phone_number", "gender", "specialty_id"]
         for f in required_user:
             if not data.get(f):
                 return Response({"detail": f"Missing field: {f}"}, status=400)
 
-        if User.objects.filter(username=data["username"]).exists():
-            return Response({"detail": "Username already exists"}, status=400)
         if User.objects.filter(email=data["email"]).exists():
             return Response({"detail": "Email already exists"}, status=400)
 
-        # Handle specialty
         spec = None
         spec_id = data.get("specialty_id")
         spec_name = data.get("specialty")
@@ -134,7 +132,6 @@ class DoctorRegisterView(APIView):
         else:
             return Response({"detail": "Missing field: specialty_id (or 'specialty' name)."}, status=400)
 
-        # Handle gender
         gender = data.get("gender")
         if gender:
             gender = str(gender).upper()
@@ -143,31 +140,30 @@ class DoctorRegisterView(APIView):
         else:
             gender = None
 
-        # Create user
         user = User(
-            username=data["username"],
             email=data["email"],
             full_name=data.get("full_name"),
             phone_number=data.get("phone_number"),
+            dob=data.get("dob"),
+            gender=data.get("gender"),
+            address_detail=data.get("address_detail"),
+            ward=data.get("ward"),
+            city=data.get("city"),
+            id_number=data.get("id_number"),
+            ethnicity=data.get("ethnicity"),
             role="DOCTOR",
-            is_active=True,  
         )
         user.set_password(data["password"])
         user.save()
 
-        # Create doctor
         doctor = Doctor.objects.create(
             user=user,
-            gender=data["gender"],
             specialty=spec,
             bio=data.get("bio", "Bác sĩ chưa cập nhật tiểu sử."),
-            dob=data.get("dob"),
-            address=data.get("address", ""),
             profile_picture=data.get("profile_picture"),
             is_active=True,
         )
 
-        # 6) Token & response
         return Response(
             {
                 "message": "Register doctor success",
