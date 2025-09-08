@@ -11,7 +11,6 @@ class SpecialtySerializer(serializers.ModelSerializer):
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    phone_number = serializers.CharField(source='user.phone_number', read_only=True)
 
     specialty = SpecialtySerializer(read_only=True)
     specialty_id = serializers.PrimaryKeyRelatedField(
@@ -22,31 +21,27 @@ class DoctorSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
-    dob = serializers.DateField(required=False, allow_null=True)
-    address = serializers.CharField(source="user.address", required=False, allow_blank=True, allow_null=True)
-    bio = serializers.CharField(default="Bác sĩ chưa cập nhật tiểu sử", required=False)
+    address = serializers.ReadOnlyField(source='user.get_full_address')
+
+    profile_picture = serializers.ImageField(required=False, allow_null=True)
     profile_picture_thumbs = serializers.SerializerMethodField()
 
     class Meta:
         model = Doctor
         fields = [
-            "id", "user", "phone_number",
-            "gender", "dob", "address",
-            "specialty", "specialty_id",
-            "bio", "profile_picture",
-            "profile_picture_thumbs", "is_active"
+            "id", "user", "specialty", "specialty_id",
+            "bio", "profile_picture", "profile_picture_thumbs", 
+            "address", "is_active"
         ]
-        read_only_fields = ["id", "user", "phone_number", "profile_picture"]
-
-    def get_specialty(self, obj):
-        s = obj.specialty
-        return {"id": s.id, "name": s.name} if s else None
+        read_only_fields = ["id", "user", "profile_picture"]
 
     def get_profile_picture_thumbs(self, obj):
-        return cloud_thumbs(
-            obj.profile_picture, 
-            sizes={"small": (64, 64), "large": (400, 400)}
-        )
+        if obj.profile_picture:
+            return cloud_thumbs(
+                obj.profile_picture,
+                sizes={"small": (64, 64), "large": (400, 400)}
+            )
+        return None
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:

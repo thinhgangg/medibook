@@ -6,6 +6,8 @@ from .views import (
     DoctorRegisterView,
     MeView,
     LogoutView,
+    SendOTPView,
+    VerifyOTPView,
 )
 
 app_name = 'accounts_api'
@@ -19,4 +21,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('me/', MeView.as_view()),
+
+    path('register/send-otp/', SendOTPView.as_view(), name='send-otp'),
+    path('register/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
 ]
