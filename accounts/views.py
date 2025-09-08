@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
+from django.core.mail import send_mail
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated
@@ -10,12 +11,18 @@ from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import UntypedToken
+from rest_framework.permissions import AllowAny
 from accounts.serializers import UserSerializer
 from .serializers import UserPublicSerializer, UserUpdateSerializer
+from .serializers import SendOTPSerializer, VerifyOTPSerializer
+from .models import OTPVerification
 from doctors.models import Doctor, Specialty
 from doctors.serializers import DoctorSerializer
 from patients.models import Patient
 from patients.serializers import PatientSerializer
+from datetime import timedelta
+from medibook.settings import DEFAULT_FROM_EMAIL
 
 # Django views for rendering templates
 def login_view(request):
@@ -45,6 +52,14 @@ class PatientRegisterView(APIView):
 
     @transaction.atomic
     def post(self, request):
+        temp_token = request.data.get('temp_token')
+        if not temp_token:
+            return Response({"detail": "Thiếu temp_token từ verify OTP."}, status=400)
+        try:
+            UntypedToken(temp_token)
+        except Exception:
+            return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=400)
+        
         data = request.data
 
         # Validate user fields
@@ -81,6 +96,8 @@ class PatientRegisterView(APIView):
             gender=data["gender"],
             insurance_no=data.get("insurance_no", ""),
         )
+
+        OTPVerification.objects.filter(email=data['email']).delete()
 
         refresh, access = issue_tokens(user)
         return Response({
@@ -249,3 +266,51 @@ class LogoutView(APIView):
             return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class SendOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        OTPVerification.objects.filter(email=email).delete()
+
+        otp_obj = OTPVerification(email=email)
+        otp_obj.save()
+
+        subject = 'Mã OTP Đăng Ký MediBook'
+        message = f'Mã OTP của bạn là: {otp_obj.otp}. Mã hết hạn sau 5 phút.'
+        send_mail(subject, message, DEFAULT_FROM_EMAIL, [email])
+
+        return Response({"message": "OTP đã gửi đến email của bạn."}, status=status.HTTP_200_OK)
+
+class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, otp=otp)
+            if otp_obj.is_expired():
+                return Response({"detail": "OTP đã hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+            if otp_obj.is_verified:
+                return Response({"detail": "OTP đã được sử dụng."}, status=status.HTTP_400_BAD_REQUEST)
+
+            otp_obj.is_verified = True
+            otp_obj.save()
+
+            temp_token = RefreshToken()
+            temp_token.set_exp(lifetime=timedelta(minutes=10)) 
+            return Response({
+                "message": "Xác thực OTP thành công.",
+                "temp_token": str(temp_token)
+            }, status=status.HTTP_200_OK)
+
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP không đúng."}, status=status.HTTP_400_BAD_REQUEST)

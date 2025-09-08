@@ -45,3 +45,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ("full_name", "phone_number", "address", "role", "email")
         extra_kwargs = {"email": {"required": False}}
+
+class SendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email đã tồn tại.")
+        return value
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    
