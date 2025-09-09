@@ -16,6 +16,7 @@ from rest_framework.permissions import AllowAny
 from accounts.serializers import UserSerializer
 from .serializers import UserPublicSerializer, UserUpdateSerializer
 from .serializers import SendOTPSerializer, VerifyOTPSerializer
+from .serializers import SetPasswordSerializer
 from .models import OTPVerification
 from doctors.models import Doctor, Specialty
 from doctors.serializers import DoctorSerializer
@@ -28,6 +29,12 @@ from medibook.settings import DEFAULT_FROM_EMAIL
 def login_register_view(request):
     action = request.GET.get("action", "login")
     return render(request, "accounts/login.html", {"action": action})
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return render(request, "accounts/forgot-password.html")
 
 # API Views for handling authentication and registration
 User = get_user_model()
@@ -44,65 +51,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         user = serializer.user
         resp.data["user"] = UserSerializer(user).data
         return resp
-
-class PatientRegisterView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    @transaction.atomic
-    def post(self, request):
-        temp_token = request.data.get('temp_token')
-        if not temp_token:
-            return Response({"detail": "Thiếu temp_token từ verify OTP."}, status=400)
-        try:
-            UntypedToken(temp_token)
-        except Exception:
-            return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=400)
-
-        data = request.data
-
-        required_user = ["email", "password", "phone_number", "full_name"]
-        required_patient = ["dob", "gender"]
-
-        for f in required_user + required_patient:
-            if not data.get(f):
-                return Response({"detail": f"Missing field: {f}"}, status=400)
-
-        if User.objects.filter(email=data["email"]).exists():
-            return Response({"detail": "Email already exists"}, status=400)
-
-        user = User(
-            email=data["email"],
-            full_name=data.get("full_name"),
-            phone_number=data.get("phone_number"),
-            dob=data.get("dob"),
-            gender=data.get("gender"),
-            address_detail=data.get("address_detail"),
-            ward=data.get("ward"),
-            city=data.get("city"),
-            id_number=data.get("id_number"),
-            ethnicity=data.get("ethnicity"),
-            role="PATIENT",
-        )
-        user.set_password(data["password"])
-        user.save()
-
-        patient = Patient.objects.create(
-            user=user,
-            insurance_no=data.get("insurance_no", ""),
-            occupation=data.get("occupation"),
-            profile_picture=data.get("profile_picture"),
-        )
-
-        OTPVerification.objects.filter(email=data['email']).delete()
-
-        refresh, access = issue_tokens(user)
-        return Response({
-            "message": "Register patient success",
-            "user": UserSerializer(user).data,
-            "patient": PatientSerializer(patient).data,
-            "refresh": refresh,
-            "access": access
-        }, status=status.HTTP_201_CREATED)
 
 class DoctorRegisterView(APIView):
     permission_classes = [IsAdminUser]
@@ -146,6 +94,7 @@ class DoctorRegisterView(APIView):
             gender=data.get("gender"),
             address_detail=data.get("address_detail"),
             ward=data.get("ward"),
+            district=data.get("district"),
             city=data.get("city"),
             id_number=data.get("id_number"),
             ethnicity=data.get("ethnicity"),
@@ -304,3 +253,79 @@ class VerifyOTPView(APIView):
 
         except OTPVerification.DoesNotExist:
             return Response({"detail": "OTP không đúng."}, status=status.HTTP_400_BAD_REQUEST)
+        
+class PatientSetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password1"]
+        temp_token = request.data.get("temp_token")
+
+        # check temp token
+        try:
+            UntypedToken(temp_token)
+        except Exception:
+            return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=400)
+
+        # check OTP verified
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, is_verified=True)
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP chưa được xác thực."}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return Response({"detail": "Email đã tồn tại."}, status=400)
+
+        # tạo user bệnh nhân
+        user = User(email=email, role="PATIENT")
+        user.set_password(password)
+        user.save()
+
+        # xóa OTP
+        otp_obj.delete()
+
+        refresh, access = issue_tokens(user)
+        return Response({
+            "message": "Tạo mật khẩu thành công, tiếp tục hoàn thiện hồ sơ.",
+            "user": UserSerializer(user).data,
+            "refresh": refresh,
+            "access": access,
+        }, status=201)
+
+class PatientProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        if user.role != "PATIENT":
+            return Response({"detail": "Chỉ bệnh nhân mới được cập nhật hồ sơ."}, status=403)
+
+        data = request.data
+
+        # update các field hồ sơ cơ bản
+        user.full_name = data.get("full_name", user.full_name)
+        user.phone_number = data.get("phone_number", user.phone_number)
+        user.dob = data.get("dob", user.dob)
+        user.gender = data.get("gender", user.gender)
+        user.address_detail = data.get("address_detail", user.address_detail)
+        user.ward = data.get("ward", user.ward)
+        user.district = data.get("district", user.district)
+        user.city = data.get("city", user.city)
+        user.id_number = data.get("id_number", user.id_number)
+        user.ethnicity = data.get("ethnicity", user.ethnicity)
+        user.save()
+
+        # tạo hoặc cập nhật profile patient
+        patient, created = Patient.objects.get_or_create(user=user)
+        patient.insurance_no = data.get("insurance_no", patient.insurance_no)
+        patient.occupation = data.get("occupation", patient.occupation)
+        patient.save()
+
+        return Response({
+            "message": "Cập nhật hồ sơ thành công",
+            "user": UserSerializer(user).data,
+            "patient": PatientSerializer(patient).data
+        }, status=200)

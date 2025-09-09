@@ -1,9 +1,9 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Trang chủ - MediBook{% endblock title %} {% block content %}
+{% extends "base.html" %} {% load static %} {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/login.css' %}?v=7" />
 
 <div class="auth-container">
-    <div class="container">
+    <div class="form-container">
         <div class="tabs">
             <a href="?action=login" class="tab {% if action == 'login' %}active{% endif %}">Đăng nhập</a>
             <a href="?action=register" class="tab {% if action == 'register' %}active{% endif %}">Đăng ký</a>
@@ -25,7 +25,9 @@
                         <input type="checkbox" id="remember" />
                         <label for="remember">Nhớ mật khẩu</label>
                     </div>
-                    <div class="forgot-password">Quên mật khẩu?</div>
+                    <div class="forgot-password">
+                        <a href="{% url 'accounts:forgot_password' %}">Quên mật khẩu?</a>
+                    </div>
                 </div>
 
                 <button type="submit">Đăng nhập</button>
@@ -44,11 +46,7 @@
             <form id="register-form">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="tel" name="phone" placeholder="Nhập email của bạn" required />
-                </div>
-                <div class="form-group">
-                    <label>Mã OTP</label>
-                    <input type="text" name="otp" placeholder="Nhập mã OTP" />
+                    <input type="email" name="email" placeholder="Nhập email của bạn" required />
                 </div>
                 <div class="form-row">
                     <div class="checkbox">
@@ -56,9 +54,7 @@
                         <label for="terms">Tôi đồng ý với các điều khoản và điều kiện sử dụng</label>
                     </div>
                 </div>
-
-                <button type="submit">Gửi OTP</button>
-
+                <button type="button" id="send-otp" disabled>Gửi OTP</button>
                 <div class="divider-with-text">
                     <span class="divider-text">
                         Đã có tài khoản?
@@ -68,6 +64,115 @@
             </form>
         </div>
     </div>
+
+    <div class="register-flow hidden">
+        <div class="container">
+            <div class="steps">
+                <div class="step active" data-step="1">1. Xác thực</div>
+                <div class="step" data-step="2">2. Mật khẩu</div>
+                <div class="step" data-step="3">3. Tạo hồ sơ</div>
+            </div>
+
+            <!-- Step 1: OTP -->
+            <div id="otp-section" class="step-content hidden" data-step="1">
+                <p class="otp-info">Nhập mã OTP vừa được gửi đến <span id="user-email"></span></p>
+                <div class="otp-input">
+                    <input type="text" name="otp" maxlength="6" placeholder="Nhập mã OTP" />
+                </div>
+                <button type="button" id="verify-otp" class="btn-primary">Tiếp tục</button>
+                <p class="resend">
+                    Không nhận được mã OTP? <br />
+                    <a href="#" id="resend-otp">Thử lại</a>
+                    <span id="countdown"></span>
+                </p>
+            </div>
+
+            <!-- Step 2: Password -->
+            <div id="password-section" class="step-content hidden" data-step="2">
+                <form id="password-form">
+                    <div class="form-group">
+                        <label>Mật khẩu</label>
+                        <input type="password" name="password" placeholder="Nhập mật khẩu" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Xác nhận mật khẩu</label>
+                        <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu" required />
+                    </div>
+                    <button type="button" id="set-password" class="btn-primary">Tiếp tục</button>
+                </form>
+            </div>
+
+            <!-- Step 3: Profile -->
+            <div id="profile-section" class="step-content hidden" data-step="3">
+                <form id="profile-form" class="profile-grid">
+                    <!-- Cột trái -->
+                    <div class="form-group">
+                        <label>Họ và tên <span class="required">*</span></label>
+                        <input type="text" name="full_name" placeholder="Nhập họ và tên" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại <span class="required">*</span></label>
+                        <input type="text" name="phone_number" placeholder="Nhập số điện thoại" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày sinh <span class="required">*</span></label>
+                        <input type="date" name="dob" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Số CMND/CCCD</label>
+                        <input type="text" name="id_number" placeholder="Số CMND/CCCD" />
+                    </div>
+                    <div class="form-group">
+                        <label>Giới tính</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="gender" value="MALE" checked /> Nam</label>
+                            <label><input type="radio" name="gender" value="FEMALE" /> Nữ</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Dân tộc</label>  
+                        <input type="text" name="ethnicity" placeholder="Nhập dân tộc" />
+                    </div>
+
+                    <!-- Cột phải -->
+                    <div class="form-group">
+                        <label>Mã thẻ bảo hiểm y tế</label>
+                        <input type="text" name="insurance_no" placeholder="Mã số BHYT" />
+                    </div>
+                    <div class="form-group">
+                        <label for="city">Tỉnh / Thành phố</label>
+                        <select id="city" name="city" required>
+                            <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="district">Quận / Huyện</label>
+                        <select id="district" name="district" required>
+                            <option value="">-- Chọn Quận / Huyện --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ward">Phường / Xã</label>
+                        <select id="ward" name="ward" required>
+                            <option value="">-- Chọn Phường / Xã --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Địa chỉ cụ thể</label>
+                        <input type="text" name="address_detail" placeholder="Số nhà, tên đường" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nghề nghiệp</label>
+                        <input type="text" name="occupation" placeholder="Nhập nghề nghiệp" />
+                    </div>
+                </form>
+
+                <div class="form-actions">
+                    <button type="button" id="submit-profile" class="btn-primary">Hoàn tất</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<script src="{% static 'js/login.js' %}?v=7"></script>
+
 {% endblock content %}

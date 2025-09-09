@@ -7,7 +7,7 @@
     margin: 0;
     background: #f5f7fa;
 }
-.auth-container .container {
+.auth-container .form-container {
     width: 410px;
     padding: 30px 25px;
     background: #fff;
@@ -58,6 +58,11 @@
     margin-top: 5px;
     display: none;
 }
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 .checkbox {
     margin: 10px 0;
     display: flex;
@@ -81,21 +86,27 @@ button {
 button:hover {
     background: #0056b3;
 }
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+button:hover:not(:disabled) {
+    background: #0056b3;
+}
+.hidden {
+    display: none !important;
+}
 .forgot-password,
 .signup-link {
     text-align: right;
     color: #007bff;
     cursor: pointer;
     font-size: 15px;
-    
 }
-.hidden {
-    display: none;
-}
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.forgot-password a,
+.signup-link a {
+    text-decoration: none;
+    color: #007bff;
 }
 .divider-with-text {
     display: flex;
@@ -103,7 +114,6 @@ button:hover {
     text-align: center;
     margin-top: 15px;
 }
-
 .divider-with-text::before,
 .divider-with-text::after {
     content: "";
@@ -111,19 +121,179 @@ button:hover {
     height: 1px;
     background: #ddd;
 }
-
 .divider-text {
     padding: 0 10px;
     font-size: 0.9em;
     color: #666;
 }
-
 .divider-text a {
     text-decoration: none;
     color: #007bff;
 }
-
 .divider-text .link {
     color: #007bff;
     cursor: pointer;
+}
+
+.register-flow {
+    margin-top: 50px;
+    width: 800px;
+    height: 80vh;
+    padding: 30px 25px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.register-flow .steps {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.register-flow .step {
+    padding: 5px 10px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.register-flow .step.active {
+    border-bottom: 2px solid #007bff;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.register-flow .container {
+    text-align: center;
+}
+
+.register-flow .otp-info {
+    font-size: 0.9em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.register-flow .otp-input {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.register-flow .otp-input input {
+    width: 100%;
+    height: 40px;
+    text-align: center;
+    font-size: 1.2em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+}
+
+.register-flow .btn-primary {
+    width: 50%;
+    padding: 12px;
+    background: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.3s;
+    margin-top: 15px;
+}
+
+.register-flow .btn-primary:hover {
+    background: #0056b3;
+}
+
+.register-flow .resend {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+}
+
+.register-flow .resend a {
+    color: #007bff;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.register-flow .resend #countdown {
+    margin-left: 5px;
+    color: #333;
+}
+
+.step-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    font-size: 1.1em;
+    color: #333;
+    text-align: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+/* Profile grid 2 cột */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 40px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.required {
+    color: red;
+}
+
+.form-actions {
+    grid-column: span 2;
+    text-align: right;
+    margin-top: 20px;
+}
+
+.btn-primary {
+    background: #1c8d73;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-primary:hover {
+    background: #167a63;
 }
