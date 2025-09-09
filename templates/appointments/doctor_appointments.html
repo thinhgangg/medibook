@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lịch khám – Bác sĩ</title>
+  <link rel="stylesheet" href="{% static 'css/mb-appointments.css' %}">
+</head>
+<body>
+<div class="wrap">
+  <div class="page">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <ul class="side-list">
+        <li><a class="side-item active" href="#">Lịch khám</a></li>
+        <li><a class="side-item" href="#">Hồ sơ bác sĩ</a></li>
+        <li><a class="side-item" href="#">Đăng xuất</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="card">
+        <div class="toolbar"><h1>Quản lý lịch</h1></div>
+
+        <!-- Tabs -->
+        <div class="tabs" data-tabs id="docTabs">
+          <div class="tab-nav">
+            <button class="tab-btn active" data-target="#tab-appointments">Ca khám</button>
+            <button class="tab-btn" data-target="#tab-hours">Giờ làm</button>
+            <button class="tab-btn" data-target="#tab-timeoff">Ngày/giờ nghỉ</button>
+          </div>
+
+          <!-- Tab: Ca khám -->
+          <section class="tab-panel active" id="tab-appointments">
+            {% if appointments %}
+              <div class="grid">
+                {% for a in appointments %}
+                <div class="item" data-appt-id="{{ a.id }}">
+                  <div class="item-head">
+                    <strong>#{{ a.code }}</strong>
+                    <span class="status {% if a.status == 'PENDING' %}st-pending{% elif a.status == 'CONFIRMED' %}st-confirmed{% elif a.status == 'CANCELED' %}st-canceled{% endif %}">
+                      {{ a.get_status_display }}
+                    </span>
+                  </div>
+                  <div class="meta">
+                    <div><label>Ngày</label><span>{{ a.date|date:"d/m/Y" }}</span></div>
+                    <div><label>Giờ</label><span>{{ a.time|time:"H:i" }}</span></div>
+                    <div><label>Bệnh nhân</label><span>{{ a.patient.get_full_name }}</span></div>
+                  </div>
+                  <div class="actions">
+                    <button class="btn primary js-reschedule" data-id="{{ a.id }}">Dời ca</button>
+                    <button class="btn js-cancel" data-id="{{ a.id }}">Hủy</button>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty">Chưa có ca khám.</div>
+            {% endif %}
+          </section>
+
+          <!-- Tab: Giờ làm -->
+          <section class="tab-panel" id="tab-hours">
+            <form class="form-hours" id="formHours">
+              <div class="grid">
+                {% for wh in working_hours %}
+                <div class="item">
+                  <div class="meta">
+                    <div>
+                      <label>Thứ</label>
+                      <select name="weekday">
+                        {% for i,d in wh.WEEKDAYS %}
+                          <option value="{{ i }}" {% if wh.weekday == i %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <label>Bắt đầu</label>
+                      <input type="time" name="start_time" value="{{ wh.start_time|time:'H:i' }}">
+                    </div>
+                    <div>
+                      <label>Kết thúc</label>
+                      <input type="time" name="end_time" value="{{ wh.end_time|time:'H:i' }}">
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <label class="switch">
+                      <input type="checkbox" name="is_active" {% if wh.is_active %}checked{% endif %}>
+                      <span>Bật</span>
+                    </label>
+                    <button class="btn primary" data-action="update_hours" data-id="{{ wh.id }}">Lưu</button>
+                  </div>
+                </div>
+                {% empty %}
+                  <div class="empty">Chưa cấu hình giờ làm.</div>
+                {% endfor %}
+              </div>
+            </form>
+          </section>
+
+          <!-- Tab: Ngày/giờ nghỉ -->
+          <section class="tab-panel" id="tab-timeoff">
+            <form id="formTimeoff" class="form-timeoff">
+              <div class="modal-row">
+                <div>
+                  <label class="f-label">Ngày</label>
+                  <input type="date" name="date" required>
+                </div>
+                <div>
+                  <label class="f-label">Loại</label>
+                  <select name="type">
+                    <option value="full">Nghỉ cả ngày</option>
+                    <option value="range">Theo khung giờ</option>
+                  </select>
+                </div>
+              </div>
+              <div class="modal-row" data-range>
+                <div>
+                  <label class="f-label">Từ</label>
+                  <input type="time" name="start_time">
+                </div>
+                <div>
+                  <label class="f-label">Đến</label>
+                  <input type="time" name="end_time">
+                </div>
+              </div>
+              <div class="modal-foot">
+                <button class="btn primary" data-action="add_timeoff">Thêm</button>
+              </div>
+            </form>
+
+            <div class="grid" style="margin-top:12px">
+              {% for tf in timeoffs %}
+                <div class="item">
+                  <div class="meta">
+                    <div><label>Ngày</label><span>{{ tf.date|date:"d/m/Y" }}</span></div>
+                    <div><label>Loại</label><span>{% if tf.is_full_day %}Cả ngày{% else %}{{ tf.start_time|time:"H:i" }}–{{ tf.end_time|time:"H:i" }}{% endif %}</span></div>
+                    <div><label>Lý do</label><span>{{ tf.reason|default:"—" }}</span></div>
+                  </div>
+                </div>
+              {% empty %}
+                <div class="empty">Chưa có ngày nghỉ.</div>
+              {% endfor %}
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Reschedule modal -->
+<div class="modal" id="resModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+    <h3 id="resTitle">Dời ca khám</h3>
+    <div class="modal-row">
+      <div><label class="f-label">Ngày</label><input id="rsDate" type="date" /></div>
+      <div><label class="f-label">Giờ</label><input id="rsTime" type="time" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="btnCloseRes">Hủy</button>
+      <button class="btn primary" id="btnSaveRes">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">OK</div>
+<script src="{% static 'js/mb-appointments.js' %}"></script>
+<script>
+  window.APPT_ROLE = "doctor";
+  window.APPT_API = {
+    cancel: id => `/api/doctor/appointments/${id}/cancel/`,
+    reschedule: id => `/api/doctor/appointments/${id}/reschedule/`,
+    updateHours: id => `/api/doctor/working-hours/${id}/`,
+    addTimeoff: () => `/api/doctor/timeoff/`
+  };
+</script>
+</body>
+</html>

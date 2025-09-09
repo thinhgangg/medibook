@@ -48,7 +48,7 @@
             <h2 class="dm-title">Đặt khám bác sĩ</h2>
             <p class="dm-subtitle">Tìm Bác sĩ chính xác – Đặt lịch khám dễ dàng.</p>
         </div>
-        <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
+        <a href="{% url 'appointments:search' %}" class="dm-btn dm-btn--pill">Xem thêm</a>
     </div>
 
     <div class="dm-doctors__rail">
@@ -87,7 +87,7 @@
         <!-- main.js render -->
     </ul>
     <div class="specs__more">
-        <a href="#" class="dm-btn dm-btn--pill spec-link">Xem thêm</a>
+        <a href="{% url 'appointments:search' %}" class="dm-btn dm-btn--pill spec-link">Xem thêm</a>
     </div>
 </section>
 

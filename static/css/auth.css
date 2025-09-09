@@ -230,41 +230,50 @@ input[type="date"] {
     gap: 14px;
 }
 
-/* ===== Giới tính (segmented) cũng cao 48px ===== */
+/* ===== Giới tính (segmented control) ===== */
 .segmented {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
     width: 100%;
-    height: var(--control-h);
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 4px;
+    border-radius: 14px;
+    overflow: hidden;
+    height: var(--control-h);
+    box-shadow: inset 0 0 0 0 transparent;
+    transition: 0.2s border-color, 0.2s box-shadow;
 }
+.segmented:focus-within {
+    border-color: var(--pri);
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
 .seg {
-    position: relative;
+    flex: 1;
+    text-align: center;
     height: 100%;
 }
 .seg input {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    pointer-events: none;
+    display: none;
 }
 .seg span {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: calc(var(--control-h) - 8px);
-    padding: 0 16px;
-    border-radius: 10px;
-    font-weight: 700;
+    height: 110%;
+    font-weight: 600;
     color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 .seg input:checked + span {
     background: linear-gradient(180deg, var(--pri), #0c39b4);
     color: #fff;
+    font-weight: 700;
+}
+.seg span:hover {
+    background: #f3f4f6;
 }
 
 /* ===== Aside Slider ===== */
@@ -293,7 +302,7 @@ input[type="date"] {
 .slide {
     position: absolute;
     inset: 0;
-    opacity: 0;
+opacity: 0;
     transition: opacity 0.5s ease;
 }
 .slide.is-active {
@@ -461,7 +470,7 @@ input[type="date"] {
 }
 
 .input-wrap input::placeholder {
-    color: #9ca3af;
+color: #9ca3af;
 }
 
 .input-icon {
@@ -472,13 +481,14 @@ input[type="date"] {
 .toggle-eye {
     flex: 0 0 auto;
     height: 100%;
-    width: 44px;
+    width: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-left: 6px;
     border-radius: 10px;
     border: 0;
     background: transparent;
     color: #6b7280;
+    margin: 0;
+    padding: 0;
 }

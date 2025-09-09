@@ -1,20 +1,3 @@
-from django.shortcuts import render
-
-def appointment_view(request):
-    return render(request, 'appointments/appointment.html')
-
-def appointment_invoice_view(request):
-    return render(request, 'appointments/appointment-invoice.html')
-
-def appointment_list_view(request):
-    return render(request, 'appointments/appointment-list.html')
-
-def appointment_success_view(request):
-    return render(request, 'appointments/appointment-success.html')
-
-def search(request):
-    return render(request, 'appointments/search.html')
-
 from datetime import timedelta, date as date_cls
 
 from django.conf import settings
@@ -22,6 +5,8 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -36,23 +21,129 @@ from .serializers import (
     _ensure_within_availability_and_grid,
 )
 
-# Django views for rendering templates
+# ===================== PAGES (TEMPLATE VIEWS) =====================
+
 def appointment_view(request):
-    return render(request, 'appointments/appointment.html')
+    return render(request, "appointments/appointment.html")
 
 def appointment_invoice_view(request):
-    return render(request, 'appointments/appointment-invoice.html')
+    return render(request, "appointments/appointment-invoice.html")
 
 def appointment_list_view(request):
-    return render(request, 'appointments/appointment-list.html')
+    return render(request, "appointments/appointment-list.html")
 
 def appointment_success_view(request):
-    return render(request, 'appointments/appointment-success.html')
+    return render(request, "appointments/appointment-success.html")
 
 def search(request):
-    return render(request, 'appointments/search.html')
+    return render(request, "appointments/search.html")
 
-# API ViewSet for Appointment
+# ⭐ Trang đặt lịch mới (HTML/CSS/JS thuần).
+#   Nếu có truyền doctor_slug/doctor_id thì bạn có thể load hồ sơ để bơm vào context.
+def booking_youmed(request, doctor_slug=None, doctor_id=None):
+    ctx = {}
+    # ví dụ nạp doctor nếu bạn có model bác sĩ:
+    # from doctors.models import Doctor
+    # if doctor_slug:
+    #     ctx["doctor"] = get_object_or_404(Doctor, slug=doctor_slug)
+    # elif doctor_id:
+    #     ctx["doctor"] = get_object_or_404(Doctor, pk=doctor_id)
+
+    # ✅ ĐỔI ĐÚNG TÊN TEMPLATE MỚI
+    return render(request, "appointments/appointment-booking.html", ctx)
+
+# ----- Trang mới: bệnh nhân xem lịch đã đặt (admin cũng vào được) -----
+@login_required
+def patient_appointments_page(request):
+    """Trang bệnh nhân: lịch đã đặt"""
+    user = request.user
+    is_admin = user.is_staff or user.is_superuser
+
+    if not (hasattr(user, "patient_profile") or is_admin):
+        raise DjangoPermissionDenied("Chỉ bệnh nhân (hoặc admin) mới được xem trang này.")
+
+    qs = Appointment.objects.select_related("doctor", "patient")
+    if not is_admin:
+        qs = qs.filter(patient=user.patient_profile)
+    qs = qs.order_by("-start_at")
+
+    # filter nhẹ theo query string (status, date_from, date_to)
+    status_q = request.GET.get("status")
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
+    if status_q:
+        qs = qs.filter(status=status_q)
+    try:
+        if date_from:
+            qs = qs.filter(start_at__date__gte=date_cls.fromisoformat(date_from))
+    except ValueError:
+        pass
+    try:
+        if date_to:
+            qs = qs.filter(start_at__date__lte=date_cls.fromisoformat(date_to))
+    except ValueError:
+        pass
+
+    ctx = {"appointments": qs}
+    return render(request, "appointments/patient_appointments.html", ctx)
+
+# ----- Trang mới: bác sĩ quản lý ca khám / giờ làm / ngày nghỉ (admin cũng vào được) -----
+@login_required
+def doctor_appointments_page(request):
+    """Trang bác sĩ: ca khám + giờ làm + ngày nghỉ"""
+    user = request.user
+    is_admin = user.is_staff or user.is_superuser
+
+    if not (hasattr(user, "doctor_profile") or is_admin):
+        raise DjangoPermissionDenied("Chỉ bác sĩ (hoặc admin) mới được xem trang này.")
+
+    appts = Appointment.objects.select_related("doctor", "patient")
+    if not is_admin:
+        appts = appts.filter(doctor=user.doctor_profile)
+    appts = appts.order_by("start_at")
+
+    # filter nhẹ theo query string
+    status_q = request.GET.get("status")
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
+    if status_q:
+        appts = appts.filter(status=status_q)
+    try:
+        if date_from:
+            appts = appts.filter(start_at__date__gte=date_cls.fromisoformat(date_from))
+    except ValueError:
+        pass
+    try:
+        if date_to:
+            appts = appts.filter(start_at__date__lte=date_cls.fromisoformat(date_to))
+    except ValueError:
+        pass
+
+    # working_hours & timeoffs:
+    # - Bác sĩ thật sự: nạp dữ liệu để chỉnh.
+    # - Admin: để rỗng (hoặc bạn tự xây trang quản trị riêng).
+    working_hours, timeoffs = [], []
+    if not is_admin:
+        try:
+            from .models import WorkingHour, TimeOff  # nếu chưa có models này, sẽ vào except
+            working_hours = (
+                WorkingHour.objects.filter(doctor=user.doctor_profile).order_by("weekday")
+            )
+            timeoffs = (
+                TimeOff.objects.filter(doctor=user.doctor_profile).order_by("-date")
+            )
+        except Exception:
+            pass
+
+    ctx = {
+        "appointments": appts,
+        "working_hours": working_hours,
+        "timeoffs": timeoffs,
+    }
+    return render(request, "appointments/doctor_appointments.html", ctx)
+
+# ===================== API (DRF VIEWSET) =====================
+
 class AppointmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
@@ -61,7 +152,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             return None
         return timezone.make_aware(dt, timezone.get_current_timezone()) if timezone.is_naive(dt) else dt
 
-    # ---------------- Queryset & Serializer ----------------
+    # ---------- Queryset & Serializer ----------
     def get_queryset(self):
         user = self.request.user
         base = Appointment.objects.select_related("doctor", "patient")
@@ -86,24 +177,20 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
         if status_q:
             qs = qs.filter(status=status_q)
-
         if doctor_id and doctor_id.isdigit():
             qs = qs.filter(doctor_id=int(doctor_id))
-
         if patient_id and patient_id.isdigit():
             qs = qs.filter(patient_id=int(patient_id))
 
-        # Lọc theo ngày (YYYY-MM-DD) – dựa vào start_at__date
+        # Lọc theo ngày (YYYY-MM-DD)
         try:
             if date_from:
-                df = date_cls.fromisoformat(date_from)
-                qs = qs.filter(start_at__date__gte=df)
+                qs = qs.filter(start_at__date__gte=date_cls.fromisoformat(date_from))
         except ValueError:
             pass
         try:
             if date_to:
-                dt = date_cls.fromisoformat(date_to)
-                qs = qs.filter(start_at__date__lte=dt)
+                qs = qs.filter(start_at__date__lte=date_cls.fromisoformat(date_to))
         except ValueError:
             pass
 
@@ -112,7 +199,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         return AppointmentCreateSerializer if self.action == "create" else AppointmentSerializer
 
-    # ---------------- Create ----------------
+    # ---------- Create ----------
     def perform_create(self, serializer):
         user = self.request.user
         if not hasattr(user, "patient_profile"):
@@ -127,11 +214,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if start < timezone.now():
             raise ValidationError("Không được đặt lịch trong quá khứ.")
 
-        # buffer giữa 2 lịch (phút) – set trong settings.py, mặc định 0
         buffer = timedelta(minutes=getattr(settings, "APPOINTMENT_BUFFER_MINUTES", 0))
 
         with transaction.atomic():
-            # chặn trùng giờ (kể cả buffer)
             clash = (
                 Appointment.objects.select_for_update()
                 .filter(doctor=doctor)
@@ -144,7 +229,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                     f"Khung giờ đã bận (bao gồm buffer {buffer.seconds // 60} phút)."
                 )
 
-            # Lưu: ghi đè start/end đã normalize để đảm bảo timezone
             self._created_instance = serializer.save(
                 patient=user.patient_profile, start_at=start, end_at=end
             )
@@ -157,7 +241,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(ser.data)
         return Response(detail, status=status.HTTP_201_CREATED, headers=headers)
 
-    # ---------------- Actions: confirm / complete / cancel / reschedule ----------------
+    # ---------- Actions ----------
     @action(detail=True, methods=["post"])
     def confirm(self, request, pk=None):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
@@ -189,7 +273,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
         u = request.user
 
-        # Quyền: bệnh nhân/bác sĩ của lịch hoặc admin
         is_party = (
             (hasattr(u, "patient_profile") and appt.patient_id == u.patient_profile.id)
             or (hasattr(u, "doctor_profile") and appt.doctor_id == u.doctor_profile.id)
@@ -199,7 +282,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if not is_party:
             return Response({"detail": "Không có quyền hủy."}, status=403)
 
-        # Không cho hủy nếu đã quá giờ bắt đầu hoặc đã hoàn tất
         if appt.status == Appointment.Status.COMPLETED:
             return Response({"detail": "Không thể hủy lịch đã hoàn tất."}, status=400)
         if appt.start_at <= timezone.now():
@@ -226,11 +308,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if new_start < timezone.now():
             return Response({"detail": "Không được dời lịch vào thời điểm quá khứ."}, status=400)
 
-        # Chỉ đc dời khi chưa COMPLETED/CANCELLED
-        if appt.status in (Appointment.Status.COMPLETED, Appointment.Status.CANCELLED):
-            return Response({"detail": "Không thể dời lịch ở trạng thái hiện tại."}, status=400)
-
-        # Quyền: bệnh nhân/bác sĩ của lịch (hoặc admin)
         u = request.user
         is_party = (
             (hasattr(u, "patient_profile") and appt.patient_id == u.patient_profile.id)
@@ -241,13 +318,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if not is_party:
             return Response({"detail": "Không có quyền"}, status=403)
 
-        # Phải nằm trong availability & khớp lưới slot
         _ensure_within_availability_and_grid(appt.doctor, new_start, new_end)
 
         buffer = timedelta(minutes=getattr(settings, "APPOINTMENT_BUFFER_MINUTES", 0))
 
         with transaction.atomic():
-            # Khoá & kiểm tra chồng lấp (có buffer), loại trừ chính cuộc hẹn này
             clash = (
                 Appointment.objects.select_for_update()
                 .filter(doctor=appt.doctor)
@@ -264,7 +339,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
             appt.start_at = new_start
             appt.end_at = new_end
-            appt.status = Appointment.Status.PENDING  # dời lịch -> cần xác nhận lại
+            appt.status = Appointment.Status.PENDING  # dời -> chờ xác nhận
             appt.save()
 
         return Response(AppointmentSerializer(appt).data)
