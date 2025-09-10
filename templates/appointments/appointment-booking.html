@@ -1,0 +1,86 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Thời gian khám – MediBook{% endblock %} {% block page_css %}
+<link rel="stylesheet" href="{% static 'css/appointment-booking.css' %}" />
+{% endblock %} {% block content %}
+<div class="abk-page">
+    <!-- Bước -->
+    <div class="abk-step">
+        <span class="abk-step-index">1</span>
+        <span class="abk-step-text">Thời gian khám</span>
+    </div>
+
+    <div class="abk-grid">
+        <!-- Cột trái: lịch + khung giờ -->
+        <section class="abk-card abk-schedule">
+            <div class="abk-card-head">
+                <div class="abk-head-left">
+                    <span class="abk-head-index">1</span>
+                    <span class="abk-head-title">Ngày và giờ khám</span>
+                </div>
+
+                <div class="abk-date-nav">
+                    <button id="abkPrev" class="abk-circle-btn" aria-label="Trước">
+                        <i class="fa fa-chevron-left"></i>
+                    </button>
+
+                    <div id="abkDateList" class="abk-date-list"></div>
+
+                    <button id="abkNext" class="abk-circle-btn" aria-label="Sau">
+                        <i class="fa fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <button class="abk-collapse" aria-label="Thu gọn">
+                    <i class="fa fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Container lớn bao trọn ngày và giờ -->
+            <div class="abk-session-container">
+                <div class="abk-session">
+                    <div class="abk-session-title"><i class="fa fa-sun-o"></i> Buổi chiều</div>
+                    <div id="abkSlotGrid" class="abk-slots"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cột phải: thông tin bác sĩ -->
+        <aside class="abk-card abk-side">
+            <div class="abk-side-head">
+                <span>Thông tin đặt khám</span>
+                <button class="abk-collapse" aria-label="Thu gọn">
+                    <i class="fa fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <div class="abk-doctor">
+                <img src="/static/img/doctors/doctor1.jpg" alt="Bác sĩ" class="abk-doctor-avatar" />
+                <div class="abk-doctor-info">
+                    <div class="abk-doctor-name">Lê Thị Minh Hương</div>
+                    <div class="abk-doctor-addr">250 Nguyễn Xí, P.13, Q. Bình Thạnh, TP.HCM</div>
+                </div>
+            </div>
+
+            <div class="abk-side-cta">
+                <button id="abkConfirm" class="abk-confirm" disabled>Xác nhận đặt khám</button>
+                <p class="abk-terms">Bằng cách nhấn nút xác nhận, bạn đã đồng ý với các điều khoản và điều kiện đặt khám</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Promo dưới cùng -->
+    <div class="abk-promo">
+        <div>
+            <div class="abk-promo-title">Bạn muốn đặt lịch</div>
+            <div class="abk-promo-brand">An toàn hơn?</div>
+        </div>
+        <div class="abk-promo-right">
+            <img src="/static/img/promo-security.jpg" alt="Promo" />
+        </div>
+    </div>
+</div>
+
+<!-- FontAwesome (nếu base.html chưa có) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+{% endblock %} {% block page_js %}
+<script src="{% static 'js/appointment-booking.js' %}"></script>
+{% endblock %}

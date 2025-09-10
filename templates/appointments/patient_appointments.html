@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Lịch khám – Bệnh nhân</title>
+        <link rel="stylesheet" href="{% static 'css/mb-appointments.css' %}" />
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="page">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <ul class="side-list" id="sideList">
+                        <li><a class="side-item active" href="#">Lịch khám</a></li>
+                        <li><a class="side-item" href="#">Lịch sử thanh toán</a></li>
+                        <li><a class="side-item" href="#">Hồ sơ</a></li>
+                        <li><a class="side-item" href="#">Đăng xuất</a></li>
+                    </ul>
+                </aside>
+
+                <!-- Main -->
+                <main class="main">
+                    <div class="card">
+                        <div class="toolbar">
+                            <h1>Lịch khám</h1>
+                            <div class="toolbar-right">
+                                <div class="search" id="searchBox">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path
+                                            d="M21 21l-4.2-4.2m1.7-5.1a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
+                                            stroke="#9ca3af"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                        />
+                                    </svg>
+                                    <input id="q" type="search" placeholder="Mã giao dịch, tên dịch vụ, tên bệnh nhân,..." />
+                                    <button class="clear" type="button" aria-label="Xóa">&times;</button>
+                                </div>
+
+                                <button class="btn" id="btnFilter" aria-expanded="false">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 5h18M6 12h12M10 19h4" stroke="#6b7280" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                    Lọc
+                                </button>
+
+                                <div class="filter-pop" id="filterPop" role="dialog" aria-label="Bộ lọc">
+                                    <div class="filter-row">
+                                        <div>
+                                            <label>Trạng thái</label>
+                                            <select id="fStatus">
+                                                <option value="">Tất cả</option>
+                                                <option value="PENDING">Chờ xác nhận</option>
+                                                <option value="CONFIRMED">Đã xác nhận</option>
+                                                <option value="COMPLETED">Hoàn tất</option>
+                                                <option value="CANCELED">Đã hủy</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label>Cơ sở</label>
+                                            <input id="fClinic" type="text" placeholder="Tên bệnh viện/phòng khám" />
+                                        </div>
+                                    </div>
+                                    <div class="filter-row">
+                                        <div>
+                                            <label>Từ ngày</label>
+                                            <input id="fFrom" type="date" />
+                                        </div>
+                                        <div>
+                                            <label>Đến ngày</label>
+                                            <input id="fTo" type="date" />
+                                        </div>
+                                    </div>
+                                    <div class="filter-foot">
+                                        <button class="btn" id="btnClearFilter">Xóa lọc</button>
+                                        <button class="btn primary" id="btnApplyFilter">Áp dụng</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if appointments %}
+                        <div class="grid" id="list">
+                            {% for a in appointments %}
+                            <div class="item" data-appt-id="{{ a.id }}">
+                                <div class="item-head">
+                                    <strong>#{{ a.code }}</strong>
+                                    <span
+                                        class="status {% if a.status == 'PENDING' %}st-pending{% elif a.status == 'CONFIRMED' %}st-confirmed{% elif a.status == 'CANCELED' %}st-canceled{% endif %}"
+                                    >
+                                        {{ a.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="meta">
+                                    <div>
+                                        <label>Ngày</label>
+                                        <span>{{ a.date|date:"d/m/Y" }}</span>
+                                    </div>
+                                    <div>
+                                        <label>Giờ</label>
+                                        <span>{{ a.time|time:"H:i" }}</span>
+                                    </div>
+                                    <div>
+                                        <label>Bác sĩ</label>
+                                        <span>{{ a.doctor.get_full_name }}</span>
+                                    </div>
+                                </div>
+                                <div class="actions">
+                                    <button class="btn primary js-reschedule" data-id="{{ a.id }}">Đổi lịch</button>
+                                    <button class="btn js-cancel" data-id="{{ a.id }}">Hủy lịch</button>
+                                    <button class="btn" onclick="window.print()">In</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="grid">
+                            <div class="empty">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                                    <path d="M4 7h16v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7z" stroke="#9ca3af" stroke-width="1.6" />
+                                    <path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="#9ca3af" stroke-width="1.6" />
+                                </svg>
+                                <div>Lịch khám của bạn trống !</div>
+                            </div>
+                            <div class="empty">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 5h18M6 12h12M10 19h4" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round" />
+                                </svg>
+                                <div>Lịch khám của bạn trống !</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Modal đổi lịch -->
+        <div class="modal" id="resModal" aria-hidden="true">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+                <h3 id="resTitle">Đổi lịch</h3>
+                <div class="modal-row">
+                    <div>
+                        <label for="rsDate" class="f-label">Ngày</label>
+                        <input id="rsDate" type="date" />
+                    </div>
+                    <div>
+                        <label for="rsTime" class="f-label">Giờ</label>
+                        <input id="rsTime" type="time" />
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn" id="btnCloseRes">Hủy</button>
+                    <button class="btn primary" id="btnSaveRes">Lưu</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast">Đã cập nhật</div>
+        <script src="{% static 'js/mb-appointments.js' %}"></script>
+        <script>
+            window.APPT_ROLE = "patient"; // cho JS biết đang ở trang nào
+            // map API (đổi theo BE)
+            window.APPT_API = {
+                cancel: (id) => `/api/appointments/${id}/cancel/`,
+                reschedule: (id) => `/api/appointments/${id}/reschedule/`,
+                search: (q) => `/api/appointments/?q=${encodeURIComponent(q)}`,
+            };
+        </script>
+    </body>
+</html>

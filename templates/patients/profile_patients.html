@@ -1,0 +1,81 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Hồ Sơ Bệnh Nhân - MediBook{% endblock %} {% block page_css %}
+<link rel="stylesheet" href="{% static 'css/patient_profile.css' %}" />
+{% endblock %} {% block content %}
+<div class="patient-profile">
+    <h2 class="text-center mb-4" id="profile-title">Hồ Sơ Bệnh Nhân</h2>
+    <div class="patient-info d-flex align-items-center mb-4">
+        <div class="patient-avatar me-4">
+            <img src="https://via.placeholder.com/150" alt="Ảnh bệnh nhân" id="avatar" />
+        </div>
+        <div class="patient-details flex-grow-1">
+            <h3 id="patient-name">Bệnh Nhân XYZ</h3>
+            <div class="patient-info-details">
+                <p><i class="fas fa-calendar-day"></i> Ngày sinh: <span id="dob">01/01/1990</span></p>
+                <p><i class="fas fa-venus-mars"></i> Giới tính: <span id="gender">Nam</span></p>
+                <p><i class="fas fa-phone"></i> Số điện thoại: <span id="phone">0901234567</span></p>
+                <p><i class="fas fa-envelope"></i> Email: <span id="email">example@email.com</span></p>
+                <p><i class="fas fa-map-marker-alt"></i> Địa chỉ: <span id="address">123 Đường ABC</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="update-form">
+        <h4 class="mb-3">Cập Nhật Thông Tin</h4>
+        <form id="update-form">
+            <div class="mb-3">
+                <label for="update-phone" class="form-label">Số điện thoại:</label>
+                <input type="tel" class="form-control" id="update-phone" value="0901234567" required />
+            </div>
+            <div class="mb-3">
+                <label for="update-address" class="form-label">Địa chỉ:</label>
+                <input type="text" class="form-control" id="update-address" value="123 Đường ABC" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+        </form>
+    </div>
+
+    <div class="patient-appointments">
+        <h3>Lịch Sử Hẹn Khám</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ngày Hẹn</th>
+                    <th>Bác Sĩ</th>
+                    <th>Trạng Thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="completed">
+                    <td>01/09/2025 08:00</td>
+                    <td>Bác Sĩ ABC</td>
+                    <td>Hoàn Thành</td>
+                </tr>
+                <tr class="pending">
+                    <td>10/09/2025 09:00</td>
+                    <td>Bác Sĩ DEF</td>
+                    <td>Đang Chờ</td>
+                </tr>
+                <tr class="cancelled">
+                    <td>05/09/2025 14:00</td>
+                    <td>Bác Sĩ GHI</td>
+                    <td>Đã Hủy</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="patient-reviews">
+        <h3>Đánh Giá Của Bạn</h3>
+        <div class="review">
+            <p>"Dịch vụ rất tốt, bác sĩ tận tâm!"</p>
+            <p class="review-date">Ngày: 01/09/2025</p>
+        </div>
+        <div class="review">
+            <p>"Thời gian chờ hơi lâu nhưng hài lòng."</p>
+            <p class="review-date">Ngày: 03/09/2025</p>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block page_js %}
+<script src="{% static 'js/patient_profile.js' %}"></script>
+{% endblock %}

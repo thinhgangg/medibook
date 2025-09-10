@@ -1,0 +1,81 @@
+/* doctor-profile.css */
+.doctor-profile {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.doctor-info {
+    display: flex;
+    margin-bottom: 40px;
+}
+
+.doctor-avatar img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+}
+
+.doctor-details {
+    margin-left: 20px;
+}
+
+.doctor-details h2 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.doctor-details form {
+    margin-top: 20px;
+}
+
+.doctor-details label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.doctor-details input,
+.doctor-details textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.doctor-details button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.doctor-details button:hover {
+    background-color: #45a049;
+}
+
+.doctor-schedule table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.doctor-schedule table th,
+.doctor-schedule table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.doctor-reviews .review {
+    margin-bottom: 20px;
+}
+
+.doctor-reviews .review-text {
+    font-style: italic;
+}
+
+.doctor-reviews .review-author {
+    font-weight: bold;
+}

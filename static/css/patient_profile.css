@@ -1,0 +1,117 @@
+body {
+    background-color: #f8f9fa;
+    font-family: "Arial", sans-serif;
+    padding-top: 80px; /* Đảm bảo khoảng cách với header cố định */
+    padding-bottom: 60px; /* Đảm bảo khoảng cách với footer */
+}
+
+.patient-profile {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 30px;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.patient-avatar img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #007bff;
+}
+
+.patient-details h3 {
+    color: #333;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.patient-info-details p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.patient-info-details i {
+    margin-right: 10px;
+    color: #007bff;
+}
+
+.update-form .form-control {
+    border-radius: 8px;
+    border-color: #ced4da;
+}
+
+.update-form .btn-primary {
+    background-color: #007bff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.update-form .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.patient-appointments h3,
+.patient-reviews h3 {
+    color: #333;
+    font-size: 1.6rem;
+    margin-top: 30px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.patient-appointments table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.patient-appointments th,
+.patient-appointments td {
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    text-align: center;
+}
+
+.patient-appointments th {
+    background-color: #007bff;
+    color: white;
+}
+
+.completed {
+    background-color: #d4edda;
+}
+.pending {
+    background-color: #fff3cd;
+}
+.cancelled {
+    background-color: #f8d7da;
+}
+
+.patient-reviews .review {
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.patient-reviews .review p {
+    margin: 0;
+    color: #333;
+}
+
+.patient-reviews .review-date {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+#profile-title {
+    color: #007bff;
+    font-size: 2rem;
+}

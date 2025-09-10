@@ -1,0 +1,81 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Hồ Sơ Cá Nhân - Bác Sĩ{% endblock %} {% block page_css %}
+<!-- Kết nối CSS riêng cho trang doctor profile -->
+<link rel="stylesheet" href="{% static 'css/doctor-profile.css' %}" />
+{% endblock %} {% block content %} {% if request.user.role != 'DOCTOR' %}
+<p>Xin lỗi, bạn không có quyền truy cập trang này. Chỉ có bác sĩ mới được phép xem trang này.</p>
+{% else %}
+<section class="doctor-profile">
+    <div class="container">
+        <!-- Thông tin bác sĩ -->
+        <div class="doctor-info">
+            <div class="doctor-avatar">
+                <img src="{% static 'img/doctor-avatar.jpg' %}" alt="Ảnh bác sĩ" class="avatar-img" />
+            </div>
+            <div class="doctor-details">
+                <h2 class="doctor-name">{{ doctor.name }}</h2>
+                <p class="doctor-specialty">Chuyên khoa: {{ doctor.specialty }}</p>
+                <p class="doctor-description">{{ doctor.description }}</p>
+                <!-- Form edit profile, POST đến cùng URL -->
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <label for="name">Tên bác sĩ:</label>
+                    <input type="text" name="name" value="{{ doctor.name }}" required />
+
+                    <label for="specialty">Chuyên khoa:</label>
+                    <input type="text" name="specialty" value="{{ doctor.specialty }}" required />
+
+                    <label for="description">Giới thiệu:</label>
+                    <textarea name="description" required>{{ doctor.description }}</textarea>
+
+                    <button type="submit">Cập nhật hồ sơ</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lịch làm việc của bác sĩ -->
+        <div class="doctor-schedule">
+            <h3>Lịch làm việc</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ngày trong tuần</th>
+                        <th>Giờ bắt đầu</th>
+                        <th>Giờ kết thúc</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for avail in availabilities %}
+                    <tr>
+                        <td>{{ avail.weekday }}</td>
+                        <td>{{ avail.start_time }}</td>
+                        <td>{{ avail.end_time }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">Chưa có lịch làm việc.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Form edit schedule có thể chuyển sang trang doctor_schedule, hoặc dùng API -->
+            <p>Để chỉnh sửa lịch, sử dụng trang lịch làm việc hoặc API.</p>
+        </div>
+
+        <!-- Đánh giá của bệnh nhân (Chỉ xem) -->
+        <div class="doctor-reviews">
+            <h3>Đánh giá từ bệnh nhân</h3>
+            {% for review in doctor.reviews %}
+            <div class="review">
+                <p class="review-text">“{{ review.text }}”</p>
+                <p class="review-author">- {{ review.patient_name }}</p>
+            </div>
+            {% empty %}
+            <p>Chưa có đánh giá.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %} {% endblock content %} {% block page_js %}
+<!-- Kết nối JS riêng cho trang doctor profile -->
+<script src="{% static 'js/doctor-profile.js' %}"></script>
+{% endblock %}
