@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import CustomUser  
-from .validators import validate_avatar
+from cloudinary.models import CloudinaryField
 
 class Doctor(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='doctor_profile')
@@ -14,9 +14,7 @@ class Doctor(models.Model):
 
     bio = models.TextField(default="Bác sĩ chưa cập nhật tiểu sử", blank=True, null=True)
     
-    profile_picture = models.ImageField(
-        upload_to="doctors/", blank=True, null=True, validators=[validate_avatar],
-    )
+    profile_picture = CloudinaryField('image', blank=True, null=True)
     
     is_active = models.BooleanField(default=True, db_index=True)  
 
@@ -36,6 +34,7 @@ class Specialty(models.Model):
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
+    specialty_picture = models.ImageField(upload_to='specialties/', blank=True, null=True)
     class Meta:
         ordering = ["name"]
 
