@@ -109,6 +109,8 @@ class DoctorRegisterView(APIView):
             bio=data.get("bio", "Bác sĩ chưa cập nhật tiểu sử."),
             profile_picture=data.get("profile_picture"),
             is_active=True,
+            started_practice=data.get("started_practice"),
+            experience_detail=data.get("experience_detail", "Bác sĩ chưa cập nhật kinh nghiệm."),
         )
 
         return Response(
@@ -136,62 +138,47 @@ class MeView(APIView):
     def patch(self, request):
         user = request.user
 
-        # 1) Cập nhật thông tin user
+        # 1) Update user cơ bản
         user_ser = UserUpdateSerializer(user, data=request.data, partial=True)
         user_ser.is_valid(raise_exception=True)
         user_ser.save()
 
-        # 2) Cập nhật avatar cho doctor/patient (nếu có)
-        has_file = "profile_picture" in request.FILES or "profile_picture" in request.data
-        want_remove = str(request.data.get("remove_profile_picture", "")).lower() in ("1", "true", "yes")
+        updated_doctor, updated_patient = None, None
 
-        updated_doctor = None
-        updated_patient = None
-
-        if has_file or want_remove:
-            # Nếu 1 user vừa là doctor vừa là patient (hiếm), cho phép chỉ định profile_owner=doctor|patient
-            target = str(request.data.get("profile_owner", "")).lower()
-            obj = None
-
-            if target == "doctor" and hasattr(user, "doctor_profile"):
-                obj = user.doctor_profile
-            elif target == "patient" and hasattr(user, "patient_profile"):
-                obj = user.patient_profile
-            else:
-                # nếu không chỉ định, tự suy ra
-                if hasattr(user, "doctor_profile") and not hasattr(user, "patient_profile"):
-                    obj = user.doctor_profile
-                elif hasattr(user, "patient_profile") and not hasattr(user, "doctor_profile"):
-                    obj = user.patient_profile
-                elif hasattr(user, "doctor_profile") and hasattr(user, "patient_profile"):
-                    return Response(
-                        {"detail": "Vui lòng chỉ định 'profile_owner' = 'doctor' hoặc 'patient'."},
-                        status=400
-                    )
-                else:
-                    return Response({"detail": "Chỉ bác sĩ hoặc bệnh nhân mới cập nhật avatar."}, status=403)
-
-            if want_remove:
-                if getattr(obj, "profile_picture", None):
-                    obj.profile_picture = None
-            else:
-                file_obj = request.FILES.get("profile_picture") or request.data.get("profile_picture")
-                if not file_obj:
-                    return Response({"detail": "Thiếu file profile_picture."}, status=400)
-                obj.profile_picture = file_obj
-
-            obj.save()
-            if obj is getattr(user, "doctor_profile", None):
-                updated_doctor = obj
-            if obj is getattr(user, "patient_profile", None):
-                updated_patient = obj
-
-        # 3) Response gồm user + profile
-        resp = UserPublicSerializer(user).data
+        # 2) Nếu user có hồ sơ Doctor
         if hasattr(user, "doctor_profile"):
-            resp["doctor"] = DoctorSerializer(updated_doctor or user.doctor_profile).data
+            doc_ser = DoctorSerializer(
+                user.doctor_profile,
+                data=request.data,
+                partial=True,
+                context={"request": request},  # để xử lý file upload
+            )
+            doc_ser.is_valid(raise_exception=True)
+            updated_doctor = doc_ser.save()
+
+        # 3) Nếu user có hồ sơ Patient
         if hasattr(user, "patient_profile"):
-            resp["patient"] = PatientSerializer(updated_patient or user.patient_profile).data
+            pat_ser = PatientSerializer(
+                user.patient_profile,
+                data=request.data,
+                partial=True,
+                context={"request": request},
+            )
+            pat_ser.is_valid(raise_exception=True)
+            updated_patient = pat_ser.save()
+
+        # 4) Response
+        resp = UserPublicSerializer(user).data
+        if updated_doctor:
+            resp["doctor"] = DoctorSerializer(updated_doctor).data
+        elif hasattr(user, "doctor_profile"):
+            resp["doctor"] = DoctorSerializer(user.doctor_profile).data
+
+        if updated_patient:
+            resp["patient"] = PatientSerializer(updated_patient).data
+        elif hasattr(user, "patient_profile"):
+            resp["patient"] = PatientSerializer(user.patient_profile).data
+
         return Response(resp, status=status.HTTP_200_OK)
     
 class LogoutView(APIView):
