@@ -1,20 +1,3 @@
-from django.shortcuts import render
-
-def appointment_view(request):
-    return render(request, 'appointments/appointment.html')
-
-def appointment_invoice_view(request):
-    return render(request, 'appointments/appointment-invoice.html')
-
-def appointment_list_view(request):
-    return render(request, 'appointments/appointment-list.html')
-
-def appointment_success_view(request):
-    return render(request, 'appointments/appointment-success.html')
-
-def search(request):
-    return render(request, 'appointments/search.html')
-
 from datetime import timedelta, date as date_cls
 
 from django.conf import settings
@@ -22,6 +5,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.shortcuts import render, get_object_or_404
+from django.core.mail import send_mail
 
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -127,11 +111,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if start < timezone.now():
             raise ValidationError("Không được đặt lịch trong quá khứ.")
 
-        # buffer giữa 2 lịch (phút) – set trong settings.py, mặc định 0
         buffer = timedelta(minutes=getattr(settings, "APPOINTMENT_BUFFER_MINUTES", 0))
 
         with transaction.atomic():
-            # chặn trùng giờ (kể cả buffer)
             clash = (
                 Appointment.objects.select_for_update()
                 .filter(doctor=doctor)
@@ -144,10 +126,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                     f"Khung giờ đã bận (bao gồm buffer {buffer.seconds // 60} phút)."
                 )
 
-            # Lưu: ghi đè start/end đã normalize để đảm bảo timezone
-            self._created_instance = serializer.save(
-                patient=user.patient_profile, start_at=start, end_at=end
-            )
+            self._created_instance = serializer.save(patient=user.patient_profile, start_at=start, end_at=end, status=Appointment.Status.PENDING)
 
     def create(self, request, *args, **kwargs):
         ser = self.get_serializer(data=request.data)
@@ -161,13 +140,19 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def confirm(self, request, pk=None):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
+
         if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
             return Response({"detail": "Chỉ bác sĩ của lịch được xác nhận."}, status=403)
+
         if appt.status in (Appointment.Status.CANCELLED, Appointment.Status.COMPLETED):
             return Response({"detail": "Không thể xác nhận ở trạng thái hiện tại."}, status=400)
+
         if appt.status != Appointment.Status.CONFIRMED:
             appt.status = Appointment.Status.CONFIRMED
             appt.save()
+
+            send_appointment_confirmation(appt)
+
         return Response(AppointmentSerializer(appt).data)
 
     @action(detail=True, methods=["post"])
@@ -189,7 +174,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
         u = request.user
 
-        # Quyền: bệnh nhân/bác sĩ của lịch hoặc admin
         is_party = (
             (hasattr(u, "patient_profile") and appt.patient_id == u.patient_profile.id)
             or (hasattr(u, "doctor_profile") and appt.doctor_id == u.doctor_profile.id)
@@ -199,7 +183,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if not is_party:
             return Response({"detail": "Không có quyền hủy."}, status=403)
 
-        # Không cho hủy nếu đã quá giờ bắt đầu hoặc đã hoàn tất
         if appt.status == Appointment.Status.COMPLETED:
             return Response({"detail": "Không thể hủy lịch đã hoàn tất."}, status=400)
         if appt.start_at <= timezone.now():
@@ -208,6 +191,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if appt.status != Appointment.Status.CANCELLED:
             appt.status = Appointment.Status.CANCELLED
             appt.save()
+
+            send_appointment_cancellation(appt)
+
         return Response(AppointmentSerializer(appt).data)
 
     @action(detail=True, methods=["post"])
@@ -268,3 +254,25 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             appt.save()
 
         return Response(AppointmentSerializer(appt).data)
+    
+def send_appointment_confirmation(appointment):
+    subject = 'Xác nhận lịch hẹn khám bệnh'
+    message = f"Lịch hẹn của bạn với bác sĩ {appointment.doctor.user.full_name} đã được xác nhận.\nThời gian: {appointment.start_at.strftime('%H:%M %d-%m-%Y')}\nChúc bạn sức khỏe tốt!"
+    recipient = appointment.patient.user.email
+
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient])
+        print(f"Đã gửi email xác nhận lịch hẹn đến {recipient}")
+    except Exception as e:
+        print(f"Lỗi khi gửi email: {e}")
+
+def send_appointment_cancellation(appointment):
+    subject = 'Thông báo hủy lịch hẹn khám bệnh'
+    message = f"Lịch hẹn của bạn với bác sĩ {appointment.doctor.user.full_name} đã bị hủy.\nThời gian đã được lên kế hoạch trước: {appointment.start_at.strftime('%H:%M %d-%m-%Y')}\nChúng tôi xin lỗi về sự bất tiện này."
+    recipient = appointment.patient.user.email
+
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient])
+        print(f"Đã gửi email thông báo hủy lịch đến {recipient}")
+    except Exception as e:
+        print(f"Lỗi khi gửi email: {e}")

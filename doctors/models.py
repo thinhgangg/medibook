@@ -14,11 +14,14 @@ class Doctor(models.Model):
 
     bio = models.TextField(default="Bác sĩ chưa cập nhật tiểu sử", blank=True, null=True)
     
-    profile_picture = models.ImageField(upload_to="doctors/", blank=True, null=True, validators=[validate_avatar],)
-    is_active = models.BooleanField(default=True, db_index=True)  # dễ filter danh bạ bác sĩ
+    profile_picture = models.ImageField(
+        upload_to="doctors/", blank=True, null=True, validators=[validate_avatar],
+    )
+    
+    is_active = models.BooleanField(default=True, db_index=True)  
 
     def __str__(self):
-        return self.user.full_name or self.user.username
+        return self.user.full_name
 
     @property
     def phone_number(self):
