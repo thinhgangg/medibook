@@ -64,7 +64,7 @@
         </div>
     </div>
 
-    <div class="register-flow">
+    <div class="register-flow ">
         <div class="container">
             <div class="steps">
                 <div class="step active" data-step="1">1. Xác thực</div>
@@ -88,7 +88,7 @@
             </div>
 
             <!-- Step 2: Password -->
-            <div id="password-section" class="step-content" data-step="2">
+            <div id="password-section" class="step-content hidden" data-step="2">
                 <form id="password-form">
                     <div class="form-group">
                         <label>Mật khẩu</label>
@@ -112,12 +112,12 @@
             </div>
 
             <!-- Step 3: Profile - Xóa phần form-step trùng lặp -->
-            <div id="profile-section" class="step-content hidden" data-step="3">
+            <div id="profile-section" class="step-content " data-step="3">
                 <form id="profile-form" class="profile-grid">
                     <!-- Cột trái -->
                     <div class="form-group">
                         <label>Họ và tên <span class="required">*</span></label>
-                        <input type="text" name="full_name" placeholder="Nhập họ và tên" required class="input-field" data-validate="text" />
+                        <input type="text" name="full_name" placeholder="Nhập họ và tên" required class="input-field" data-validate="name" />
                         <span class="error" id="full-name-error"></span>
                     </div>
                     <div class="form-group">
@@ -150,7 +150,7 @@
                     </div>
                     <div class="form-group">
                         <label>Dân tộc</label>
-                        <input type="text" name="ethnicity" placeholder="Nhập dân tộc" class="input-field" data-validate="text" />
+                        <input type="text" name="ethnicity" placeholder="Nhập dân tộc" class="input-field" data-validate="ethnicity" />
                         <span class="error" id="ethnicity-error"></span>
                     </div>
 
@@ -183,12 +183,12 @@
                     </div>
                     <div class="form-group">
                         <label>Địa chỉ cụ thể</label>
-                        <input type="text" name="address_detail" placeholder="Số nhà, tên đường" class="input-field" data-validate="text" />
+                        <input type="text" name="address_detail" placeholder="Số nhà, tên đường" class="input-field" data-validate="address_detail" />
                         <span class="error" id="address-error"></span>
                     </div>
                     <div class="form-group">
                         <label>Nghề nghiệp</label>
-                        <input type="text" name="occupation" placeholder="Nhập nghề nghiệp" class="input-field" data-validate="text" />
+                        <input type="text" name="occupation" placeholder="Nhập nghề nghiệp" class="input-field" data-validate="occupation" />
                         <span class="error" id="occupation-error"></span>
                     </div>
                 </form>

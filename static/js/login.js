@@ -273,14 +273,14 @@ document.addEventListener("DOMContentLoaded", () => {
             startCountdown(300);
         } else {
             if (data?.email && Array.isArray(data.email) && data.email.length > 0) {
-                regEmailErrorSpan.textContent = data.email[0]; 
-                regEmailErrorSpan.style.display = "block"; 
+                regEmailErrorSpan.textContent = data.email[0];
+                regEmailErrorSpan.style.display = "block";
             } else if (data?.detail) {
                 regEmailErrorSpan.textContent = data.detail;
-                regEmailErrorSpan.style.display = "block"; 
+                regEmailErrorSpan.style.display = "block";
             } else {
                 regEmailErrorSpan.textContent = "Gửi OTP thất bại. Vui lòng thử lại.";
-                regEmailErrorSpan.style.display = "block"; 
+                regEmailErrorSpan.style.display = "block";
             }
         }
     });
@@ -410,6 +410,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const { ok, data } = await patchJSON(ENDPOINTS.patient_profile, payload, true);
 
         if (ok) {
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            localStorage.removeItem("temp_token");
+            
             window.location.href = REDIRECTS.afterRegister;
         } else {
             console.error("Cập nhật hồ sơ thất bại.");

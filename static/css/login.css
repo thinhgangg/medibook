@@ -347,7 +347,7 @@ body {
     text-align: center;
     font-size: 18px;
     font-weight: 600;
-    max-width: 250px;
+    width: 100%;
     margin: 0 auto;
 }
 

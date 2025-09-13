@@ -1,6 +1,11 @@
 class FormValidator {
     constructor() {
         this.rules = {
+            name: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Tên không hợp lệ",
+            },
             email: {
                 pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                 message: "Vui lòng nhập email hợp lệ",
@@ -17,11 +22,6 @@ class FormValidator {
                 pattern: /^(0[3|5|7|8|9])+([0-9]{8})$/,
                 message: "Số điện thoại không hợp lệ",
             },
-            text: {
-                minLength: 2,
-                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
-                message: "Vui lòng nhập ít nhất 2 ký tự",
-            },
             id: {
                 pattern: /^[0-9]{9,12}$/,
                 message: "CMND/CCCD phải có 9-12 chữ số",
@@ -33,6 +33,21 @@ class FormValidator {
             insurance_no: {
                 pattern: /^[0-9]{10,15}$/,
                 message: "Mã thẻ BHYT phải có 10-15 chữ số",
+            },
+            ethnicity: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Dân tộc không hợp lệ",
+            },
+            address_detail: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Địa chỉ không hợp lệ",
+            },
+            occupation: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Nghề nghiệp không hợp lệ",
             },
         };
 
