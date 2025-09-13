@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 window.location.href = "/";
             } else {
-                showAlert("error", data?.detail || "Đăng nhập thất bại.");
+                console.error("Đăng nhập thất bại.");
             }
         });
     }
@@ -180,10 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.textContent = "Đăng ký";
 
             if (ok) {
-                showAlert("success", "Đăng ký thành công! Đăng nhập nhé.");
+                console.info("Đăng ký thành công!");
                 window.location.href = REDIRECTS.afterRegister;
             } else {
-                showAlert("error", data?.detail || Object.values(data || {}).join(" • ") || "Đăng ký thất bại.");
+                console.error("Đăng ký thất bại.");
             }
         });
     }
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const refreshToken = localStorage.getItem("refresh");
             console.log("Refresh Token:", refreshToken);
             if (!refreshToken) {
-                showAlert("error", "Không tìm thấy refresh token. Vui lòng đăng nhập lại.");
+                console.error("Không tìm thấy refresh token. Vui lòng đăng nhập lại.");
                 return;
             }
 
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("user-avatar").style.display = "none";
                 window.location.href = REDIRECTS.afterLogout;
             } else {
-                showAlert("error", data?.detail || "Đăng xuất thất bại.");
+                console.error("Đăng xuất thất bại.");
             }
         });
     }
@@ -220,16 +220,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const emailInput = document.querySelector("#register input[name='email']");
     const termsCheckbox = document.getElementById("terms");
     const sendOtpButton = document.getElementById("send-otp");
-    const otpSection = document.getElementById("otp-section");
-    const userEmail = document.getElementById("user-email");
     const otpInput = document.querySelector("#otp-section input[name='otp']");
     const verifyOtpButton = document.getElementById("verify-otp");
     const resendOtpLink = document.getElementById("resend-otp");
     const countdownElement = document.getElementById("countdown");
-    const passwordSection = document.getElementById("password-section");
     const setPasswordButton = document.getElementById("set-password");
-    const profileSection = document.getElementById("profile-section");
     const submitProfileButton = document.getElementById("submit-profile");
+    const regEmailErrorSpan = document.getElementById("reg-email-error");
 
     function validateEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -246,19 +243,19 @@ document.addEventListener("DOMContentLoaded", () => {
     termsCheckbox.addEventListener("change", checkConditions);
 
     function goToStep(stepNumber) {
-        // Ẩn tất cả các step
         document.querySelectorAll(".step-content").forEach((el) => el.classList.add("hidden"));
 
-        // Hiện step được chọn
         document.querySelector(`.step-content[data-step="${stepNumber}"]`).classList.remove("hidden");
 
-        // Cập nhật trạng thái active của các step indicator
         document.querySelectorAll(".steps .step").forEach((el) => el.classList.remove("active"));
         document.querySelector(`.steps .step[data-step="${stepNumber}"]`).classList.add("active");
     }
 
     sendOtpButton.addEventListener("click", async () => {
         const payload = { email: emailInput.value.trim() };
+
+        console.log(regEmailErrorSpan);
+        regEmailErrorSpan.textContent = "";
 
         sendOtpButton.disabled = true;
         sendOtpButton.textContent = "Đang xử lý...";
@@ -270,16 +267,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (ok) {
             document.querySelector(".form-container").classList.add("hidden");
-
             document.querySelector(".register-flow").classList.remove("hidden");
-
             document.getElementById("user-email").textContent = emailInput.value.trim();
-
             goToStep(1);
-
             startCountdown(300);
         } else {
-            showAlert("error", data?.detail || "Gửi OTP thất bại.");
+            if (data?.email && Array.isArray(data.email) && data.email.length > 0) {
+                regEmailErrorSpan.textContent = data.email[0];
+                regEmailErrorSpan.style.display = "block";
+            } else if (data?.detail) {
+                regEmailErrorSpan.textContent = data.detail;
+                regEmailErrorSpan.style.display = "block";
+            } else {
+                regEmailErrorSpan.textContent = "Gửi OTP thất bại. Vui lòng thử lại.";
+                regEmailErrorSpan.style.display = "block";
+            }
         }
     });
 
@@ -318,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const otp = otpInput.value.trim();
         if (!otp) {
-            showAlert("error", "Vui lòng nhập OTP.");
+            console.error("Vui lòng nhập OTP.");
             return;
         }
 
@@ -331,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             goToStep(2);
         } else {
-            showAlert("error", data?.detail || "Xác thực OTP thất bại.");
+            console.error("Xác thực OTP thất bại.");
         }
     });
 
@@ -344,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const confirmPassword = passwordForm.querySelector("input[name='confirm_password']").value;
 
         if (password !== confirmPassword) {
-            showAlert("error", "Mật khẩu không khớp!");
+            console.error("Mật khẩu không khớp!");
             return;
         }
 
@@ -370,10 +372,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 goToStep(3);
             } else {
-                showAlert("error", "Đặt mật khẩu thành công nhưng đăng nhập thất bại.");
+                console.error("Đặt mật khẩu thành công nhưng đăng nhập thất bại.");
             }
         } else {
-            showAlert("error", "Đặt mật khẩu thất bại.");
+            console.error("Đặt mật khẩu thất bại.");
         }
     });
 
@@ -408,9 +410,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const { ok, data } = await patchJSON(ENDPOINTS.patient_profile, payload, true);
 
         if (ok) {
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            localStorage.removeItem("temp_token");
+            
             window.location.href = REDIRECTS.afterRegister;
         } else {
-            showAlert("error", data?.detail || "Cập nhật hồ sơ thất bại.");
+            console.error("Cập nhật hồ sơ thất bại.");
         }
     });
 

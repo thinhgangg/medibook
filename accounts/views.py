@@ -47,9 +47,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         resp = super().post(request, *args, **kwargs)
+        
         user = serializer.user
         resp.data["user"] = UserSerializer(user).data
+        resp.data["success"] = True
+        
         return resp
 
 class DoctorRegisterView(APIView):
