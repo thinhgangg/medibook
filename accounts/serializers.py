@@ -74,7 +74,7 @@ class SendOTPSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if CustomUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email đã tồn tại.")
+            raise serializers.ValidationError("Email đã được sử dụng. Vui lòng dùng email khác hoặc đăng nhập nếu bạn đã có tài khoản.")
         return value
 
 class VerifyOTPSerializer(serializers.Serializer):
@@ -90,3 +90,6 @@ class SetPasswordSerializer(serializers.Serializer):
         if data["password1"] != data["password2"]:
             raise serializers.ValidationError("Mật khẩu không khớp.")
         return data
+
+class ForgotPasswordSendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()

@@ -64,7 +64,7 @@
         </div>
     </div>
 
-    <div class="register-flow ">
+    <div class="register-flow hidden">
         <div class="container">
             <div class="steps">
                 <div class="step active" data-step="1">1. Xác thực</div>
@@ -112,7 +112,7 @@
             </div>
 
             <!-- Step 3: Profile - Xóa phần form-step trùng lặp -->
-            <div id="profile-section" class="step-content " data-step="3">
+            <div id="profile-section" class="step-content hidden" data-step="3">
                 <form id="profile-form" class="profile-grid">
                     <!-- Cột trái -->
                     <div class="form-group">
@@ -200,4 +200,6 @@
     </div>
 </div>
 
+<script src="{% static 'js/login.js' %}"></script>
+<script src="{% static 'js/form-validation.js' %}"></script>
 {% endblock content %}

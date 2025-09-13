@@ -17,6 +17,7 @@ from accounts.serializers import UserSerializer
 from .serializers import UserPublicSerializer, UserUpdateSerializer
 from .serializers import SendOTPSerializer, VerifyOTPSerializer
 from .serializers import SetPasswordSerializer
+from .serializers import ForgotPasswordSendOTPSerializer
 from .models import OTPVerification
 from doctors.models import Doctor, Specialty
 from doctors.serializers import DoctorSerializer
@@ -281,7 +282,7 @@ class PatientSetPasswordView(APIView):
             return Response({"detail": "OTP chưa được xác thực."}, status=400)
 
         if User.objects.filter(email=email).exists():
-            return Response({"detail": "Email đã tồn tại."}, status=400)
+            return Response({"detail": "Email đã được sử dụng. Vui lòng dùng email khác hoặc đăng nhập nếu bạn đã có tài khoản."}, status=400)
 
         # tạo user bệnh nhân
         user = User(email=email, role="PATIENT")
@@ -333,3 +334,107 @@ class PatientProfileView(APIView):
             "user": UserSerializer(user).data,
             "patient": PatientSerializer(patient).data
         }, status=200)
+
+class ForgotPasswordSendOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        user_exists = User.objects.filter(email=email).exists()
+
+        OTPVerification.objects.filter(email=email).delete()
+
+        otp_obj = OTPVerification(email=email)
+        otp_obj.save()
+
+        if user_exists:
+            subject = 'Mã OTP Đặt Lại Mật Khẩu MediBook'
+            message = f'Mã OTP của bạn là: {otp_obj.otp}. Mã hết hạn sau 5 phút. Không chia sẻ mã này với bất kỳ ai.'
+            try:
+                send_mail(subject, message, DEFAULT_FROM_EMAIL, [email])
+            except Exception as e:
+                print(f"Failed to send email: {str(e)}")
+                return Response({
+                    "message": "Có lỗi xảy ra khi gửi OTP. Vui lòng thử lại sau."
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            "message": "Nếu email tồn tại, OTP đã được gửi đến hộp thư của bạn. Vui lòng kiểm tra hộp thư (bao gồm spam)."
+        }, status=status.HTTP_200_OK)
+
+
+class ForgotPasswordVerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, otp=otp)
+            if otp_obj.is_expired():
+                return Response({"detail": "OTP đã hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+            if otp_obj.is_verified:
+                return Response({"detail": "OTP đã được sử dụng."}, status=status.HTTP_400_BAD_REQUEST)
+
+            otp_obj.is_verified = True
+            otp_obj.save()
+
+            temp_token = RefreshToken()
+            temp_token.set_exp(lifetime=timedelta(minutes=10))
+            return Response({
+                "message": "Xác thực OTP thành công.",
+                "temp_token": str(temp_token)
+            }, status=status.HTTP_200_OK)
+
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP không đúng."}, status=status.HTTP_400_BAD_REQUEST)
+
+class ForgotPasswordSetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password1"]
+        temp_token = request.data.get("temp_token")
+
+        # Check temp token
+        try:
+            UntypedToken(temp_token)
+        except Exception:
+            return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check OTP verified
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, is_verified=True)
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP chưa được xác thực."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if user exists
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "Email không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Set new password
+        user.set_password(password)
+        user.save()
+
+        # Delete OTP
+        otp_obj.delete()
+
+        # Issue new tokens
+        refresh, access = issue_tokens(user)
+        return Response({
+            "message": "Đặt lại mật khẩu thành công.",
+            "user": UserSerializer(user).data,
+            "refresh": refresh,
+            "access": access,
+        }, status=status.HTTP_200_OK)

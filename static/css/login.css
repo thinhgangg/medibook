@@ -45,7 +45,8 @@ body {
 }
 
 /* Register Flow Container */
-.register-flow {
+.register-flow,
+.forgot-password-flow {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     border-radius: 20px;
