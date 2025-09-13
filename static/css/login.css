@@ -1,160 +1,46 @@
+/* Cấu trúc cơ bản */
 .auth-container {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Thay đổi từ center để tránh lệch lên trên */
     min-height: 100vh;
     margin: 0;
     background: #f5f7fa;
+    padding-top: 20px; /* Tăng padding-top để steps không bị che */
 }
+
 .auth-container .form-container {
-    width: 410px;
-    padding: 30px 25px;
+    width: 400px;
+    padding: 30px;
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-.tabs {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-.tab {
-    flex: 1;
-    padding: 10px;
-    text-align: center;
-    cursor: pointer;
-    color: #666;
-    border-bottom: 2px solid transparent;
-    transition: all 0.3s;
-}
-.tabs a {
-    text-decoration: none;
-    color: inherit;
-}
-.tab.active {
-    border-bottom: 2px solid #007bff;
-    color: #007bff;
-    font-weight: bold;
-}
-.form-group {
-    margin-bottom: 15px;
-}
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #333;
-}
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-.form-group .error {
-    color: red;
-    font-size: 0.8em;
-    margin-top: 5px;
-    display: none;
-}
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.checkbox {
-    margin: 10px 0;
-    display: flex;
-    align-items: center;
-}
-.checkbox label {
-    margin-left: 5px;
-}
-button {
-    width: 100%;
-    padding: 12px;
-    background: #007bff;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background 0.3s;
-    margin-top: 15px;
-}
-button:hover {
-    background: #0056b3;
-}
-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-button:hover:not(:disabled) {
-    background: #0056b3;
-}
-.hidden {
-    display: none !important;
-}
-.forgot-password,
-.signup-link {
-    text-align: right;
-    color: #007bff;
-    cursor: pointer;
-    font-size: 15px;
-}
-.forgot-password a,
-.signup-link a {
-    text-decoration: none;
-    color: #007bff;
-}
-.divider-with-text {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin-top: 15px;
-}
-.divider-with-text::before,
-.divider-with-text::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: #ddd;
-}
-.divider-text {
-    padding: 0 10px;
-    font-size: 0.9em;
-    color: #666;
-}
-.divider-text a {
-    text-decoration: none;
-    color: #007bff;
-}
-.divider-text .link {
-    color: #007bff;
-    cursor: pointer;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    position: relative;
 }
 
 .register-flow {
-    margin-top: 50px;
-    width: 800px;
-    height: 80vh;
-    padding: 30px 25px;
+    width: 500px;
+    margin: 40px auto; /* Tăng margin-top để đẩy xuống, tránh che steps */
+    padding: 30px;
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
+/* Steps ở trên cùng - Tăng margin và font để hiển thị đầy đủ */
 .register-flow .steps {
     display: flex;
     justify-content: space-around;
-    margin-bottom: 20px;
-    font-size: 0.9em;
+    margin-bottom: 30px; /* Tăng margin-bottom để tách biệt với content */
+    font-size: 1em; /* Tăng font để rõ ràng hơn */
     color: #666;
 }
 
 .register-flow .step {
-    padding: 5px 10px;
+    padding: 8px 15px; /* Tăng padding để steps to hơn */
     border-bottom: 2px solid transparent;
     transition: all 0.3s;
 }
@@ -165,8 +51,262 @@ button:hover:not(:disabled) {
     font-weight: bold;
 }
 
-.register-flow .container {
+/* Step content - Điều chỉnh để không lệch, loại bỏ height cố định */
+.step-content {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto; /* Loại bỏ height cố định để tự động điều chỉnh */
+    font-size: 1.1em;
+    color: #333;
     text-align: center;
+    box-sizing: border-box;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: visible; /* Thay auto bằng visible để tránh scroll che steps */
+}
+
+/* Giới tính - Tinh chỉnh để giống mẫu: hai cột đều, label sát radio, dot blue lớn hơn */
+.gender-group {
+    grid-column: span 2;
+    text-align: left;
+    margin-top: 10px;
+}
+
+.radio-group.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px; /* Giảm gap để sát hơn như mẫu */
+    margin-top: 5px;
+}
+
+.gender-column {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Giảm gap để label sát radio */
+}
+
+.gender-column label {
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    cursor: pointer; /* Thêm cursor để interactive hơn */
+}
+
+.gender-column input {
+    width: 16px; /* Tăng size radio để giống mẫu */
+    height: 16px;
+    margin-right: 5px;
+    accent-color: #007bff;
+    cursor: pointer;
+}
+
+/* Đảm bảo nút và form-actions căn phải */
+.form-actions {
+    grid-column: span 2;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    width: 100%;
+}
+
+.btn-primary {
+    width: auto;
+    padding: 10px 25px;
+    background: #007bff;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+/* Đảm bảo input và select đồng đều */
+.input-field,
+.select-field {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #495057;
+    background-color: #fff;
+}
+
+.input-field:focus,
+.select-field:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.error {
+    font-size: 12px;
+    color: #dc3545;
+    display: none;
+    margin-top: 5px;
+}
+
+/* Các phần còn lại giữ nguyên */
+.tabs {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.tabs a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.tab.active {
+    border-bottom: 2px solid #007bff;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 8px;
+    display: block;
+    text-align: left;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-group .error {
+    color: red;
+    font-size: 0.8em;
+    margin-top: 5px;
+    display: none;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.checkbox {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.checkbox label {
+    font-size: 13px;
+    color: #666;
+    margin-left: 8px;
+}
+
+.checkbox input {
+    margin-right: 8px;
+    accent-color: #007bff;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 15px;
+}
+
+button:hover:not(:disabled) {
+    background: #0056b3;
+}
+
+button:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.forgot-password,
+.signup-link {
+    text-align: right;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.forgot-password a,
+.signup-link a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.divider-with-text {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.divider-with-text::before,
+.divider-with-text::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+}
+
+.divider-text {
+    font-size: 13px;
+    color: #666;
+    padding: 0 10px;
+}
+
+.divider-text a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.divider-text .link {
+    color: #007bff;
+    cursor: pointer;
 }
 
 .register-flow .otp-info {
@@ -187,8 +327,8 @@ button:hover:not(:disabled) {
     height: 40px;
     text-align: center;
     font-size: 1.2em;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
     outline: none;
 }
 
@@ -197,11 +337,12 @@ button:hover:not(:disabled) {
     padding: 12px;
     background: #007bff;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     color: #fff;
     cursor: pointer;
-    font-size: 1em;
-    transition: background 0.3s;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.3s ease;
     margin-top: 15px;
 }
 
@@ -226,74 +367,15 @@ button:hover:not(:disabled) {
     color: #333;
 }
 
-.step-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-    font-size: 1.1em;
-    color: #333;
-    text-align: center;
-    padding: 0 20px;
-    box-sizing: border-box;
-    flex-direction: column;
-    gap: 20px;
-    overflow-y: auto;
-}
 /* Profile grid 2 cột */
 .profile-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px 40px;
+    gap: 15px 30px;
     margin-top: 20px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: #333;
-}
-
-.form-group input,
-.form-group select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.radio-group {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    margin-top: 4px;
+    align-items: stretch;
 }
 
 .required {
     color: red;
-}
-
-.form-actions {
-    grid-column: span 2;
-    text-align: right;
-    margin-top: 20px;
-}
-
-.btn-primary {
-    background: #1c8d73;
-    color: #fff;
-    padding: 12px 28px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-size: 15px;
-}
-
-.btn-primary:hover {
-    background: #167a63;
 }

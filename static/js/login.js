@@ -124,13 +124,97 @@ document.addEventListener("DOMContentLoaded", () => {
         return { ok: res.ok, status: res.status, data };
     }
 
+    // ====== Validation Functions ======
+    const validateField = (input) => {
+        const value = input.value.trim();
+        const type = input.getAttribute("data-validate");
+        const errorElement = document.getElementById(`${input.id || input.name}-error`) || input.parentElement.querySelector(".error");
+        let isValid = true;
+
+        if (value.length === 0) {
+            errorElement.style.display = "none";
+            return true;
+        }
+
+        switch (type) {
+            case "email":
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                isValid = emailRegex.test(value);
+                errorElement.textContent = isValid ? "" : "Vui lòng nhập đúng định dạng email.";
+                break;
+            case "password":
+                const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+                isValid = passwordRegex.test(value);
+                errorElement.textContent = isValid ? "" : "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ và số.";
+                break;
+            case "confirm-password":
+                const passwordInput = document.querySelector('[name="password"]');
+                isValid = value === passwordInput.value && value.length > 0;
+                errorElement.textContent = isValid ? "" : "Mật khẩu xác nhận không khớp.";
+                break;
+            case "phone":
+                const phoneRegex = /^[0-9]{10}$/;
+                isValid = phoneRegex.test(value);
+                errorElement.textContent = isValid ? "" : "Số điện thoại phải có 10 số.";
+                break;
+            case "otp":
+                isValid = value.length === 6 && !isNaN(value);
+                errorElement.textContent = isValid ? "" : "Mã OTP phải là 6 số.";
+                break;
+            case "date":
+                const today = new Date();
+                const inputDate = new Date(value);
+                isValid = inputDate <= today && !isNaN(inputDate);
+                errorElement.textContent = isValid ? "" : "Ngày sinh không hợp lệ.";
+                break;
+            case "id":
+                const idRegex = /^[0-9]{9,12}$/;
+                isValid = idRegex.test(value);
+                errorElement.textContent = isValid ? "" : "Số CMND/CCCD phải là 9-12 số.";
+                break;
+            case "select":
+                isValid = value !== "";
+                errorElement.textContent = isValid ? "" : "Vui lòng chọn một tùy chọn.";
+                break;
+            default:
+                isValid = value.length > 0;
+                errorElement.textContent = isValid ? "" : "Trường này không được để trống.";
+        }
+
+        errorElement.style.display = isValid ? "none" : "block";
+        return isValid;
+    };
+
+    const validateForm = (formId) => {
+        const form = document.getElementById(formId);
+        if (!form) return true;
+
+        let isValid = true;
+        const inputs = form.querySelectorAll("[data-validate]");
+        inputs.forEach((input) => {
+            if (!validateField(input)) isValid = false;
+        });
+
+        return isValid;
+    };
+
+    // Function to update button state based on form validation
+    const updateButtonState = (button, formId) => {
+        button.disabled = !validateForm(formId);
+    };
+
     // ====== Login ======
     const loginForm = document.querySelector("#login-form");
     if (loginForm) {
+        const loginBtn = loginForm.querySelector("button[type=submit]");
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const btn = loginForm.querySelector("button[type=submit]");
-            btn.disabled = true;
+            loginBtn.disabled = true;
+
+            if (!validateForm("login-form")) {
+                loginBtn.disabled = false;
+                return;
+            }
 
             const payload = {
                 email: loginForm.email.value.trim(),
@@ -138,8 +222,8 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             const { ok, data } = await postJSON(ENDPOINTS.login, payload);
 
-            btn.disabled = false;
-            btn.textContent = "Đăng nhập";
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Đăng nhập";
 
             if (ok) {
                 const { access, refresh, user } = data;
@@ -149,19 +233,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 window.location.href = "/";
             } else {
-                showAlert("error", data?.detail || "Đăng nhập thất bại.");
+                showAlert("error", data?.detail || "Email hoặc mật khẩu không đúng.");
             }
+        });
+        // Realtime validation for login button
+        loginForm.querySelectorAll("[data-validate]").forEach((input) => {
+            input.addEventListener("input", () => updateButtonState(loginBtn, "login-form"));
         });
     }
 
     // ====== Register ======
     const regForm = document.querySelector("#patient-register-form");
     if (regForm) {
-        const btn = regForm.querySelector("button[type=submit]");
+        const regBtn = regForm.querySelector("button[type=submit]");
         regForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            btn.disabled = true;
-            btn.textContent = "Đang xử lý...";
+            regBtn.disabled = true;
+            regBtn.textContent = "Đang xử lý...";
+
+            if (!validateForm("patient-register-form")) {
+                regBtn.disabled = false;
+                regBtn.textContent = "Đăng ký";
+                return;
+            }
 
             const genderVal = regForm.querySelector("input[name='gender']:checked")?.value || "";
             const payload = {
@@ -176,8 +270,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 address: regForm.address.value.trim(),
             };
             const { ok, data } = await postJSON(ENDPOINTS.register, payload);
-            btn.disabled = false;
-            btn.textContent = "Đăng ký";
+            regBtn.disabled = false;
+            regBtn.textContent = "Đăng ký";
 
             if (ok) {
                 showAlert("success", "Đăng ký thành công! Đăng nhập nhé.");
@@ -185,6 +279,10 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 showAlert("error", data?.detail || Object.values(data || {}).join(" • ") || "Đăng ký thất bại.");
             }
+        });
+        // Realtime validation for register button
+        regForm.querySelectorAll("[data-validate]").forEach((input) => {
+            input.addEventListener("input", () => updateButtonState(regBtn, "patient-register-form"));
         });
     }
 
@@ -246,13 +344,8 @@ document.addEventListener("DOMContentLoaded", () => {
     termsCheckbox.addEventListener("change", checkConditions);
 
     function goToStep(stepNumber) {
-        // Ẩn tất cả các step
         document.querySelectorAll(".step-content").forEach((el) => el.classList.add("hidden"));
-
-        // Hiện step được chọn
         document.querySelector(`.step-content[data-step="${stepNumber}"]`).classList.remove("hidden");
-
-        // Cập nhật trạng thái active của các step indicator
         document.querySelectorAll(".steps .step").forEach((el) => el.classList.remove("active"));
         document.querySelector(`.steps .step[data-step="${stepNumber}"]`).classList.add("active");
     }
@@ -263,6 +356,13 @@ document.addEventListener("DOMContentLoaded", () => {
         sendOtpButton.disabled = true;
         sendOtpButton.textContent = "Đang xử lý...";
 
+        if (!validateEmail(emailInput.value.trim())) {
+            showAlert("error", "Vui lòng nhập đúng định dạng email.");
+            sendOtpButton.disabled = false;
+            sendOtpButton.textContent = "Gửi OTP";
+            return;
+        }
+
         const { ok, data } = await postJSON(ENDPOINTS.send_otp, payload);
 
         sendOtpButton.disabled = false;
@@ -270,13 +370,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (ok) {
             document.querySelector(".form-container").classList.add("hidden");
-
             document.querySelector(".register-flow").classList.remove("hidden");
-
             document.getElementById("user-email").textContent = emailInput.value.trim();
-
             goToStep(1);
-
             startCountdown(300);
         } else {
             showAlert("error", data?.detail || "Gửi OTP thất bại.");
@@ -313,16 +409,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1000);
     }
 
+    // Validate OTP and update button state
+    const validateOtp = () => {
+        const isValid = validateField(otpInput);
+        verifyOtpButton.disabled = !isValid;
+        return isValid;
+    };
+    if (otpInput) {
+        otpInput.addEventListener("input", validateOtp);
+    }
+
     verifyOtpButton.addEventListener("click", async (e) => {
         e.preventDefault();
 
-        const otp = otpInput.value.trim();
-        if (!otp) {
-            showAlert("error", "Vui lòng nhập OTP.");
+        if (!validateOtp()) {
+            showAlert("error", "Vui lòng nhập mã OTP hợp lệ.");
             return;
         }
 
-        const payload = { email: emailInput.value.trim(), otp };
+        const payload = { email: emailInput.value.trim(), otp: otpInput.value.trim() };
         const { ok, data } = await postJSON(ENDPOINTS.verify_otp, payload);
 
         if (ok) {
@@ -336,22 +441,48 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ====== Set Password ======
+    const validatePasswordForm = () => {
+        const passwordForm = document.getElementById("password-form");
+        if (!passwordForm) return false;
+
+        const passwordInput = passwordForm.querySelector("input[name='password']");
+        const confirmPasswordInput = passwordForm.querySelector("input[name='confirm_password']");
+        const passwordError = document.getElementById("pass-error");
+        const confirmError = document.getElementById("confirm-pass-error");
+
+        const passwordValid = validateField(passwordInput);
+        let confirmValid = true;
+
+        if (confirmPasswordInput.value.trim().length > 0) {
+            confirmValid = confirmPasswordInput.value === passwordInput.value;
+            confirmError.textContent = confirmValid ? "" : "Mật khẩu xác nhận không khớp.";
+            confirmError.style.display = confirmValid ? "none" : "block";
+        } else {
+            confirmError.textContent = "Trường này không được để trống.";
+            confirmError.style.display = "block";
+            confirmValid = false;
+        }
+
+        return passwordValid && confirmValid;
+    };
+
     setPasswordButton.addEventListener("click", async (e) => {
         e.preventDefault();
+        setPasswordButton.disabled = true;
+        setPasswordButton.textContent = "Đang xử lý...";
 
-        const passwordForm = document.getElementById("password-form");
-        const password = passwordForm.querySelector("input[name='password']").value;
-        const confirmPassword = passwordForm.querySelector("input[name='confirm_password']").value;
-
-        if (password !== confirmPassword) {
-            showAlert("error", "Mật khẩu không khớp!");
+        if (!validatePasswordForm()) {
+            setPasswordButton.disabled = false;
+            setPasswordButton.textContent = "Tiếp tục";
+            showAlert("error", "Vui lòng nhập mật khẩu hợp lệ và xác nhận khớp.");
             return;
         }
 
+        const passwordForm = document.getElementById("password-form");
         const payload = {
             email: emailInput.value.trim(),
-            password1: password,
-            password2: confirmPassword,
+            password1: passwordForm.querySelector("input[name='password']").value,
+            password2: passwordForm.querySelector("input[name='confirm_password']").value,
             temp_token: localStorage.getItem("temp_token"),
         };
 
@@ -360,14 +491,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (ok) {
             const loginPayload = {
                 email: emailInput.value.trim(),
-                password: password,
+                password: payload.password1,
             };
             const { ok: loginOk, data: loginData } = await postJSON(ENDPOINTS.login, loginPayload);
 
             if (loginOk) {
                 localStorage.setItem("access", loginData.access);
                 localStorage.setItem("refresh", loginData.refresh);
-
                 goToStep(3);
             } else {
                 showAlert("error", "Đặt mật khẩu thành công nhưng đăng nhập thất bại.");
@@ -375,11 +505,23 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             showAlert("error", "Đặt mật khẩu thất bại.");
         }
+
+        setPasswordButton.disabled = false;
+        setPasswordButton.textContent = "Tiếp tục";
     });
 
     submitProfileButton.addEventListener("click", async () => {
-        const profileForm = document.getElementById("profile-form");
+        submitProfileButton.disabled = true;
+        submitProfileButton.textContent = "Đang xử lý...";
 
+        if (!validateForm("profile-form")) {
+            submitProfileButton.disabled = false;
+            submitProfileButton.textContent = "Hoàn tất";
+            showAlert("error", "Vui lòng điền đầy đủ và đúng thông tin hồ sơ.");
+            return;
+        }
+
+        const profileForm = document.getElementById("profile-form");
         const genderElement = profileForm.querySelector("input[name='gender']:checked");
         const gender = genderElement ? genderElement.value : "";
 
@@ -403,7 +545,7 @@ document.addEventListener("DOMContentLoaded", () => {
             occupation: getValue("input[name='occupation']"),
         };
 
-        console.log("Profile payload:", payload); // Debug
+        console.log("Profile payload:", payload);
 
         const { ok, data } = await patchJSON(ENDPOINTS.patient_profile, payload, true);
 
@@ -412,6 +554,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             showAlert("error", data?.detail || "Cập nhật hồ sơ thất bại.");
         }
+
+        submitProfileButton.disabled = false;
+        submitProfileButton.textContent = "Hoàn tất";
     });
 
     // ====== Tỉnh/Thành phố và Quận/Huyện, Phường/Xã ======
@@ -452,7 +597,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const districtSelect = document.getElementById("district");
         const wardSelect = document.getElementById("ward");
 
-        // Load danh sách tỉnh/thành phố
         const provinces = await getProvinces();
         provinces.forEach((p) => {
             const opt = document.createElement("option");
@@ -461,7 +605,6 @@ document.addEventListener("DOMContentLoaded", () => {
             citySelect.appendChild(opt);
         });
 
-        // Khi chọn tỉnh/thành phố -> load quận/huyện
         citySelect.addEventListener("change", async () => {
             districtSelect.innerHTML = '<option value="">-- Chọn Quận / Huyện --</option>';
             wardSelect.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
@@ -479,7 +622,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Khi chọn quận/huyện -> load phường/xã
         districtSelect.addEventListener("change", async () => {
             wardSelect.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
 
@@ -495,6 +637,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Gọi hàm khởi tạo
+    // Gọi hàm khởi tạo và thêm validation realtime
     initAddressSelects();
 });
