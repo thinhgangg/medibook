@@ -41,7 +41,7 @@ class FormValidator {
             },
             address_detail: {
                 minLength: 2,
-                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                pattern: /^[a-zA-ZÀ-ỹ0-9\s]+$/,
                 message: "Địa chỉ không hợp lệ",
             },
             occupation: {

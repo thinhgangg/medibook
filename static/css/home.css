@@ -285,6 +285,11 @@ body {
     list-style: none;
     padding: 18px 0 8px;
     margin: 0;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+.specs__grid.collapsed {
+    max-height: 180px;
+    overflow: hidden;
 }
 @media (max-width: 1024px) {
     .specs__grid {
@@ -311,8 +316,8 @@ body {
     box-shadow: 0 12px 30px rgba(16, 64, 197, 0.18), inset 0 0 0 1px #eaf1ff;
 }
 .spec-thumb img {
-    width: 80%;
-    height: 80%;
+    width: 70%;
+    height: 70%;
     object-fit: contain;
     margin: 0 auto;
 }
@@ -327,6 +332,12 @@ body {
 .specs__more {
     text-align: center;
     margin-top: 12px;
+}
+.specs__more .dm-btn {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ================= News ================= */

@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Trang chủ - MediBook{% endblock title %} {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+<link rel="stylesheet" href="{% static 'css/home.css' %}" />
 
 <!-- Hero -->
 <section class="hero">
@@ -48,7 +48,7 @@
             <h2 class="dm-title">Đặt khám bác sĩ</h2>
             <p class="dm-subtitle">Tìm Bác sĩ chính xác – Đặt lịch khám dễ dàng.</p>
         </div>
-        <a href="#" class="dm-btn dm-btn--pill">Xem thêm</a>
+        <a href="#" class="dm-btn dm-btn--ghost">Xem thêm</a>
     </div>
 
     <div class="dm-doctors__rail">
@@ -83,11 +83,11 @@
         </div>
     </div>
 
-    <ul class="specs__grid" id="specList">
+    <ul class="specs__grid collapsed" id="specList">
         <!-- main.js render -->
     </ul>
     <div class="specs__more">
-        <a href="#" class="dm-btn dm-btn--pill spec-link">Xem thêm</a>
+        <button id="toggleSpecsBtn" class="dm-btn dm-btn--ghost">Xem thêm</button>
     </div>
 </section>
 
@@ -174,7 +174,7 @@
         </div>
     </div>
     <div class="news__more">
-        <a href="#" class="dm-btn dm-btn--pill spec-link">Xem thêm</a>
+        <a href="#" class="dm-btn dm-btn--ghost spec-link">Xem thêm</a>
     </div>
 </section>
 
