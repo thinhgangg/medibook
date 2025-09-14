@@ -1,87 +1,48 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // ready
-});
-
-/* ====== HERO search ====== */
-const form = document.getElementById("searchForm");
-const input = document.getElementById("searchInput");
-if (form && input) {
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const q = input.value.trim();
-        if (!q) {
-            input.focus();
-            return;
+/* ===== Fetch doctors from API ===== */
+async function fetchDoctors() {
+    try {
+        const response = await fetch("http://127.0.0.1:8000/api/doctors/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        if (!response.ok) {
+            throw new Error("Failed to fetch doctors");
         }
-        alert(`Tìm kiếm: ${q}`); // TODO: điều hướng thật
-    });
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching doctors:", error);
+        return [];
+    }
 }
 
-/* ===== Mock data (Doctors) ===== */
-const DOCTORS = [
-    {
-        id: 1,
-        initials: "LMH",
-        title: "BS. CK2",
-        full_name: "Lê Thị Minh Hồng",
-        specialties: ["Nhi khoa"],
-        hospital: "Bệnh viện Nhi Đồng 2",
-        avatar_url: "/static/img/doctors/doctor1.jpg",
-    },
-    {
-        id: 2,
-        initials: "LVT",
-        title: "PGS. TS.",
-        full_name: "Lâm Việt Trung",
-        specialties: ["Tiêu hoá", "Ngoại tiết niệu"],
-        hospital: "Bệnh viện Chợ Rẫy",
-        avatar_url: "/static/img/doctors/doctor2.webp",
-    },
-    {
-        id: 3,
-        initials: "NTH",
-        title: "BS.",
-        full_name: "Nguyễn Thị Thu Hà",
-        specialties: ["Nhi khoa"],
-        hospital: "BV Nhi Đồng TP.HCM",
-        avatar_url: "/static/img/doctors/doctor3.webp",
-    },
-    {
-        id: 4,
-        initials: "VDH",
-        title: "BS. CK2",
-        full_name: "Võ Đức Hiếu",
-        specialties: ["Ung bướu"],
-        hospital: "BV Ung Bướu TP.HCM",
-        avatar_url: "/static/img/doctors/doctor4.webp",
-    },
-    {
-        id: 5,
-        initials: "LMH",
-        title: "BS. CK2",
-        full_name: "Lê Thị Minh Hồng",
-        specialties: ["Nhi khoa"],
-        hospital: "Bệnh viện Nhi Đồng 2",
-        avatar_url: "/static/img/doctors/doctor1.jpg",
-    },
-];
-
 /* ===== Render doctors ===== */
-function renderDoctors(list) {
+function renderDoctors(doctors) {
     const rail = document.getElementById("doctorRail");
     if (!rail) return;
 
-    rail.innerHTML = list
+    rail.innerHTML = doctors
         .map((d) => {
-            const tags = (d.specialties || []).map((t) => `<span class="dm-tag">${t}</span>`).join("");
+            // Map specialties (handle null specialty)
+            const specialties = d.specialty ? [d.specialty.name] : ["Chưa xác định"];
+            const tags = specialties.map((t) => `<span class="dm-tag">${t}</span>`).join("");
+            // Use user full_name and fallback hospital/organization
+            const fullName = d.user.full_name || "Bác sĩ chưa cập nhật";
+            const hospital = d.user.address_detail || "Chưa xác định";
+            // Use profile picture or fallback
+            const avatarUrl = d.profile_picture_thumbs?.small || "/static/img/doctors/default-avatar.jpg";
+            // Use title if available, otherwise empty
+            const title = d.user.role === "DOCTOR" ? "BS." : "";
+
             return `
       <article class="dm-card" role="option" tabindex="0" data-doctor-id="${d.id}">
         <div class="dm-card__avatar">
-          <img src="${d.avatar_url}" alt="Ảnh của ${d.full_name}" />
+          <img src="${avatarUrl}" alt="Ảnh của ${fullName}" />
         </div>
-        <h3 class="dm-card__name">${d.title} ${d.full_name}</h3>
+        <h3 class="dm-card__name">${title} ${fullName}</h3>
         <div class="dm-card__tags">${tags}</div>
-        <div class="dm-card__org">${d.hospital}</div>
+        <div class="dm-card__org">${hospital}</div>
         <a href="#" class="dm-btn dm-btn--ghost" data-book="${d.id}">Đặt lịch khám</a>
       </article>`;
         })
@@ -182,8 +143,9 @@ function renderSpecialties(list) {
 }
 
 /* ===== Init ===== */
-document.addEventListener("DOMContentLoaded", () => {
-    renderDoctors(DOCTORS);
+document.addEventListener("DOMContentLoaded", async () => {
+    const doctors = await fetchDoctors();
+    renderDoctors(doctors);
     setupRail("doctorRail", "doctorProgress");
     renderSpecialties(SPECIALTIES);
 });
