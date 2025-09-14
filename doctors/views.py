@@ -7,14 +7,13 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime, timedelta, date as date_cls
 
-from .models import Doctor, DoctorAvailability, DoctorDayOff
-from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer
+from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
+from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer, SpecialtySerializer
 
 class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
     
     def get_permissions(self):
-        # Cho phép ai cũng GET danh bạ bác sĩ; còn lại cần đăng nhập
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticatedOrReadOnly()]
         return [IsAuthenticated()]
@@ -22,7 +21,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = Doctor.objects.select_related("user", "specialty")
         if self.action in ("list", "retrieve"):
-            qs = qs.filter(is_active=True)  # công khai chỉ thấy active
+            qs = qs.filter(is_active=True)
         return qs
 
     def perform_create(self, serializer):
@@ -126,7 +125,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
                 off_start = timezone.make_aware(datetime.combine(target_date, off.start_time), tz)
                 off_end   = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
                 off_intervals.append((off_start, off_end))
-        # ...
         # Trong vòng while tạo slot, thêm điều kiện loại bỏ nếu trùng interval nghỉ:
         overlap_off = any((slot_start < o_end and slot_end > o_start) for o_start, o_end in off_intervals)
         if not overlap and not overlap_off:
@@ -202,3 +200,23 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
         if not hasattr(u, 'doctor_profile'):
             raise PermissionDenied("Chỉ bác sĩ mới sửa ngày nghỉ.")
         serializer.save(doctor=u.doctor_profile)
+
+class SpecialtyViewSet(viewsets.ModelViewSet):
+    queryset = Specialty.objects.all().order_by("name")
+    serializer_class = SpecialtySerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        if not self.request.user.is_staff:
+            raise PermissionDenied("Chỉ admin mới được quản lý chuyên khoa.")
+        serializer.save()
+
+    def perform_update(self, serializer):
+        if not self.request.user.is_staff:
+            raise PermissionDenied("Chỉ admin mới được quản lý chuyên khoa.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not self.request.user.is_staff:
+            raise PermissionDenied("Chỉ admin mới được quản lý chuyên khoa.")
+        instance.delete()

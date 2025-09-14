@@ -7,7 +7,7 @@ from media.utils import cloud_thumbs
 class SpecialtySerializer(serializers.ModelSerializer):
     class Meta:
         model = Specialty
-        fields = ["id", "name", "description", "is_active"]
+        fields = "__all__"
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

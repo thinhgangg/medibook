@@ -42,6 +42,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     address_detail = models.CharField(max_length=255, blank=True, null=True)  
     ward = models.CharField(max_length=100, blank=True, null=True)            
+    district = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)            
 
     ROLE_CHOICES = (
@@ -68,7 +69,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     @property
     def full_address(self):
-        parts = [self.address_detail, self.ward, self.city]
+        parts = [self.address_detail, self.ward,  self.district, self.city]
         return ", ".join([p for p in parts if p])
 
 class OTPVerification(models.Model):
