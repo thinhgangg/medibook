@@ -101,38 +101,63 @@ function setupRail(railId, progressId) {
     );
 }
 
-// ===== Specialties =====
-const SPECIALTIES = [
-    { id: "yhct", name: "Y học cổ truyền", icon: "/static/img/specs/yhct-logo.webp" },
-    { id: "truyen", name: "Truyền nhiễm", icon: "/static/img/specs/tn-logo.webp" },
-    { id: "tim", name: "Tim mạch", icon: "/static/img/specs/tim-mach.webp" },
-    { id: "lao", name: "Lão khoa", icon: "/static/img/specs/laokhoa-nobg.png" },
-    { id: "chan", name: "Chấn thương chỉnh hình", icon: "/static/img/specs/chanthuong-nobg.png" },
-    { id: "hoisuc", name: "Hồi sức - cấp cứu", icon: "/static/img/specs/hsuc-nobg.png" },
-];
+// ===== Fetch specialties from API =====
+async function fetchSpecialties() {
+    try {
+        const response = await fetch("http://127.0.0.1:8000/api/specialties/", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) throw new Error("Failed to fetch specialties");
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching specialties:", error);
+        return [];
+    }
+}
 
 function renderSpecialties(list) {
     const ul = document.getElementById("specList");
     if (!ul) return;
+
     ul.innerHTML = list
         .map(
             (s) => `
-    <li class="spec-item">
-      <a href="#" class="spec-link" data-spec="${s.id}" aria-label="${s.name}">
-        <div class="spec-thumb">${s.icon ? `<img src="${s.icon}" alt="${s.name}">` : ""}</div>
-        <div class="spec-name">${s.name}</div>
-      </a>
-    </li>
-  `
+        <li class="spec-item">
+          <a href="#" class="spec-link" data-spec="${s.id}" aria-label="${s.name}">
+            <div class="spec-thumb">
+              <img src="${s.specialty_picture}" alt="${s.name}">
+            </div>
+            <div class="spec-name">${s.name}</div>
+          </a>
+        </li>
+      `
         )
         .join("");
 
     ul.querySelectorAll("[data-spec]").forEach((a) => {
         a.addEventListener("click", (e) => {
             e.preventDefault();
-            alert("(Demo) Chuyên khoa: " + a.dataset.spec);
+            alert("(Demo) Chuyên khoa ID: " + a.dataset.spec);
         });
     });
+
+    const toggleBtn = document.getElementById("toggleSpecsBtn");
+    const specsMore = document.querySelector(".specs__more");
+
+    if (list.length > 6) {
+        ul.classList.add("collapsed");
+        specsMore.style.display = "block"; // hiện nút
+        toggleBtn.textContent = "Xem thêm";
+
+        toggleBtn.onclick = () => {
+            ul.classList.toggle("collapsed");
+            toggleBtn.textContent = ul.classList.contains("collapsed") ? "Xem thêm" : "Thu gọn";
+        };
+    } else {
+        ul.classList.remove("collapsed");
+        specsMore.style.display = "none"; // ẩn nút
+    }
 }
 
 /* ===== Init ===== */
@@ -140,5 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const doctors = await fetchDoctors();
     renderDoctors(doctors);
     setupRail("doctorRail", "doctorProgress");
-    renderSpecialties(SPECIALTIES);
+
+    const specialties = await fetchSpecialties();
+    renderSpecialties(specialties);
 });
