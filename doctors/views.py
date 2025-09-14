@@ -12,6 +12,7 @@ from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorD
 
 class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
+    lookup_field = "slug"
     
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
@@ -19,9 +20,19 @@ class DoctorViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
     
     def get_queryset(self):
-        qs = Doctor.objects.select_related("user", "specialty")
-        if self.action in ("list", "retrieve"):
-            qs = qs.filter(is_active=True)
+        qs = Doctor.objects.select_related("user", "specialty").filter(is_active=True)
+
+        if self.action == "list":
+            specialty = self.request.query_params.get("specialty")
+            if specialty:
+                if specialty.isdigit():
+                    qs = qs.filter(specialty_id=int(specialty))
+                else:
+                    qs = qs.filter(specialty__name__icontains=specialty)
+
+            gender = self.request.query_params.get("gender")
+            if gender:
+                qs = qs.filter(user__gender__iexact=gender)
         return qs
 
     def perform_create(self, serializer):

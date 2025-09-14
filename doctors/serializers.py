@@ -13,8 +13,10 @@ class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
     specialty = SpecialtySerializer(read_only=True)
-    specialty_id = serializers.PrimaryKeyRelatedField(
+    
+    specialty_slug = serializers.SlugRelatedField(
         source="specialty",
+        slug_field="slug",
         queryset=Specialty.objects.filter(is_active=True),
         write_only=True,
         required=False,
@@ -26,14 +28,20 @@ class DoctorSerializer(serializers.ModelSerializer):
     profile_picture = serializers.ImageField(required=False, allow_null=True)
     profile_picture_thumbs = serializers.SerializerMethodField()
 
+    started_practice = serializers.DateField(required=False, allow_null=True)
+    experience_detail = serializers.CharField(required=False, allow_blank=True)
+
+    experience_years = serializers.SerializerMethodField()
+
     class Meta:
         model = Doctor
         fields = [
-            "id", "user", "specialty", "specialty_id",
-            "bio", "profile_picture", "profile_picture_thumbs", 
+            "id", "slug", "user", 
+            "specialty", "specialty_slug",
+            "bio", "started_practice", "experience_years", "experience_detail","profile_picture", "profile_picture_thumbs", 
             "address", "is_active"
         ]
-        read_only_fields = ["id", "user", "profile_picture"]
+        read_only_fields = ["id", "slug", "user", "profile_picture", "experience_years"]
 
     def get_profile_picture_thumbs(self, obj):
         if obj.profile_picture:
@@ -42,6 +50,14 @@ class DoctorSerializer(serializers.ModelSerializer):
                 sizes={"small": (64, 64), "large": (400, 400)}
             )
         return None
+    
+    def update(self, instance, validated_data):
+        if validated_data.pop("remove_profile_picture", False):
+            instance.profile_picture = None
+        return super().update(instance, validated_data)
+
+    def get_experience_years(self, obj):
+        return obj.experience_years
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,7 +83,6 @@ class DoctorAvailabilitySerializer(serializers.ModelSerializer):
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
 
-        # Overlap nếu: start < other_end và end > other_start
         if qs.filter(start_time__lt=end, end_time__gt=start).exists():
             raise serializers.ValidationError("Khung giờ bị chồng lấp với availability khác.")
 
