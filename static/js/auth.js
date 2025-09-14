@@ -22,6 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         avatarContainer.style.display = "block";
                         const avatarImg = avatarContainer.querySelector(".user-avatar");
                         avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+
+                        const profileLink = document.getElementById("profileLink");
+                        if (data.role === "PATIENT") {
+                            profileLink.href = "/dashboard/";
+                        } else if (data.role === "DOCTOR") {
+                            profileLink.href = "/dashboard/";
+                        } else if (data.role === "ADMIN") {
+                            profileLink.href = "/dashboard/";
+                        } else {
+                            profileLink.href = "/dashboard/";
+                        }
                     }
                 })
                 .catch(() => {
