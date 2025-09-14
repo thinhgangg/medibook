@@ -40,7 +40,7 @@ const DOCTORS = [
     {
         id: 3,
         initials: "NTH",
-        title: "BS. CK2",
+        title: "BS.",
         full_name: "Nguyễn Thị Thu Hà",
         specialties: ["Nhi khoa"],
         hospital: "BV Nhi Đồng TP.HCM",
@@ -54,6 +54,15 @@ const DOCTORS = [
         specialties: ["Ung bướu"],
         hospital: "BV Ung Bướu TP.HCM",
         avatar_url: "/static/img/doctors/doctor4.webp",
+    },
+    {
+        id: 5,
+        initials: "LMH",
+        title: "BS. CK2",
+        full_name: "Lê Thị Minh Hồng",
+        specialties: ["Nhi khoa"],
+        hospital: "Bệnh viện Nhi Đồng 2",
+        avatar_url: "/static/img/doctors/doctor1.jpg",
     },
 ];
 

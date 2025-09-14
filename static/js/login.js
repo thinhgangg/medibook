@@ -2,8 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // API ENDPOINTS
     const ENDPOINTS = {
         login: "/api/accounts/login/",
-        logout: "/api/accounts/logout/",
-        me: "/api/accounts/me/",
         send_otp: "/api/accounts/send_otp/",
         verify_otp: "/api/accounts/verify_otp/",
         set_password: "/api/accounts/set_password/",
@@ -23,37 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
     }
     const csrfToken = getCookie("csrftoken");
-
-    // Check if user is logged in
-    function checkAuthStatus() {
-        const accessToken = localStorage.getItem("access");
-        if (accessToken) {
-            fetch(ENDPOINTS.me, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.id) {
-                        document.getElementById("guest-buttons").style.display = "none";
-                        const avatarContainer = document.getElementById("user-avatar");
-                        avatarContainer.style.display = "block";
-                        const avatarImg = avatarContainer.querySelector(".user-avatar");
-                        avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
-                    }
-                })
-                .catch(() => {
-                    localStorage.removeItem("access");
-                    localStorage.removeItem("refresh");
-                    document.getElementById("guest-buttons").style.display = "block";
-                    document.getElementById("user-avatar").style.display = "none";
-                });
-        }
-    }
-
-    checkAuthStatus();
 
     // Toggle password eye
     document.querySelectorAll(".toggle-eye").forEach((btn) => {
@@ -184,34 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.location.href = REDIRECTS.afterRegister;
             } else {
                 console.error("Đăng ký thất bại.");
-            }
-        });
-    }
-
-    // ====== Logout ======
-    const logoutLink = document.querySelector("#logoutLink");
-    if (logoutLink) {
-        logoutLink.addEventListener("click", async (e) => {
-            e.preventDefault();
-
-            const refreshToken = localStorage.getItem("refresh");
-            console.log("Refresh Token:", refreshToken);
-            if (!refreshToken) {
-                console.error("Không tìm thấy refresh token. Vui lòng đăng nhập lại.");
-                return;
-            }
-
-            const payload = { refresh: refreshToken };
-            const { ok, data } = await postJSON(ENDPOINTS.logout, payload, true);
-
-            if (ok) {
-                localStorage.removeItem("access");
-                localStorage.removeItem("refresh");
-                document.getElementById("guest-buttons").style.display = "block";
-                document.getElementById("user-avatar").style.display = "none";
-                window.location.href = REDIRECTS.afterLogout;
-            } else {
-                console.error("Đăng xuất thất bại.");
             }
         });
     }
