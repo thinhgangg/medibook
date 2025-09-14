@@ -1,4 +1,4 @@
-/* ===== Fetch doctors from API ===== */
+// ===== Fetch doctors from API =====
 async function fetchDoctors() {
     try {
         const response = await fetch("http://127.0.0.1:8000/api/doctors/", {
@@ -17,22 +17,18 @@ async function fetchDoctors() {
     }
 }
 
-/* ===== Render doctors ===== */
+// ===== Render doctors =====
 function renderDoctors(doctors) {
     const rail = document.getElementById("doctorRail");
     if (!rail) return;
 
     rail.innerHTML = doctors
+        .slice(0, 10)
         .map((d) => {
-            // Map specialties (handle null specialty)
             const specialties = d.specialty ? [d.specialty.name] : ["Chưa xác định"];
             const tags = specialties.map((t) => `<span class="dm-tag">${t}</span>`).join("");
-            // Use user full_name and fallback hospital/organization
             const fullName = d.user.full_name || "Bác sĩ chưa cập nhật";
-            const hospital = d.user.address_detail || "Chưa xác định";
-            // Use profile picture or fallback
-            const avatarUrl = d.profile_picture_thumbs?.small || "/static/img/doctors/default-avatar.jpg";
-            // Use title if available, otherwise empty
+            const avatarUrl = d.profile_picture || "/static/img/doctors/default-avatar.jpg";
             const title = d.user.role === "DOCTOR" ? "BS." : "";
 
             return `
@@ -42,7 +38,6 @@ function renderDoctors(doctors) {
         </div>
         <h3 class="dm-card__name">${title} ${fullName}</h3>
         <div class="dm-card__tags">${tags}</div>
-        <div class="dm-card__org">${hospital}</div>
         <a href="#" class="dm-btn dm-btn--ghost" data-book="${d.id}">Đặt lịch khám</a>
       </article>`;
         })
@@ -56,7 +51,7 @@ function renderDoctors(doctors) {
     });
 }
 
-/* ===== Generic rail controls (dùng cho doctor) ===== */
+// ===== Generic rail controls (dùng cho doctor) =====
 function setupRail(railId, progressId) {
     const rail = document.getElementById(railId);
     const bar = document.getElementById(progressId);
@@ -78,7 +73,6 @@ function setupRail(railId, progressId) {
     window.addEventListener("resize", update);
     update();
 
-    // drag to scroll
     let down = false,
         sx = 0,
         sl = 0;
@@ -95,7 +89,6 @@ function setupRail(railId, progressId) {
     rail.addEventListener("pointerup", () => (down = false));
     rail.addEventListener("pointercancel", () => (down = false));
 
-    // vertical wheel -> horizontal
     rail.addEventListener(
         "wheel",
         (e) => {
@@ -108,7 +101,7 @@ function setupRail(railId, progressId) {
     );
 }
 
-/* ===== Specialties ===== */
+// ===== Specialties =====
 const SPECIALTIES = [
     { id: "yhct", name: "Y học cổ truyền", icon: "/static/img/specs/yhct-logo.webp" },
     { id: "truyen", name: "Truyền nhiễm", icon: "/static/img/specs/tn-logo.webp" },

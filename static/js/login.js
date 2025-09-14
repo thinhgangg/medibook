@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // API ENDPOINTS
     const ENDPOINTS = {
         login: "/api/accounts/login/",
         send_otp: "/api/accounts/send_otp/",
@@ -21,15 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
     }
     const csrfToken = getCookie("csrftoken");
-
-    // Toggle password eye
-    document.querySelectorAll(".toggle-eye").forEach((btn) => {
-        const input = document.querySelector(btn.getAttribute("data-target"));
-        if (!input) return;
-        btn.addEventListener("click", () => {
-            input.type = input.type === "password" ? "text" : "password";
-        });
-    });
 
     // ====== POST JSON ======
     async function postJSON(url, payload, includeAuth = false) {
@@ -329,22 +319,41 @@ document.addEventListener("DOMContentLoaded", () => {
             return element && element.value ? element.value : defaultValue;
         }
 
+        const citySelect = document.getElementById("city");
+        const districtSelect = document.getElementById("district");
+        const wardSelect = document.getElementById("ward");
+
+        const cityName = citySelect.options[citySelect.selectedIndex]?.textContent || "";
+        const districtName = districtSelect.options[districtSelect.selectedIndex]?.textContent || "";
+        const wardName = wardSelect.options[wardSelect.selectedIndex]?.textContent || "";
+
+        const addressDetail = getValue("input[name='address_detail']");
+
+        let fullAddressParts = [];
+        if (addressDetail) fullAddressParts.push(addressDetail);
+        if (wardName && wardName !== "-- Chọn Phường / Xã --") fullAddressParts.push(wardName);
+        if (districtName && districtName !== "-- Chọn Quận / Huyện --") fullAddressParts.push(districtName);
+        if (cityName && cityName !== "-- Chọn Tỉnh / Thành phố --") fullAddressParts.push(cityName);
+
+        const fullAddress = fullAddressParts.join(", ");
+
         const payload = {
             full_name: getValue("input[name='full_name']"),
             phone_number: getValue("input[name='phone_number']"),
             dob: getValue("input[name='dob']"),
             gender: gender,
-            address_detail: getValue("input[name='address_detail']"),
-            ward: getValue("#ward"),
-            district: getValue("#district"),
-            city: getValue("#city"),
+            address_detail: addressDetail,
+            ward: wardName,
+            district: districtName,
+            city: cityName,
+            full_address: fullAddress,
             id_number: getValue("input[name='id_number']"),
             ethnicity: getValue("input[name='ethnicity']"),
             insurance_no: getValue("input[name='insurance_no']"),
             occupation: getValue("input[name='occupation']"),
         };
 
-        console.log("Profile payload:", payload); // Debug
+        console.log("Profile payload:", payload);
 
         const { ok, data } = await patchJSON(ENDPOINTS.patient_profile, payload, true);
 
@@ -352,10 +361,10 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.removeItem("access");
             localStorage.removeItem("refresh");
             localStorage.removeItem("temp_token");
-            
+
             window.location.href = REDIRECTS.afterRegister;
         } else {
-            console.error("Cập nhật hồ sơ thất bại.");
+            console.error("Cập nhật hồ sơ thất bại.", data);
         }
     });
 
@@ -391,13 +400,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Khởi tạo danh sách tỉnh/thành phố
     async function initAddressSelects() {
         const citySelect = document.getElementById("city");
         const districtSelect = document.getElementById("district");
         const wardSelect = document.getElementById("ward");
 
-        // Load danh sách tỉnh/thành phố
         const provinces = await getProvinces();
         provinces.forEach((p) => {
             const opt = document.createElement("option");
@@ -406,7 +413,6 @@ document.addEventListener("DOMContentLoaded", () => {
             citySelect.appendChild(opt);
         });
 
-        // Khi chọn tỉnh/thành phố -> load quận/huyện
         citySelect.addEventListener("change", async () => {
             districtSelect.innerHTML = '<option value="">-- Chọn Quận / Huyện --</option>';
             wardSelect.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
@@ -424,7 +430,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Khi chọn quận/huyện -> load phường/xã
         districtSelect.addEventListener("change", async () => {
             wardSelect.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
 
@@ -440,6 +445,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Gọi hàm khởi tạo
     initAddressSelects();
 });
