@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth import logout as django_logout
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
@@ -49,13 +50,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        resp = super().post(request, *args, **kwargs)
-        
+        # Gọi super để lấy JWT
+        response = super().post(request, *args, **kwargs)
+
+        # Đăng nhập user vào session Django
         user = serializer.user
-        resp.data["user"] = UserSerializer(user).data
-        resp.data["success"] = True
-        
-        return resp
+        login(request, user)
+
+        # Custom response
+        response.data['success'] = True
+        response.data['message'] = 'Login successful'
+        response.data['user'] = UserSerializer(user).data
+
+        return response
 
 class DoctorRegisterView(APIView):
     permission_classes = [IsAdminUser]
@@ -191,12 +198,23 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+            refresh_token = request.data.get("refresh")
+            if refresh_token:
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception:
+                    pass  
+
+            django_logout(request)
+
+            return Response({"detail": "Logout successful"}, status=status.HTTP_200_OK)
+
         except Exception as e:
-            return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Logout failed", "error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
 class SendOTPView(APIView):
     permission_classes = [AllowAny]
