@@ -656,7 +656,7 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
     -webkit-line-clamp: 2;
-    flex-grow: 1;
+    /* flex-grow: 1; */
 }
 
 .news-card--main .news-card__desc {
