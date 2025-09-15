@@ -2,6 +2,8 @@
 from rest_framework import serializers
 from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
 from accounts.serializers import UserSerializer
+from appointments.models import Appointment
+from doctors.models import DoctorReview
 from media.utils import cloud_thumbs
 
 class SpecialtySerializer(serializers.ModelSerializer):
@@ -101,4 +103,20 @@ class DoctorDayOffSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Nếu nghỉ theo khung giờ, cần có cả start_time và end_time.")
         if s and e and e <= s:
             raise serializers.ValidationError("end_time phải lớn hơn start_time.")
+        return data
+    
+class DoctorReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorReview
+        fields = ['stars', 'comment']
+
+    def validate(self, data):
+        # Kiểm tra trạng thái cuộc hẹn
+        appointment = self.context['appointment']
+        if appointment.status != Appointment.Status.COMPLETED:
+            raise serializers.ValidationError("Cuộc hẹn phải hoàn thành mới có thể đánh giá.")
+        
+        # Kiểm tra nếu đã có đánh giá cho cuộc hẹn này
+        if hasattr(appointment, 'review'):
+            raise serializers.ValidationError("Cuộc hẹn này đã có đánh giá.")
         return data

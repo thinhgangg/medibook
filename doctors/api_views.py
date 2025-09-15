@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,8 +9,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime, timedelta, date as date_cls
 
-from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
-from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer, SpecialtySerializer
+from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty, DoctorReview
+from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer, SpecialtySerializer, DoctorReviewSerializer
+from appointments.models import Appointment
 
 class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
@@ -62,7 +65,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'], url_path='slots')
-    def slots(self, request, pk=None):
+    def slots(self, request, slug=None):
         """
         GET /doctors/{id}/slots/?date=YYYY-MM-DD
         Trả list slot trống (đã loại các lịch hẹn confirmed/pending).
@@ -142,6 +145,17 @@ class DoctorViewSet(viewsets.ModelViewSet):
             slots.append({"start_at": slot_start.isoformat(), "end_at": slot_end.isoformat()})
 
         return Response(slots)
+    
+    @action(detail=True, methods=['get'], url_path='reviews')
+    def reviews(self, request, slug=None):
+        """
+        GET /doctors/{id}/reviews/
+        Trả về danh sách các đánh giá của bác sĩ.
+        """
+        doctor = self.get_object()
+        reviews = doctor.reviews.filter(is_active=True)
+        serializer = DoctorReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
 
 class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorAvailabilitySerializer
@@ -231,3 +245,25 @@ class SpecialtyViewSet(viewsets.ModelViewSet):
         if not self.request.user.is_staff:
             raise PermissionDenied("Chỉ admin mới được quản lý chuyên khoa.")
         instance.delete()
+
+class DoctorReviewCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, appointment_id):
+        patient = request.user.patient_profile
+
+        try:
+            appointment = Appointment.objects.get(id=appointment_id, patient=patient)
+        except Appointment.DoesNotExist:
+            return Response({"detail": "Cuộc hẹn không hợp lệ hoặc không thuộc về bệnh nhân này."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DoctorReviewSerializer(data=request.data, context={'appointment': appointment})
+
+        if serializer.is_valid():
+            review = DoctorReview.create_review(appointment, serializer.validated_data['stars'], serializer.validated_data['comment'])
+            return Response({
+                "message": "Đánh giá của bạn đã được gửi thành công!",
+                "review": DoctorReviewSerializer(review).data
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
