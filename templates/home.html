@@ -12,7 +12,7 @@
                 để có số thứ tự và khung giờ khám trước.
             </p>
             <div class="search-box">
-                <input type="text" placeholder="Triệu chứng, bác sĩ, bệnh viện..." />
+                <input type="text" placeholder="Triệu chứng, bác sĩ..." />
                 <button>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -58,9 +58,7 @@
             </svg>
         </button>
 
-        <div class="dm-doctors__list" id="doctorRail">
-            <!-- main.js render -->
-        </div>
+        <div class="dm-doctors__list" id="doctorRail"></div>
 
         <button class="dm-nav dm-nav--next" aria-label="Tiếp" data-for="doctorRail">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
@@ -79,13 +77,11 @@
     <div class="specs__head">
         <div>
             <h2 class="dm-title">Đặt lịch theo Chuyên khoa</h2>
-            <p class="dm-subtitle">Danh sách bác sĩ, bệnh viện, phòng khám theo chuyên khoa</p>
+            <p class="dm-subtitle">Danh sách bác sĩ theo chuyên khoa</p>
         </div>
     </div>
 
-    <ul class="specs__grid collapsed" id="specList">
-        <!-- main.js render -->
-    </ul>
+    <ul class="specs__grid collapsed" id="specList"></ul>
     <div class="specs__more">
         <button id="toggleSpecsBtn" class="dm-btn dm-btn--ghost">Xem thêm</button>
     </div>
@@ -99,7 +95,6 @@
     </div>
 
     <div class="news-container">
-        <!-- Tin chính -->
         <article
             class="news-card news-card--main"
             data-url="https://benhvienungbuouhungviet.vn/kien-thuc-tam-soat-ung-thu/tim-hieu-quy-trinh-tam-soat-ung-thu-tai-benh-vien-ung-buou-hung-viet.html"
@@ -119,7 +114,6 @@
             </div>
         </article>
 
-        <!-- 4 tin phụ -->
         <div class="news-grid">
             <article class="news-card" data-url="https://bookingcare.vn/cam-nang/7-dia-chi-dieu-tri-viem-nang-long-uy-tin-tai-tphcm-p2930.html">
                 <img class="news-card__img" src="/static/img/bang-tin/viem-nang-long.webp" alt="Điều trị viêm nang lông ở đâu?" loading="lazy" />

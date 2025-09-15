@@ -1,18 +1,13 @@
 // ===== Fetch doctors from API =====
 async function fetchDoctors() {
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/doctors/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        if (!response.ok) {
-            throw new Error("Failed to fetch doctors");
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching doctors:", error);
+        const res = await fetch("http://127.0.0.1:8000/api/doctors/");
+        if (!res.ok) throw new Error("Failed to fetch doctors");
+        const data = await res.json();
+        return data.results.slice(0, 10);
+    } catch (err) {
+        console.error("Error fetching doctors:", err);
+        doctorList.innerHTML = "<p>Không thể tải danh sách bác sĩ.</p>";
         return [];
     }
 }
@@ -23,7 +18,6 @@ function renderDoctors(doctors) {
     if (!rail) return;
 
     rail.innerHTML = doctors
-        .slice(0, 10)
         .map((d) => {
             const specialties = d.specialty ? [d.specialty.name] : ["Chưa xác định"];
             const tags = specialties.map((t) => `<span class="dm-tag">${t}</span>`).join("");
@@ -147,7 +141,7 @@ function renderSpecialties(list) {
 
     if (list.length > 6) {
         ul.classList.add("collapsed");
-        specsMore.style.display = "block"; // hiện nút
+        specsMore.style.display = "block";
         toggleBtn.textContent = "Xem thêm";
 
         toggleBtn.onclick = () => {
@@ -156,7 +150,7 @@ function renderSpecialties(list) {
         };
     } else {
         ul.classList.remove("collapsed");
-        specsMore.style.display = "none"; // ẩn nút
+        specsMore.style.display = "none";
     }
 }
 

@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Avg
@@ -15,8 +16,14 @@ from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty, DoctorR
 from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer, SpecialtySerializer, DoctorReviewSerializer
 from appointments.models import Appointment
 
+class DoctorPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
 class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
+    pagination_class = DoctorPagination
     lookup_field = "slug"
     
     def get_permissions(self):
@@ -83,7 +90,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         # PATCH
         serializer = self.get_serializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)  # chặn đổi user
+        serializer.save(user=request.user) 
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'], url_path='slots')
@@ -121,7 +128,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
         # Build danh sách slot
         now = timezone.now()
-        busy = [(s, e) for s, e in taken]  # list of aware datetimes
+        busy = [(s, e) for s, e in taken]
         slots = []
 
         for av in avails:
@@ -218,7 +225,6 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
         else:
             return DoctorDayOff.objects.none()
 
-        # optional filter: ?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD
         p = self.request.query_params
         df = p.get('date_from')
         dt = p.get('date_to')

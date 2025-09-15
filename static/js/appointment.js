@@ -20,7 +20,7 @@ const resultCount = document.querySelector(".result-count");
 let currentFilter = "";
 let doctorsCache = [];
 let specialtiesCache = [];
-let activeFilters = {}; // Lưu filter hiện tại
+let activeFilters = {};
 
 // ------------------- Helper Functions -------------------
 function getFilterTitle(filter) {
@@ -119,35 +119,41 @@ async function fetchSpecialties() {
     }
 }
 
-async function fetchDoctors(filters = {}) {
+let currentPage = 1;
+let totalPages = 1;
+
+async function fetchDoctorsPage(filters = {}, page = 1) {
     const url = new URL("http://localhost:8000/api/doctors/");
-    Object.keys(filters).forEach((key) => {
-        if (filters[key] !== undefined && filters[key] !== null && filters[key] !== "") {
-            url.searchParams.append(key, filters[key]);
+    const params = prepareAPIParams(filters);
+
+    url.searchParams.append("page", page);
+
+    Object.keys(params).forEach((key) => {
+        if (params[key] !== undefined && params[key] !== "") {
+            url.searchParams.set(key, params[key]);
         }
     });
 
     try {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch doctors");
-        doctorsCache = await res.json();
-        renderDoctors(doctorsCache);
+        const data = await res.json();
+        doctorsCache = data.results;
+        renderDoctors(doctorsCache, page === 1);
 
-        // Update URL
-        window.history.replaceState({}, "", `?${url.searchParams.toString()}`);
-    } catch (error) {
-        console.error(error);
-        doctorList.innerHTML = "<p>Không thể tải danh sách bác sĩ.</p>";
+        const queryString = url.searchParams.toString();
+        window.history.replaceState({}, "", `?${queryString}`);
+        currentPage = page;
+        totalPages = Math.ceil(data.count / 10);
+        renderPaginationControls();
+    } catch (err) {
+        console.error(err);
     }
 }
 
 // Render doctor cards
-function renderDoctors(doctors) {
-    doctorList.innerHTML = "";
-    resultCount.innerHTML = `
-        <div class="result-icon"><i class="fas fa-search"></i></div>
-        Tìm thấy ${doctors.length} bác sĩ phù hợp
-    `;
+function renderDoctors(doctors, replace = true) {
+    if (replace) doctorList.innerHTML = "";
 
     doctors.forEach((d) => {
         const card = document.createElement("div");
@@ -157,25 +163,39 @@ function renderDoctors(doctors) {
             <div class="doctor-info">
                 <h3 class="doctor-name">${d.user.full_name}</h3>
                 <div class="doctor-specialty">${d.specialty?.name || "Chưa cập nhật"}</div>
-                <div class="doctor-address">
-                    <i class="fas fa-map-marker-alt"></i> ${d.user.full_address || "Chưa cập nhật địa chỉ"}
-                </div>
+                <div class="doctor-address"><i class="fas fa-map-marker-alt"></i> ${d.user.full_address || "Chưa cập nhật"}</div>
                 <div class="doctor-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-star rating"></i>
-                        <span>${d.average_rating ? d.average_rating + " sao" : "Chưa có đánh giá"}</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-clock"></i> <span>${d.experience_years || 0} năm kinh nghiệm</span>
-                    </div>
+                    <div class="stat-item"><i class="fas fa-star rating"></i> <span>Chưa có đánh giá</span></div>
+                    <div class="stat-item"><i class="fas fa-clock"></i> <span>${d.experience_years || 0} năm kinh nghiệm</span></div>
                 </div>
             </div>
-            <a href="/doctors/${d.slug}/" class="book-btn">
-                <i class="fas fa-calendar-plus"></i> Đặt khám
-            </a>
+            <a href="/doctors/${d.slug}/" class="book-btn"><i class="fas fa-calendar-plus"></i> Đặt khám</a>
         `;
         doctorList.appendChild(card);
     });
+
+    resultCount.innerHTML = `<div class="result-icon"><i class="fas fa-search"></i></div>Tìm thấy ${doctorsCache.length} bác sĩ`;
+}
+
+// Render pagination
+function renderPaginationControls() {
+    const paginationContainer = document.getElementById("pagination");
+    if (!paginationContainer) return;
+
+    paginationContainer.innerHTML = "";
+    if (currentPage > 1) {
+        const prev = document.createElement("button");
+        prev.textContent = "« Trước";
+        prev.addEventListener("click", () => fetchDoctorsPage(currentPage - 1));
+        paginationContainer.appendChild(prev);
+    }
+
+    if (currentPage < totalPages) {
+        const next = document.createElement("button");
+        next.textContent = "Tiếp »";
+        next.addEventListener("click", () => fetchDoctorsPage(currentPage + 1));
+        paginationContainer.appendChild(next);
+    }
 }
 
 // ------------------- Modal & Filters -------------------
@@ -222,11 +242,35 @@ window.addEventListener("click", (e) => {
     if (e.target === modal) modal.style.display = "none";
 });
 
+function normalize(str) {
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
+
+// Modal search
 modalSearch.addEventListener("input", (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    modalOptions.querySelectorAll(".option-item").forEach((opt) => {
-        opt.style.display = opt.textContent.toLowerCase().includes(searchTerm) ? "block" : "none";
+    const searchTerm = normalize(e.target.value);
+
+    const optionItems = Array.from(modalOptions.querySelectorAll(".option-item"));
+
+    const data = optionItems.map((opt) => ({
+        text: normalize(opt.textContent),
+        element: opt,
+    }));
+
+    const fuse = new Fuse(data, {
+        keys: ["text"],
+        threshold: 0.1,
+        ignoreLocation: true,
     });
+
+    const results = searchTerm ? fuse.search(searchTerm).map((r) => r.item) : data;
+
+    optionItems.forEach((opt) => (opt.style.display = "none"));
+
+    results.forEach((r) => (r.element.style.display = "block"));
 });
 
 // Apply filter
@@ -245,7 +289,7 @@ applyBtn.addEventListener("click", () => {
     if (currentFilter === "rating") activeFilters.min_rating = mapRatingToValue(values[0]);
 
     updateFilterButton(currentFilter);
-    fetchDoctors(prepareAPIParams());
+    fetchDoctorsPage(prepareAPIParams());
     modal.style.display = "none";
 });
 
@@ -264,7 +308,7 @@ clearBtn.addEventListener("click", () => {
     if (currentFilter === "rating") delete activeFilters.min_rating;
 
     updateFilterButton(currentFilter);
-    fetchDoctors(prepareAPIParams());
+    fetchDoctorsPage(prepareAPIParams());
     modal.style.display = "none";
 });
 
@@ -272,10 +316,19 @@ clearBtn.addEventListener("click", () => {
 function prepareAPIParams() {
     const params = {};
     if (activeFilters.specialty) params.specialty = activeFilters.specialty;
+
     if (activeFilters.gender) params.gender = activeFilters.gender === "Nam" ? "MALE" : "FEMALE";
-    if (activeFilters.min_experience !== undefined) params.min_experience = activeFilters.min_experience;
-    if (activeFilters.max_experience !== undefined) params.max_experience = activeFilters.max_experience;
+
+    if (activeFilters.min_experience !== undefined && activeFilters.min_experience !== null) {
+        params.min_experience = activeFilters.min_experience;
+    }
+    
+    if (activeFilters.max_experience !== undefined && activeFilters.max_experience !== null) {
+        params.max_experience = activeFilters.max_experience;
+    }
+
     if (activeFilters.min_rating !== undefined) params.min_rating = activeFilters.min_rating;
+
     return params;
 }
 
@@ -290,5 +343,6 @@ window.addEventListener("DOMContentLoaded", () => {
     if (urlParams.get("min_rating")) activeFilters.min_rating = parseFloat(urlParams.get("min_rating"));
 
     Object.keys(activeFilters).forEach(updateFilterButton);
-    fetchDoctors(prepareAPIParams());
+
+    fetchDoctorsPage(prepareAPIParams());
 });
