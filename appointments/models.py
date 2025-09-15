@@ -23,5 +23,5 @@ class Appointment(models.Model):
         ordering = ["-start_at"]
 
     def __str__(self):
-        return f"{self.patient_id} with {self.doctor_id} on {self.start_at:%Y-%m-%d %H:%M}"
+        return f"{self.patient_id} with {self.doctor_id} on {self.start_at:%H:%M %d-%m-%Y}"
     
