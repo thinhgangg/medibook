@@ -1,8 +1,10 @@
+# dashboard/api_urls.py
+
 from django.urls import path
-from . import views
+from . import api_views
 
 urlpatterns = [
-    path('doctor/', views.doctor_dashboard, name='doctor_dashboard'), 
-    path('patient/', views.patient_dashboard, name='patient_dashboard'),  
-    path('admin/', views.admin_dashboard, name='admin_dashboard'),
+    path('doctor/', api_views.doctor_dashboard_api, name='doctor_dashboard_api'),
+    path('patient/', api_views.patient_dashboard_api, name='patient_dashboard_api'),
+    path('admin/', api_views.admin_dashboard_api, name='admin_dashboard_api'),
 ]

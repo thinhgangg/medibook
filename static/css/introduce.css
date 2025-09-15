@@ -1,0 +1,42 @@
+.feature-button {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.feature-button.bg-pink-100 {
+    background-color: #fce7f3;
+    color: #db2777;
+}
+
+.feature-button.bg-pink-100:hover {
+    background-color: #fecdd3;
+}
+
+.feature-button.bg-blue-100 {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.feature-button.bg-blue-100:hover {
+    background-color: #bfdbfe;
+}
+
+.feature-card {
+    transition: box-shadow 0.3s;
+}
+
+.feature-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.team-member {
+    transition: box-shadow 0.3s;
+}
+
+.team-member:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}   

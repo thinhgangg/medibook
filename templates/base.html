@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{% block title %}MediBook{% endblock %}</title>
         <link rel="stylesheet" href="{% static 'css/base.css' %}?v=7" />
+        {% block page_css %}{% endblock %} <!-- Thêm block này -->
     </head>
     <body>
         <!-- HEADER -->
@@ -18,7 +19,7 @@
 
                 <!-- Menu -->
                 <nav class="nav-links">
-                    <a class="nav-item {% if request.path == '/appointments/' %}active{% endif %}" href="{% url 'appointments:appointment' %}"
+                    <a class="nav-item {% if request.path == '/appointments/' %}active{% endif %}" href="{% url 'appointments:search' %}"  
                         >Đặt khám</a
                     >
                     <a class="nav-item {% if request.path == '/consult/' %}active{% endif %}" href="#consult">Tư vấn trực tuyến</a>
@@ -32,7 +33,7 @@
                     <div id="user-avatar" class="avatar-container" style="display: none">
                         <img src="" alt="User Avatar" class="user-avatar" />
                         <div id="avatar-dropdown" class="dropdown-content">
-                            <a href="#">Hồ sơ</a>
+                            <a href="#" id="profileLink">Hồ sơ</a>
                             <a href="#" id="logoutLink">Đăng xuất</a>
                         </div>
                     </div>
@@ -90,8 +91,9 @@
             </div>
         </footer>
 
-        <script src="{% static 'js/main.js' %}"></script>
-        <script src="{% static 'js/login.js' %}"></script>
+        <script src="{% static 'js/home.js' %}"></script>
         <script src="{% static 'js/dropdown.js' %}"></script>
+        <script src="{% static 'js/login.js' %}"></script>
+        <script src="{% static 'js/auth.js' %}"></script>
     </body>
 </html>

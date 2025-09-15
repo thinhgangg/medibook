@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Lịch Khám - MediBook{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/patient_schedule.css' %}" />
+
+<nav class="ym-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a href="#">Lịch Khám</a>
+</nav>
+
+<div class="sidebar">
+    <ul>
+      <li><a href="#">Lịch khám</a></li>
+      <li><a href="#">Lịch sử thanh toán</a></li>
+      <li><a href="#">Tài khoản</a></li>
+      <li class="logout">Đăng xuất</li>
+    </ul>
+</div>
+<div class="content">
+    <div class="search-bar">
+      <input type="text" placeholder="Mã giao dịch hoặc tên dịch vụ">
+      <select>
+        <option value="">Tất cả</option>
+        <option value="pending">Pending</option>
+      </select>
+    </div>
+    <div class="appointment-form">
+      <h3>Quản lý lịch</h3>
+      <label for="id">Hồ sơ</label>
+      <input type="text" id="id" placeholder="#" value="#">
+      <span class="status">Pending</span>
+      <label for="date">Ngày</label>
+      <input type="text" id="date" placeholder="Ngày">
+      <label for="time">Giờ</label>
+      <input type="text" id="time" placeholder="Giờ">
+      <label for="doctor">Bác sĩ</label>
+      <input type="text" id="doctor" placeholder="Bác sĩ">
+      <div class="buttons">
+        <button class="green">Đổi lịch</button>
+        <button class="orange">Hủy lịch</button>
+        <button>In</button>
+      </div>
+    </div>
+</div>
+
+<script src="{% static 'js/patient_schedule.js' %}"></script>
+{% endblock %}

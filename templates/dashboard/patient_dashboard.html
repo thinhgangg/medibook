@@ -1,21 +1,150 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Dashboard</title>
-</head>
-<body>
-    <h1>Patient Dashboard</h1>
-    
-    <p><strong>Total Bookings:</strong> {{ total_bookings }}</p>
-    
-    <h2>Bookings by Status:</h2>
-    <ul>
-        {% for booking in bookings_by_status %}
-            <li>{{ booking.status }}: {{ booking.count }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/patient-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/patient-profile.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<main class="font-inter">
+  <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-12 gap-6">
+
+    <!-- Sidebar -->
+    <aside class="col-span-12 md:col-span-3">
+      <nav class="bg-white rounded-2xl shadow-md p-3 md:p-4 sticky top-6">
+        <ul class="space-y-2">
+          <li><a id="nav-overview" href="#overview" class="nav-item is-active"><span class="icon">🏠</span> Overview</a></li>
+          <li><a id="nav-profile" href="#profile" class="nav-item"><span class="icon">👤</span> My Profile</a></li>
+          <li><a href="#" class="nav-item"><span class="icon">📅</span> Appointments</a></li>
+          <li><a href="#" class="nav-item"><span class="icon">🩺</span> Doctors</a></li>
+          <li><a href="#" class="nav-item"><span class="icon">📄</span> Prescriptions</a></li>
+          <li><a href="#" class="nav-item"><span class="icon">💬</span> Messages</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <section class="col-span-12 md:col-span-9 space-y-6">
+
+      <!-- PANEL: OVERVIEW (mặc định) -->
+      <div id="panel-overview" class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h1 class="text-3xl font-bold mb-6">Hello, {{ patient.user.full_name|default:request.user.full_name }}</h1>
+
+          <!-- Upcoming appointments -->
+          <div class="card mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="card-title">Upcoming Appointments</h2>
+              <a href="#" class="btn-secondary">View All</a>
+            </div>
+            <div class="divide-y">
+              <div class="row-skeleton">
+                <div class="col">Date</div><div class="col">Time</div><div class="col">Doctor</div>
+              </div>
+              <div class="row-skeleton shimmer"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="row-skeleton shimmer"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="card">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="card-title">My Profile</h2>
+                <a href="#profile" class="btn-primary" id="btn-go-profile">Edit Profile</a>
+              </div>
+              <div class="space-y-3">
+                <div class="bar shimmer w-3/4"></div>
+                <div class="bar shimmer w-2/3"></div>
+                <div class="bar shimmer w-1/2"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2 class="card-title mb-4">Doctors</h2>
+              <ul class="space-y-3">
+                <li class="flex items-center gap-3"><span class="avatar"></span><div class="flex-1"><div class="bar shimmer w-2/3"></div><div class="bar shimmer w-1/2 mt-2"></div></div></li>
+                <li class="flex items-center gap-3"><span class="avatar"></span><div class="flex-1"><div class="bar shimmer w-2/3"></div><div class="bar shimmer w-1/2 mt-2"></div></div></li>
+              </ul>
+              <div class="mt-4"><a href="#" class="btn-secondary w-full text-center">Book Appointment</a></div>
+            </div>
+          </div>
+
+          <div class="card mt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="card-title">Prescriptions</h2>
+              <a href="#" class="btn-secondary">View All</a>
+            </div>
+            <div class="bar shimmer w-1/3"></div>
+            <div class="bar shimmer w-1/2 mt-3"></div>
+          </div>
+        </div>
+      </div>
+      <!-- /panel-overview -->
+
+      <!-- PANEL: PROFILE (nội dung từ file profile của bạn) -->
+      <div id="panel-profile" class="hidden">
+        <div class="bg-white shadow-2xl rounded-xl p-8">
+          <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+            <!-- Profile Picture -->
+            <div class="flex-shrink-0 relative">
+              {% if patient.profile_picture %}
+                <img src="{{ patient.profile_picture.url }}" alt="Ảnh hồ sơ" class="w-40 h-40 rounded-full object-cover border-4 border-green-200 shadow-md profile-picture">
+              {% else %}
+                <div class="w-40 h-40 rounded-full bg-gradient-to-r from-green-400 to-teal-400 flex items-center justify-center text-white text-3xl font-bold shadow-md profile-picture">
+                  {{ patient.user.full_name|first }}
+                </div>
+              {% endif %}
+              <div class="absolute inset-0 rounded-full bg-green-500 opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+            </div>
+
+            <!-- Patient Info -->
+            <div class="flex-1 text-center md:text-left">
+              <h1 class="text-3xl font-bold text-gray-800">{{ patient.user.full_name }}</h1>
+              <p class="text-xl text-green-600 font-semibold mt-1">Bệnh nhân</p>
+              <p class="text-gray-500 italic mt-1">{{ patient.occupation|default:"Chưa cập nhật nghề nghiệp" }}</p>
+              <a href="#" id="btn-edit-profile" class="mt-4 px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors duration-300 inline-block">Chỉnh sửa hồ sơ</a>
+            </div>
+          </div>
+
+          <!-- Bio + Details -->
+          <div class="mt-10">
+            <h2 class="text-2xl font-semibold text-gray-800 border-b-2 border-green-200 pb-2">Thông tin cá nhân</h2>
+            <p class="text-gray-600 mt-4 leading-relaxed">Hồ sơ bệnh nhân được cập nhật với các thông tin cơ bản để hỗ trợ quá trình chăm sóc sức khỏe.</p>
+          </div>
+
+          <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold text-gray-800">Thông tin cơ bản</h2>
+              <ul class="mt-4 text-gray-600 space-y-2">
+                <li><strong>Họ và tên:</strong> {{ patient.user.full_name }}</li>
+                <li><strong>Số điện thoại:</strong> {{ patient.user.phone_number|default:"Chưa có thông tin" }}</li>
+                <li><strong>Ngày sinh:</strong> {{ patient.user.dob|default:"Chưa có thông tin" }}</li>
+                <li><strong>Giới tính:</strong> {{ patient.user.gender|lower|capfirst|default:"Chưa có thông tin" }}</li>
+                <li><strong>Địa chỉ:</strong> {{ patient.user.full_address|default:"Chưa có thông tin" }}</li>
+              </ul>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+              <h2 class="text-xl font-semibold text-gray-800">Thông tin bổ sung</h2>
+              <ul class="mt-4 text-gray-600 space-y-2">
+                <li><strong>Mã BHYT:</strong> {{ patient.insurance_no|default:"Chưa có thông tin" }}</li>
+                <li><strong>Số CMND/CCCD:</strong> {{ patient.user.id_number|default:"Chưa có thông tin" }}</li>
+                <li><strong>Dân tộc:</strong> {{ patient.user.ethnicity|default:"Chưa có thông tin" }}</li>
+                <li><strong>Nghề nghiệp:</strong> {{ patient.occupation|default:"Chưa có thông tin" }}</li>
+                <li><strong>Email:</strong> {{ patient.user.email|default:"Chưa có thông tin" }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /panel-profile -->
+
+    </section>
+  </div>
+</main>
+
+<script src="{% static 'js/patient-dashboard.js' %}"></script>
+{% endblock %}

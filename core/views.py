@@ -8,3 +8,5 @@ def privacy_view(request):
 
 def terms_view(request):
     return render(request, 'core/terms.html')
+def introduce_view(request):
+    return render(request, 'core/introduce.html')

@@ -4,9 +4,12 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render
+from dashboard.decorators import role_required  # thêm decorator kiểm tra vai trò
 
 from .models import Patient
 from .serializers import PatientSerializer
+
 
 class PatientViewSet(viewsets.ModelViewSet):
     serializer_class = PatientSerializer

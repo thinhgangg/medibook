@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/introduce.css' %}" type="text/css">
+{% endblock %}
+
+{% block content %}
+<main class="container mx-auto py-12 px-4">
+    <section class="flex flex-col md:flex-row items-center justify-between mb-16">
+        <div class="md:w-1/2 mb-8 md:mb-0">
+            <h1 class="text-5xl font-bold text-gray-900 mb-4">Ứng dụng khám, đặt thuốc</h1>
+            <p class="text-gray-600 mb-6">Chúng tôi giúp bạn dễ dàng tìm và đặt lịch khám với các bác sĩ chuyên khoa hàng đầu. Bảo vệ sức khỏe của bạn và gia đình với dịch vụ y tế chất lượng cao.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="#tim-kiem" class="btn-solid bg-pink-100 text-pink-800 hover:bg-pink-200">Tìm kiếm bác sĩ</a>
+                <a href="#dat-lich" class="btn-solid bg-blue-100 text-blue-800 hover:bg-blue-200">Đặt lịch khám</a>
+            </div>
+        </div>
+        <div class="md:w-1/2">
+            <img src="https://via.placeholder.com/400x300" alt="Bác sĩ khám bệnh" class="rounded-full shadow-lg">
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="tinh-nang" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div class="feature-card bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+            <div class="text-yellow-500 mb-4">⭐</div>
+            <h2 class="text-xl font-semibold mb-2">Tái khám thuận tiện</h2>
+            <p class="text-gray-600">MediBook giúp bạn theo dõi và tái khám dễ dàng. Bảo vệ sức khỏe của bạn với lịch sử khám chi tiết.</p>
+        </div>
+        <div class="feature-card bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+            <div class="text-purple-500 mb-4">📋</div>
+            <h2 class="text-xl font-semibold mb-2">Thông tin y tế chính thống</h2>
+            <p class="text-gray-600">Cung cấp thông tin y tế từ các nguồn chính thống, hỗ trợ bạn hiểu rõ hơn về sức khỏe.</p>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="doi-ngu" class="mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Đội ngũ điều hành</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="team-member bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                <img src="https://via.placeholder.com/150" alt="Mai Phúc Thịnh" class="rounded-full mx-auto mb-4">
+                <h3 class="text-lg font-semibold">Mai Phúc Thịnh</h3>
+                <p class="text-gray-600">Tổng giám đốc - CEO</p>
+            </div>
+            <div class="team-member bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow text-center">
+                <img src="https://via.placeholder.com/150" alt="Nguyễn Đình Duy" class="rounded-full mx-auto mb-4">
+                <h3 class="text-lg font-semibold">Nguyễn Đình Duy</h3>
+                <p class="text-gray-600">Giám đốc Marketing</p>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/introduce.js' %}"></script>
+{% endblock %}

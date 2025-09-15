@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth import logout as django_logout
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
@@ -17,6 +18,7 @@ from accounts.serializers import UserSerializer
 from .serializers import UserPublicSerializer, UserUpdateSerializer
 from .serializers import SendOTPSerializer, VerifyOTPSerializer
 from .serializers import SetPasswordSerializer
+from .serializers import ForgotPasswordSendOTPSerializer
 from .models import OTPVerification
 from doctors.models import Doctor, Specialty
 from doctors.serializers import DoctorSerializer
@@ -47,10 +49,20 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        resp = super().post(request, *args, **kwargs)
+
+        # Gọi super để lấy JWT
+        response = super().post(request, *args, **kwargs)
+
+        # Đăng nhập user vào session Django
         user = serializer.user
-        resp.data["user"] = UserSerializer(user).data
-        return resp
+        login(request, user)
+
+        # Custom response
+        response.data['success'] = True
+        response.data['message'] = 'Login successful'
+        response.data['user'] = UserSerializer(user).data
+
+        return response
 
 class DoctorRegisterView(APIView):
     permission_classes = [IsAdminUser]
@@ -109,6 +121,8 @@ class DoctorRegisterView(APIView):
             bio=data.get("bio", "Bác sĩ chưa cập nhật tiểu sử."),
             profile_picture=data.get("profile_picture"),
             is_active=True,
+            started_practice=data.get("started_practice"),
+            experience_detail=data.get("experience_detail", "Bác sĩ chưa cập nhật kinh nghiệm."),
         )
 
         return Response(
@@ -136,62 +150,47 @@ class MeView(APIView):
     def patch(self, request):
         user = request.user
 
-        # 1) Cập nhật thông tin user
+        # 1) Update user cơ bản
         user_ser = UserUpdateSerializer(user, data=request.data, partial=True)
         user_ser.is_valid(raise_exception=True)
         user_ser.save()
 
-        # 2) Cập nhật avatar cho doctor/patient (nếu có)
-        has_file = "profile_picture" in request.FILES or "profile_picture" in request.data
-        want_remove = str(request.data.get("remove_profile_picture", "")).lower() in ("1", "true", "yes")
+        updated_doctor, updated_patient = None, None
 
-        updated_doctor = None
-        updated_patient = None
-
-        if has_file or want_remove:
-            # Nếu 1 user vừa là doctor vừa là patient (hiếm), cho phép chỉ định profile_owner=doctor|patient
-            target = str(request.data.get("profile_owner", "")).lower()
-            obj = None
-
-            if target == "doctor" and hasattr(user, "doctor_profile"):
-                obj = user.doctor_profile
-            elif target == "patient" and hasattr(user, "patient_profile"):
-                obj = user.patient_profile
-            else:
-                # nếu không chỉ định, tự suy ra
-                if hasattr(user, "doctor_profile") and not hasattr(user, "patient_profile"):
-                    obj = user.doctor_profile
-                elif hasattr(user, "patient_profile") and not hasattr(user, "doctor_profile"):
-                    obj = user.patient_profile
-                elif hasattr(user, "doctor_profile") and hasattr(user, "patient_profile"):
-                    return Response(
-                        {"detail": "Vui lòng chỉ định 'profile_owner' = 'doctor' hoặc 'patient'."},
-                        status=400
-                    )
-                else:
-                    return Response({"detail": "Chỉ bác sĩ hoặc bệnh nhân mới cập nhật avatar."}, status=403)
-
-            if want_remove:
-                if getattr(obj, "profile_picture", None):
-                    obj.profile_picture = None
-            else:
-                file_obj = request.FILES.get("profile_picture") or request.data.get("profile_picture")
-                if not file_obj:
-                    return Response({"detail": "Thiếu file profile_picture."}, status=400)
-                obj.profile_picture = file_obj
-
-            obj.save()
-            if obj is getattr(user, "doctor_profile", None):
-                updated_doctor = obj
-            if obj is getattr(user, "patient_profile", None):
-                updated_patient = obj
-
-        # 3) Response gồm user + profile
-        resp = UserPublicSerializer(user).data
+        # 2) Nếu user có hồ sơ Doctor
         if hasattr(user, "doctor_profile"):
-            resp["doctor"] = DoctorSerializer(updated_doctor or user.doctor_profile).data
+            doc_ser = DoctorSerializer(
+                user.doctor_profile,
+                data=request.data,
+                partial=True,
+                context={"request": request},  # để xử lý file upload
+            )
+            doc_ser.is_valid(raise_exception=True)
+            updated_doctor = doc_ser.save()
+
+        # 3) Nếu user có hồ sơ Patient
         if hasattr(user, "patient_profile"):
-            resp["patient"] = PatientSerializer(updated_patient or user.patient_profile).data
+            pat_ser = PatientSerializer(
+                user.patient_profile,
+                data=request.data,
+                partial=True,
+                context={"request": request},
+            )
+            pat_ser.is_valid(raise_exception=True)
+            updated_patient = pat_ser.save()
+
+        # 4) Response
+        resp = UserPublicSerializer(user).data
+        if updated_doctor:
+            resp["doctor"] = DoctorSerializer(updated_doctor).data
+        elif hasattr(user, "doctor_profile"):
+            resp["doctor"] = DoctorSerializer(user.doctor_profile).data
+
+        if updated_patient:
+            resp["patient"] = PatientSerializer(updated_patient).data
+        elif hasattr(user, "patient_profile"):
+            resp["patient"] = PatientSerializer(user.patient_profile).data
+
         return Response(resp, status=status.HTTP_200_OK)
     
 class LogoutView(APIView):
@@ -199,12 +198,23 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+            refresh_token = request.data.get("refresh")
+            if refresh_token:
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception:
+                    pass  
+
+            django_logout(request)
+
+            return Response({"detail": "Logout successful"}, status=status.HTTP_200_OK)
+
         except Exception as e:
-            return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Logout failed", "error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
 class SendOTPView(APIView):
     permission_classes = [AllowAny]
@@ -277,7 +287,7 @@ class PatientSetPasswordView(APIView):
             return Response({"detail": "OTP chưa được xác thực."}, status=400)
 
         if User.objects.filter(email=email).exists():
-            return Response({"detail": "Email đã tồn tại."}, status=400)
+            return Response({"detail": "Email đã được sử dụng. Vui lòng dùng email khác hoặc đăng nhập nếu bạn đã có tài khoản."}, status=400)
 
         # tạo user bệnh nhân
         user = User(email=email, role="PATIENT")
@@ -329,3 +339,107 @@ class PatientProfileView(APIView):
             "user": UserSerializer(user).data,
             "patient": PatientSerializer(patient).data
         }, status=200)
+
+class ForgotPasswordSendOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        user_exists = User.objects.filter(email=email).exists()
+
+        OTPVerification.objects.filter(email=email).delete()
+
+        otp_obj = OTPVerification(email=email)
+        otp_obj.save()
+
+        if user_exists:
+            subject = 'Mã OTP Đặt Lại Mật Khẩu MediBook'
+            message = f'Mã OTP của bạn là: {otp_obj.otp}. Mã hết hạn sau 5 phút. Không chia sẻ mã này với bất kỳ ai.'
+            try:
+                send_mail(subject, message, DEFAULT_FROM_EMAIL, [email])
+            except Exception as e:
+                print(f"Failed to send email: {str(e)}")
+                return Response({
+                    "message": "Có lỗi xảy ra khi gửi OTP. Vui lòng thử lại sau."
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            "message": "Nếu email tồn tại, OTP đã được gửi đến hộp thư của bạn. Vui lòng kiểm tra hộp thư (bao gồm spam)."
+        }, status=status.HTTP_200_OK)
+
+
+class ForgotPasswordVerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, otp=otp)
+            if otp_obj.is_expired():
+                return Response({"detail": "OTP đã hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+            if otp_obj.is_verified:
+                return Response({"detail": "OTP đã được sử dụng."}, status=status.HTTP_400_BAD_REQUEST)
+
+            otp_obj.is_verified = True
+            otp_obj.save()
+
+            temp_token = RefreshToken()
+            temp_token.set_exp(lifetime=timedelta(minutes=10))
+            return Response({
+                "message": "Xác thực OTP thành công.",
+                "temp_token": str(temp_token)
+            }, status=status.HTTP_200_OK)
+
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP không đúng."}, status=status.HTTP_400_BAD_REQUEST)
+
+class ForgotPasswordSetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password1"]
+        temp_token = request.data.get("temp_token")
+
+        # Check temp token
+        try:
+            UntypedToken(temp_token)
+        except Exception:
+            return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check OTP verified
+        try:
+            otp_obj = OTPVerification.objects.get(email=email, is_verified=True)
+        except OTPVerification.DoesNotExist:
+            return Response({"detail": "OTP chưa được xác thực."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if user exists
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "Email không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Set new password
+        user.set_password(password)
+        user.save()
+
+        # Delete OTP
+        otp_obj.delete()
+
+        # Issue new tokens
+        refresh, access = issue_tokens(user)
+        return Response({
+            "message": "Đặt lại mật khẩu thành công.",
+            "user": UserSerializer(user).data,
+            "refresh": refresh,
+            "access": access,
+        }, status=status.HTTP_200_OK)

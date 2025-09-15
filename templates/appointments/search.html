@@ -13,10 +13,10 @@
         </button>
     </form>
     <div class="filters">
-        <span class="filter">Nơi khám: <strong>Bác sĩ</strong></span>
-        <span class="filter">Chọn chuyên khoa</span>
-        <span class="filter">Khu vực</span>
-        <span class="filter">Gần nhất</span>
+        <button class="filter-btn" data-filter="specialty">Chọn chuyên khoa</button>
+        <button class="filter-btn" data-filter="gender">Giới tính</button>
+        <button class="filter-btn" data-filter="experience">Số năm kinh nghiệm</button>
+        <button class="filter-btn" data-filter="rating">Đánh giá</button>
     </div>
 </section>
 
@@ -49,4 +49,25 @@
     </section>
 </div>
 
-{% endblock %}
+<!-- Modal cho filter -->
+<div id="filter-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Tiêu đề</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="modal-search" placeholder="Tìm theo tên" />
+            <div id="modal-options" class="options-list">
+                <!-- Options sẽ được thêm động bởi JS -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="clear-filter">Xóa bộ lọc</button>
+            <button id="apply-filter">Áp dụng</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock %} 

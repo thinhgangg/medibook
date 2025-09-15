@@ -3,12 +3,23 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from datetime import datetime, timedelta, date as date_cls
+from dashboard.decorators import role_required  # Import decorator
 
 from .models import Doctor, DoctorAvailability, DoctorDayOff
 from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer
+
+# View profile bác sĩ với kiểm tra role
+@role_required("DOCTOR")  # Chỉ bác sĩ mới có thể truy cập
+def doctor_profile(request):
+    # Logic của bạn ở đây (nếu có)
+    return render(request, 'doctors/doctor-profile.html')  # Trả về profile bác sĩ
+
+# View lịch bác sĩ (mở cho tất cả để xem trước)
+def doctor_schedule(request):
+    return render(request, 'doctors/doctor_schedule.html')  # Trả về trang lịch bác sĩ
 
 class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
@@ -22,7 +33,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = Doctor.objects.select_related("user", "specialty")
         if self.action in ("list", "retrieve"):
-            qs = qs.filter(is_active=True)  # công khai chỉ thấy active
+            qs = qs.filter(is_active=True)  # Công khai chỉ thấy bác sĩ active
         return qs
 
     def perform_create(self, serializer):
@@ -38,7 +49,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     def me(self, request):
         """
         GET  /doctors/me/   -> lấy hồ sơ bác sĩ của chính mình
-        PATCH/doctors/me/   -> cập nhật hồ sơ của chính mình
+        PATCH /doctors/me/   -> cập nhật hồ sơ của chính mình
         """
         obj = get_object_or_404(Doctor, user=request.user)
 
@@ -48,7 +59,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         # PATCH
         serializer = self.get_serializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)  # chặn đổi user
+        serializer.save(user=request.user)  # Chặn đổi user
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'], url_path='slots')
@@ -57,7 +68,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
         GET /doctors/{id}/slots/?date=YYYY-MM-DD
         Trả list slot trống (đã loại các lịch hẹn confirmed/pending).
         """
-        from appointments.models import Appointment  # tránh import vòng
+        from appointments.models import Appointment  # Tránh import vòng
         doctor = self.get_object()
 
         date_str = request.query_params.get('date')
@@ -75,18 +86,18 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
         # Lấy các cuộc hẹn cùng ngày (trừ CANCELLED)
         start_of_day = datetime.combine(target_date, datetime.min.time())
-        end_of_day   = datetime.combine(target_date, datetime.max.time())
+        end_of_day = datetime.combine(target_date, datetime.max.time())
         tz = timezone.get_current_timezone()
         start_of_day = timezone.make_aware(start_of_day, tz)
-        end_of_day   = timezone.make_aware(end_of_day, tz)
+        end_of_day = timezone.make_aware(end_of_day, tz)
 
-        taken = doctor.appointments.exclude(status="CANCELLED")\
-            .filter(start_at__lt=end_of_day, end_at__gt=start_of_day)\
+        taken = doctor.appointments.exclude(status="CANCELLED") \
+            .filter(start_at__lt=end_of_day, end_at__gt=start_of_day) \
             .values_list("start_at", "end_at")
 
         # Build danh sách slot
         now = timezone.now()
-        busy = [(s, e) for s, e in taken]  # list of aware datetimes
+        busy = [(s, e) for s, e in taken]  # List of aware datetimes
         slots = []
 
         for av in avails:
@@ -96,23 +107,23 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
             while cur + slot_len <= limit:
                 slot_start = cur
-                slot_end   = cur + slot_len
+                slot_end = cur + slot_len
 
-                # loại slot quá khứ (nếu là hôm nay)
+                # Loại slot quá khứ (nếu là hôm nay)
                 if slot_end <= now:
                     cur += slot_len
                     continue
 
-                # check overlap với busy
+                # Check overlap với busy
                 overlap = any((slot_start < b_end and slot_end > b_start) for b_start, b_end in busy)
                 if not overlap:
                     slots.append({
                         "start_at": slot_start.isoformat(),
-                        "end_at":   slot_end.isoformat()
+                        "end_at": slot_end.isoformat()
                     })
                 cur += slot_len
 
-        # lấy day-off của ngày đó
+        # Lấy day-off của ngày đó
         offs = doctor.day_offs.filter(date=target_date)
         # Nếu nghỉ cả ngày -> không có slot
         if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
@@ -124,9 +135,9 @@ class DoctorViewSet(viewsets.ModelViewSet):
         for off in offs:
             if off.start_time and off.end_time:
                 off_start = timezone.make_aware(datetime.combine(target_date, off.start_time), tz)
-                off_end   = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
+                off_end = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
                 off_intervals.append((off_start, off_end))
-        # ...
+
         # Trong vòng while tạo slot, thêm điều kiện loại bỏ nếu trùng interval nghỉ:
         overlap_off = any((slot_start < o_end and slot_end > o_start) for o_start, o_end in off_intervals)
         if not overlap and not overlap_off:
@@ -173,7 +184,7 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
         else:
             return DoctorDayOff.objects.none()
 
-        # optional filter: ?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD
+        # Optional filter: ?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD
         p = self.request.query_params
         df = p.get('date_from')
         dt = p.get('date_to')

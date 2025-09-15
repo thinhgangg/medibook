@@ -90,3 +90,6 @@ class SetPasswordSerializer(serializers.Serializer):
         if data["password1"] != data["password2"]:
             raise serializers.ValidationError("Mật khẩu không khớp.")
         return data
+
+class ForgotPasswordSendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()

@@ -1,0 +1,125 @@
+:root {
+    --border:#e5e7eb; --muted:#6b7280; --text:#0f172a; --bg:#f5f7fb;
+    --card:#ffffff; --shadow:0 6px 18px rgba(16,24,40,.06);
+    --primary:#2563eb; --primary-50:#eff6ff; --primary-100:#dbeafe;
+    --green:#16a34a; --red:#ef4444;
+    /* CHIỀU CAO HEADER CỐ ĐỊNH (nếu header của bạn cao hơn, tăng số này) */
+    --header-h: 80px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  
+  /* ===== Page căn giữa + ĐẨY XUỐNG dưới header ===== */
+  .abk-page{
+    width:100%;
+    max-width:1280px;
+    margin:0 auto;
+    padding: calc(var(--header-h) + 20px) 16px 24px;
+    color:var(--text);
+  }
+  
+  /* ===== Header bước ===== */
+  .abk-step{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .abk-step-index{background:#22c55e;color:#fff;border-radius:10px;padding:4px 10px;font-weight:700}
+  .abk-step-text{color:#334155;font-weight:600}
+  
+  /* ===== Lưới chính ===== */
+  .abk-grid{
+    display:grid;
+    grid-template-columns:minmax(760px,1fr) 420px;
+    gap:24px;
+    align-items:start;
+  }
+  
+  /* ===== Card ===== */
+  .abk-card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+  .abk-schedule{padding:14px}
+  
+  /* ===== Sidebar: STICKY và ĐẨY XUỐNG KHỎI DẢI NGÀY ===== */
+  .abk-side{
+    padding:0;
+    position: sticky;
+    top: calc(var(--header-h) + 220px); /* Đảm bảo không che lấp dải ngày */
+    align-self: flex-start; /* Giữ sidebar cố định ở đầu cột */
+    height: fit-content; /* Chiều cao tự động theo nội dung */
+    margin-top: 0; /* Xóa margin-top để tránh lệch */
+  }
+  
+  /* Header card lịch */
+  .abk-card-head{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+  .abk-head-left{display:flex;align-items:center;gap:10px}
+  .abk-head-index{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-weight:700;font-size:13px}
+  .abk-head-title{font-weight:700}
+  .abk-date-nav{display:flex;align-items:center;gap:12px;justify-self:center;width:100%}
+  .abk-circle-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:box-shadow .2s,transform .05s}
+  .abk-circle-btn:hover{box-shadow:0 2px 8px rgba(0,0,0,.07)}
+  .abk-circle-btn:active{transform:scale(.98)}
+  .abk-collapse{border:none;background:transparent;color:var(--muted);cursor:pointer}
+  
+  /* Strip ngày */
+  .abk-date-list{display:flex;gap:16px;overflow:hidden;padding:8px 2px; margin-bottom: 16px;}
+  .abk-date-item{min-width:188px;height:86px;background:#f9fafb;border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .18s ease}
+  .abk-date-item .abk-date-top{font-weight:700;color:var(--text)}
+  .abk-date-item .abk-date-sub{margin-top:4px;font-size:13px}
+  .abk-date-item.full .abk-date-sub{color:var(--red)}
+  .abk-date-item.avail .abk-date-sub{color:var(--green)}
+  .abk-date-item.active{background:var(--card);box-shadow:var(--shadow);border-color:#c7d2fe;transform:translateY(-1px)}
+  .abk-date-item.active .abk-date-top{color:var(--primary)}
+  .abk-date-underline{height:3px;background:#bfdbfe;margin-top:10px;border-radius:6px;width:80%}
+  .abk-date-item.active .abk-date-underline{background:#3b82f6}
+  
+  /* Buổi & khung giờ */
+  .abk-session-container {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  
+  .abk-session{padding:6px 6px 14px}
+  .abk-session-title{display:flex;align-items:center;gap:8px;color:#6b7280;font-weight:600;margin:8px 0 12px 8px}
+  .abk-slots{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .abk-slot{display:block;width:100%;height:48px;line-height:48px;background:#fff;border:1px solid var(--border);border-radius:10px;text-align:center;color:#374151;font-weight:600;cursor:pointer;transition:all .15s ease}
+  .abk-slot:hover{box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .abk-slot.disabled{color:#9ca3af;background:#f3f4f6;cursor:not-allowed;box-shadow:none}
+  .abk-slot.selected{background:var(--primary-100);border-color:#93c5fd;color:#1d4ed8}
+  .abk-empty{grid-column:1/-1;color:#9ca3af;text-align:center;padding:14px 0;border:1px dashed var(--border);border-radius:10px;background:#fafafa}
+  
+  /* Sidebar – thông tin đặt khám */
+  .abk-side-head{display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid var(--border);font-weight:800;font-size:18px}
+  .abk-doctor{display:flex;align-items:center;gap:18px;padding:20px;border-bottom:1px solid var(--border)}
+  .abk-doctor-avatar{width:80px;height:80px;border-radius:50%;object-fit:cover;background:#eef2ff;flex:0 0 80px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .abk-doctor-info{min-width:0;flex:1 1 auto}
+  .abk-doctor-name{font-weight:800;font-size:20px;line-height:1.2;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .abk-doctor-addr{color:#64748b;font-size:14px;line-height:1.35;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .abk-side-cta{padding:18px 20px}
+  .abk-confirm{width:100%;height:52px;border:none;border-radius:12px;background:#cbd5e1;color:#fff;font-weight:800;font-size:16px;cursor:not-allowed;transition:filter .15s,transform .05s}
+  .abk-confirm.enabled{background:var(--primary);cursor:pointer}
+  .abk-confirm.enabled:hover{filter:brightness(.98)}
+  .abk-confirm.enabled:active{transform:scale(.99)}
+  .abk-terms{color:#6b7280;font-size:13px;margin-top:12px}
+  
+  /* Promo (nếu dùng) */
+  .abk-promo{margin-top:22px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;padding:18px}
+  .abk-promo-title{color:#6b7280;margin-bottom:6px}
+  .abk-promo-brand{font-size:26px;font-weight:800;margin-bottom:10px}
+  .abk-store-badges img{height:40px;margin-right:12px}
+  .abk-promo-right img{height:120px}
+  
+  /* ===== Responsive ===== */
+  @media (max-width:1200px){
+    .abk-grid{grid-template-columns:minmax(560px,1fr) 380px}
+    .abk-side{top: calc(var(--header-h) + 200px)}
+  }
+  @media (max-width:1024px){
+    .abk-grid{grid-template-columns:1fr}
+    .abk-side{position:static;top:auto;margin-top:12px; align-self: auto;}
+    .abk-doctor-avatar{width:60px;height:60px;flex-basis:60px}
+    .abk-doctor-name{font-size:18px}
+  }
+  @media (max-width:768px){
+    .abk-slots{grid-template-columns:repeat(4,1fr)}
+    .abk-date-item{min-width:160px;height:80px}
+  }
+  @media (max-width:480px){
+    .abk-slots{grid-template-columns:repeat(3,1fr)}
+    .abk-date-item{min-width:140px}
+  }

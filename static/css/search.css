@@ -44,12 +44,25 @@ body {
     color: #555;
 }
 
-.filters .filter {
-    margin: 0 10px;
+.filters .filter-btn {
+    margin: 0 5px;
     background-color: #f2f2f2;
-    padding: 6px 10px;
+    padding: 6px 12px;
     border-radius: 20px;
-    display: inline-block;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: background-color 0.3s;
+}
+
+.filters .filter-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.filters .filter-btn.active {
+    background-color: #007bff;
+    color: white;
 }
 
 .doctor-list-container {
@@ -114,5 +127,110 @@ body {
     border: none;
     color: white;
     border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin-top: 150px; /* Điều chỉnh để hiển thị dưới nút filter */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 8px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modal-body {
+    margin: 15px 0;
+}
+
+#modal-search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.options-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.option-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+.option-item:hover {
+    background-color: #f0f0f0;
+}
+
+.option-item.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+#clear-filter {
+    background-color: #f2f2f2;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#apply-filter {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
     cursor: pointer;
 }
