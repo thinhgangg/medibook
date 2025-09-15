@@ -35,15 +35,19 @@ class DoctorSerializer(serializers.ModelSerializer):
 
     experience_years = serializers.SerializerMethodField()
 
+    average_rating = serializers.SerializerMethodField()
+
     class Meta:
         model = Doctor
         fields = [
             "id", "slug", "user", 
             "specialty", "specialty_slug",
-            "bio", "started_practice", "experience_years", "experience_detail","profile_picture", "profile_picture_thumbs", 
+            "bio", "started_practice", "experience_years", "experience_detail",
+            "average_rating",
+            "profile_picture", "profile_picture_thumbs", 
             "address", "is_active"
         ]
-        read_only_fields = ["id", "slug", "user", "profile_picture", "experience_years"]
+        read_only_fields = ["id", "slug", "user", "profile_picture", "experience_years", "average_rating"]
 
     def get_profile_picture_thumbs(self, obj):
         if obj.profile_picture:
@@ -61,6 +65,12 @@ class DoctorSerializer(serializers.ModelSerializer):
     def get_experience_years(self, obj):
         return obj.experience_years
 
+    def get_average_rating(self, obj):
+        avg = getattr(obj, 'average_rating_db', None)
+        if avg is None:
+            avg = obj.average_rating
+        return round(avg, 1) if avg else 0
+    
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorAvailability

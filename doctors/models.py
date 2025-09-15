@@ -55,6 +55,12 @@ class Specialty(models.Model):
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     specialty_picture = models.ImageField(upload_to='specialties/', blank=True, null=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["name"]
