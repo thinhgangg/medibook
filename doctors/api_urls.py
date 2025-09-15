@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from .views import DoctorViewSet, DoctorAvailabilityViewSet, DoctorDayOffViewSet
+from .api_views import DoctorViewSet, DoctorAvailabilityViewSet, DoctorDayOffViewSet
 
 router = DefaultRouter()
 router.register(r'availability', DoctorAvailabilityViewSet, basename='doctor-availability')

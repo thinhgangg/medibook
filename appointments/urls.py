@@ -1,7 +1,5 @@
 from django.urls import path
 from . import views
-from rest_framework.routers import DefaultRouter
-from .views import AppointmentViewSet
 
 app_name = 'appointments'
 
@@ -12,8 +10,3 @@ urlpatterns = [
     path('success/', views.appointment_success_view, name='appointment_success'),
     path('search/', views.search, name='search'),
 ]
-
-
-router = DefaultRouter()
-router.register(r'api', AppointmentViewSet, basename='appointment')
-urlpatterns += router.urls

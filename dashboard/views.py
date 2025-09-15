@@ -1,5 +1,3 @@
-# dashboard/views.py
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .decorators import role_required

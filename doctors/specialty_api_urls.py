@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from .views import SpecialtyViewSet
+from .api_views import SpecialtyViewSet
 
 router = DefaultRouter()
 
