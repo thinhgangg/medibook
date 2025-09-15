@@ -7,7 +7,9 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.db.models import Avg
 from datetime import datetime, timedelta, date as date_cls
+from django.db.models import F, ExpressionWrapper, IntegerField
 
 from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty, DoctorReview
 from .serializers import DoctorSerializer, DoctorAvailabilitySerializer, DoctorDayOffSerializer, SpecialtySerializer, DoctorReviewSerializer
@@ -27,15 +29,35 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
         if self.action == "list":
             specialty = self.request.query_params.get("specialty")
-            if specialty:
-                if specialty.isdigit():
-                    qs = qs.filter(specialty_id=int(specialty))
-                else:
-                    qs = qs.filter(specialty__name__icontains=specialty)
-
             gender = self.request.query_params.get("gender")
+            min_exp = self.request.query_params.get("min_experience")
+            max_exp = self.request.query_params.get("max_experience")
+            min_rating = self.request.query_params.get("min_rating")
+
+            if specialty:
+                qs = qs.filter(specialty__slug__iexact=specialty)
+
             if gender:
                 qs = qs.filter(user__gender__iexact=gender)
+
+            today = timezone.now().date()
+            qs = qs.annotate(
+                experience_years_db=ExpressionWrapper(
+                    today.year - F("started_practice__year"),
+                    output_field=IntegerField()
+                )
+            )
+
+            if min_exp:
+                qs = qs.filter(experience_years_db__gte=int(min_exp))
+            if max_exp:
+                qs = qs.filter(experience_years_db__lte=int(max_exp))
+
+            qs = qs.annotate(average_rating_db=Avg('reviews__stars'))
+
+            if min_rating:
+                qs = qs.filter(average_rating_db__gte=float(min_rating))
+
         return qs
 
     def perform_create(self, serializer):
@@ -227,7 +249,7 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
         serializer.save(doctor=u.doctor_profile)
 
 class SpecialtyViewSet(viewsets.ModelViewSet):
-    queryset = Specialty.objects.all().order_by("name")
+    queryset = Specialty.objects.all().order_by("id")
     serializer_class = SpecialtySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
