@@ -15,6 +15,8 @@ async function fetchDoctorProfile() {
 }
 
 function renderDoctorProfile(doctor) {
+    document.title = `Bác sĩ ${doctor.user.full_name} - MediBook`;
+
     const genderMap = {
         MALE: "Nam",
         FEMALE: "Nữ",
@@ -30,7 +32,9 @@ function renderDoctorProfile(doctor) {
         <nav class="ym-breadcrumb">
             <a href="/">Trang chủ</a>
             <span>/</span>
-            <a href="#">Bác sĩ</a>
+            <a href="/appointments/">Bác sĩ</a>
+            <span>/</span>
+            <span class="name">${doctor.user.full_name}</span>
         </nav>
 
         <!-- Header bác sĩ -->

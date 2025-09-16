@@ -50,6 +50,11 @@ body {
     font-weight: 300;
 }
 
+.ym-breadcrumb .name {
+    color: #6b7280;
+    font-weight: 800;
+}
+
 /* Main profile section */
 .doc-profile {
     padding-bottom: 120px;
