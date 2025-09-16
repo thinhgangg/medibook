@@ -62,7 +62,7 @@ function renderDoctorProfile(doctor) {
                 </div>
 
                 <div class="doc-row">
-                    <span class="rating">${avgRating}</span>
+                    <span><strong>Đánh giá:</strong></span><span class="rating"> ${avgRating}</span>
                 </div>
             </div>
         </div>
