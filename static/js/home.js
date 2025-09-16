@@ -24,23 +24,23 @@ function renderDoctors(doctors) {
             const fullName = d.user.full_name || "Bác sĩ chưa cập nhật";
             const avatarUrl = d.profile_picture || "/static/img/doctors/default-avatar.jpg";
             const title = d.user.role === "DOCTOR" ? "BS." : "";
+            const slug = d.slug;
 
             return `
-      <article class="dm-card" role="option" tabindex="0" data-doctor-id="${d.id}">
-        <div class="dm-card__avatar">
-          <img src="${avatarUrl}" alt="Ảnh của ${fullName}" />
-        </div>
-        <h3 class="dm-card__name">${title} ${fullName}</h3>
-        <div class="dm-card__tags">${tags}</div>
-        <a href="#" class="dm-btn dm-btn--ghost" data-book="${d.id}">Đặt lịch khám</a>
-      </article>`;
+                <article class="dm-card" role="option" tabindex="0" data-doctor-id="${d.id}">
+                    <div class="dm-card__avatar">
+                    <img src="${avatarUrl}" alt="Ảnh của ${fullName}" />
+                    </div>
+                    <h3 class="dm-card__name">${title} ${fullName}</h3>
+                    <div class="dm-card__tags">${tags}</div>
+                    <a href="/doctors/${slug}/" class="dm-btn dm-btn--ghost">Đặt lịch khám</a>
+                </article>`;
         })
         .join("");
 
-    rail.querySelectorAll("[data-book]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            alert(`(Demo) Đặt lịch bác sĩ ID: ${btn.dataset.book}`);
+    rail.querySelectorAll(".dm-btn").forEach((link) => {
+        link.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
         });
     });
 }
