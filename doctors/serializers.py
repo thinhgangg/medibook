@@ -116,17 +116,21 @@ class DoctorDayOffSerializer(serializers.ModelSerializer):
         return data
     
 class DoctorReviewSerializer(serializers.ModelSerializer):
+    patient_name = serializers.CharField(
+        source="appointment.patient.user.full_name", read_only=True
+    )
+    created_at = serializers.DateTimeField(
+        source="appointment.end_at", read_only=True
+    )
     class Meta:
         model = DoctorReview
-        fields = ['stars', 'comment']
+        fields = ['id', 'stars', 'comment', 'patient_name', 'created_at']
 
     def validate(self, data):
-        # Kiểm tra trạng thái cuộc hẹn
         appointment = self.context['appointment']
         if appointment.status != Appointment.Status.COMPLETED:
             raise serializers.ValidationError("Cuộc hẹn phải hoàn thành mới có thể đánh giá.")
         
-        # Kiểm tra nếu đã có đánh giá cho cuộc hẹn này
         if hasattr(appointment, 'review'):
             raise serializers.ValidationError("Cuộc hẹn này đã có đánh giá.")
         return data

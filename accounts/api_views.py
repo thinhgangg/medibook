@@ -115,7 +115,7 @@ class DoctorRegisterView(APIView):
             profile_picture=data.get("profile_picture"),
             is_active=True,
             started_practice=data.get("started_practice"),
-            experience_detail=data.get("experience_detail", "Bác sĩ chưa cập nhật kinh nghiệm."),
+            experience_detail=data.get("experience_detail", "Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm."),
         )
 
         return Response(

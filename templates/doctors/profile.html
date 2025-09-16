@@ -1,6 +1,13 @@
-{% extends "base.html" %} {% load static %} {% block content %}
-<div class="doctor-profile-container">
-    <div id="doctor-detail"></div>
+{% extends 'base.html' %} {% load static %} {% block title %}Đặt lịch khám - MediBook{% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+
+<section id="doc-profile" class="doc-profile container"></section>
+
+<!-- CTA dưới cùng -->
+<div class="sticky-cta">
+    <div class="hotline">Hỗ trợ đặt khám <strong>1900-2805</strong></div>
+    <a href="{% url 'appointments:appointment' %}" class="btn btn-primary">ĐẶT KHÁM NGAY</a>
 </div>
+
 <script src="{% static 'js/doctor_profile.js' %}"></script>
 {% endblock %}

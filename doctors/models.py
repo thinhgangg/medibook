@@ -16,7 +16,7 @@ class Doctor(models.Model):
     )
     bio = models.TextField(default="Bác sĩ chưa cập nhật tiểu sử", blank=True, null=True)
     started_practice = models.DateField(blank=True, null=True)
-    experience_detail = models.TextField(default="Bác sĩ chưa cập nhật kinh nghiệm", blank=True, null=True)
+    experience_detail = models.TextField(default="Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.", blank=True, null=True)
     profile_picture = models.ImageField(upload_to='doctors/', blank=True, null=True)
     is_active = models.BooleanField(default=True, db_index=True)
 

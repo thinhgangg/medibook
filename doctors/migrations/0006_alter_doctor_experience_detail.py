@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
             model_name="doctor",
             name="experience_detail",
             field=models.TextField(
-                blank=True, default="Bác sĩ chưa cập nhật kinh nghiệm", null=True
+                blank=True, default="Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.", null=True
             ),
         ),
     ]

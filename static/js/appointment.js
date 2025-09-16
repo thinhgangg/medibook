@@ -161,7 +161,7 @@ function renderDoctors(doctors, replace = true) {
         card.innerHTML = `
             <img src="${d.profile_picture}" alt="${d.user.full_name}" class="doctor-avatar" />
             <div class="doctor-info">
-                <h3 class="doctor-name">${d.user.full_name}</h3>
+                <h3 class="doctor-name">BS. ${d.user.full_name}</h3>
                 <div class="doctor-specialty">${d.specialty?.name || "Chưa cập nhật"}</div>
                 <div class="doctor-address"><i class="fas fa-map-marker-alt"></i> ${d.user.full_address || "Chưa cập nhật"}</div>
                 <div class="doctor-stats">
@@ -322,7 +322,7 @@ function prepareAPIParams() {
     if (activeFilters.min_experience !== undefined && activeFilters.min_experience !== null) {
         params.min_experience = activeFilters.min_experience;
     }
-    
+
     if (activeFilters.max_experience !== undefined && activeFilters.max_experience !== null) {
         params.max_experience = activeFilters.max_experience;
     }
