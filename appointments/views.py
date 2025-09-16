@@ -37,8 +37,10 @@ from .serializers import (
 )
 
 # Django views for rendering templates
+# def appointment_booking_view(request):
+#     return render(request, 'appointments/appointment-booking.html')
 def appointment_view(request):
-    return render(request, 'appointments/appointment.html')
+    return render(request, 'appointments/appointment-booking.html')
 
 def appointment_invoice_view(request):
     return render(request, 'appointments/appointment-invoice.html')
@@ -51,6 +53,9 @@ def appointment_success_view(request):
 
 def search(request):
     return render(request, 'appointments/search.html')
+def appointment_doctors_view(request):
+    # You can add logic to fetch a list of doctors or other data if needed
+    return render(request, 'appointments/appointment-doctors.html')
 
 # API ViewSet for Appointment
 class AppointmentViewSet(viewsets.ModelViewSet):

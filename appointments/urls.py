@@ -11,7 +11,11 @@ urlpatterns = [
     path('list/', views.appointment_list_view, name='appointment_list'),
     path('success/', views.appointment_success_view, name='appointment_success'),
     path('search/', views.search, name='search'),
+    path('doctors/', views.appointment_doctors_view, name='appointment_doctors'),  # Thêm đường dẫn cho trang bác sĩ
+    # path('booking/', views.appointment_booking_view, name='appointments_booking'),  # Đảm bảo khai báo đường dẫn cho đặt lịch
 ]
+
+
 
 
 router = DefaultRouter()
