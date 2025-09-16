@@ -10,7 +10,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('api/accounts/', include('accounts.api_urls')),
     path('appointments/', include('appointments.urls')),
-    path('api/appointments/', include('appointments.api_urls')),
+    path('api/', include('appointments.api_urls')),
     path('doctors/', include('doctors.urls')),
     path('api/doctors/', include('doctors.api_urls')),
     path('patients/', include('patients.urls')),

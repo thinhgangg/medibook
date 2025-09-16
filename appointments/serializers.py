@@ -1,18 +1,23 @@
 # appointments/serializers.py
 from django.utils import timezone
 from rest_framework import serializers
-from .models import Appointment
-from doctors.models import Doctor  # dùng queryset
+from .models import Appointment, AppointmentImage
+from doctors.models import Doctor
 
+class AppointmentImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentImage
+        fields = ["id", "appointment", "image", "uploaded_at"]
+        read_only_fields = ["id", "uploaded_at"]
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor_id  = serializers.IntegerField(source="doctor.id", read_only=True)
     patient_id = serializers.IntegerField(source="patient.id", read_only=True)
+    images = AppointmentImageSerializer(many=True, read_only=True)
 
     class Meta:
         model  = Appointment
-        fields = ["id", "doctor_id", "patient_id", "start_at", "end_at", "reason", "status", "created_at"]
+        fields = ["id", "doctor_id", "patient_id", "start_at", "end_at", "note", "status", "created_at", "images"]
         read_only_fields = ["id", "doctor_id", "patient_id", "status", "created_at"]
-
 
 # ---------- helper kiểm tra availability & lưới slot ----------
 def _ensure_within_availability_and_grid(doctor, start_at, end_at):
@@ -81,7 +86,7 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Appointment
-        fields = ["doctor", "start_at", "end_at", "reason"]
+        fields = ["doctor", "start_at", "end_at", "note"]
 
     def validate(self, data):
         start = data["start_at"]

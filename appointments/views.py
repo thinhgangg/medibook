@@ -3,14 +3,6 @@ from django.shortcuts import render
 def appointment_view(request):
     return render(request, 'appointments/appointment.html')
 
-def appointment_invoice_view(request):
-    return render(request, 'appointments/appointment-invoice.html')
-
-def appointment_list_view(request):
-    return render(request, 'appointments/appointment-list.html')
-
-def appointment_success_view(request):
-    return render(request, 'appointments/appointment-success.html')
-
-def search(request):
-    return render(request, 'appointments/search.html')
+def appointment_create(request):
+    doctor_slug = request.GET.get("doctor")
+    return render(request, "appointments/new.html", {"doctor_slug": doctor_slug})
