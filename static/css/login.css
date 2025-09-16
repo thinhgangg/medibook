@@ -10,12 +10,11 @@ body {
 
 /* Main Auth Container */
 .auth-container {
-    margin-top: 50px;
+    margin-top: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 20px;
     position: relative;
 }
 
