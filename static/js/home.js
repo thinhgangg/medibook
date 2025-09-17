@@ -117,24 +117,19 @@ function renderSpecialties(list) {
     ul.innerHTML = list
         .map(
             (s) => `
-        <li class="spec-item">
-          <a href="#" class="spec-link" data-spec="${s.id}" aria-label="${s.name}">
-            <div class="spec-thumb">
-              <img src="${s.specialty_picture}" alt="${s.name}">
-            </div>
-            <div class="spec-name">${s.name}</div>
-          </a>
-        </li>
-      `
+                <li class="spec-item">
+                <a href="/appointments/?page=1&specialty=${s.slug}" 
+                    class="spec-link" 
+                    aria-label="${s.name}">
+                    <div class="spec-thumb">
+                    <img src="${s.specialty_picture}" alt="${s.name}">
+                    </div>
+                    <div class="spec-name">${s.name}</div>
+                </a>
+                </li>
+            `
         )
         .join("");
-
-    ul.querySelectorAll("[data-spec]").forEach((a) => {
-        a.addEventListener("click", (e) => {
-            e.preventDefault();
-            alert("(Demo) Chuyên khoa ID: " + a.dataset.spec);
-        });
-    });
 
     const toggleBtn = document.getElementById("toggleSpecsBtn");
     const specsMore = document.querySelector(".specs__more");
