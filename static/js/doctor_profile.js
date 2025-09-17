@@ -1,6 +1,7 @@
 const pathParts = window.location.pathname.split("/");
 const slug = pathParts[pathParts.length - 2];
 const doctorProfile = document.getElementById("doc-profile");
+const ctaBtn = document.getElementById("cta-booking");
 
 async function fetchDoctorProfile() {
     try {
@@ -37,7 +38,6 @@ function renderDoctorProfile(doctor) {
             <span class="name">${doctor.user.full_name}</span>
         </nav>
 
-        <!-- Header bác sĩ -->
         <div class="card doc-header">
             <div class="doc-avatar">
                 <img src="${doctor.profile_picture || "/static/img/doctors/default.jpg"}" 
@@ -67,26 +67,22 @@ function renderDoctorProfile(doctor) {
             </div>
         </div>
 
-        <!-- Giới thiệu -->
         <div class="card">
             <h3 class="section-title">Giới thiệu</h3>
             <p>${doctor.bio || "Bác sĩ chưa cập nhật tiểu sử"}</p>
         </div>
 
-        <!-- Kinh nghiệm chi tiết -->
         <div class="card">
             <h3 class="section-title">Kinh nghiệm</h3>
             <p>${expDetail}</p>
         </div>
 
-        <!-- Liên hệ -->
         <div class="card">
             <h3 class="section-title">Thông tin liên hệ</h3>
             <p><strong>Điện thoại:</strong> ${doctor.user.phone_number || "Chưa cập nhật"}</p>
             <p><strong>Email:</strong> ${doctor.user.email || "Chưa cập nhật"}</p>
         </div>
 
-        <!-- Đặt khám -->
         <div class="card quick">
             <h3 class="section-title">Đặt khám</h3>
             <div id="slots">
@@ -94,7 +90,6 @@ function renderDoctorProfile(doctor) {
             </div>
         </div>
 
-        <!-- Đánh giá -->
         <div class="card reviews">
             <h3 class="section-title">Đánh giá của bệnh nhân</h3>
             <div id="reviews">
@@ -102,6 +97,10 @@ function renderDoctorProfile(doctor) {
             </div>
         </div>
     `;
+
+    if (ctaBtn) {
+        ctaBtn.href = `/appointments/new/?doctor=${doctor.slug}`;
+    }
 
     fetchDoctorSlots(slug);
     fetchDoctorReviews(slug);
