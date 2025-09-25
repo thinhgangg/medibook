@@ -1,18 +1,13 @@
 // ===== Fetch doctors from API =====
 async function fetchDoctors() {
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/doctors/", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        if (!response.ok) {
-            throw new Error("Failed to fetch doctors");
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching doctors:", error);
+        const res = await fetch("http://127.0.0.1:8000/api/doctors/");
+        if (!res.ok) throw new Error("Failed to fetch doctors");
+        const data = await res.json();
+        return data.results.slice(0, 10);
+    } catch (err) {
+        console.error("Error fetching doctors:", err);
+        doctorList.innerHTML = "<p>Không thể tải danh sách bác sĩ.</p>";
         return [];
     }
 }
@@ -23,30 +18,29 @@ function renderDoctors(doctors) {
     if (!rail) return;
 
     rail.innerHTML = doctors
-        .slice(0, 10)
         .map((d) => {
             const specialties = d.specialty ? [d.specialty.name] : ["Chưa xác định"];
             const tags = specialties.map((t) => `<span class="dm-tag">${t}</span>`).join("");
             const fullName = d.user.full_name || "Bác sĩ chưa cập nhật";
             const avatarUrl = d.profile_picture || "/static/img/doctors/default-avatar.jpg";
             const title = d.user.role === "DOCTOR" ? "BS." : "";
+            const slug = d.slug;
 
             return `
-      <article class="dm-card" role="option" tabindex="0" data-doctor-id="${d.id}">
-        <div class="dm-card__avatar">
-          <img src="${avatarUrl}" alt="Ảnh của ${fullName}" />
-        </div>
-        <h3 class="dm-card__name">${title} ${fullName}</h3>
-        <div class="dm-card__tags">${tags}</div>
-        <a href="#" class="dm-btn dm-btn--ghost" data-book="${d.id}">Đặt lịch khám</a>
-      </article>`;
+                <article class="dm-card" role="option" tabindex="0" data-doctor-id="${d.id}">
+                    <div class="dm-card__avatar">
+                    <img src="${avatarUrl}" alt="Ảnh của ${fullName}" />
+                    </div>
+                    <h3 class="dm-card__name">${title} ${fullName}</h3>
+                    <div class="dm-card__tags">${tags}</div>
+                    <a href="/doctors/${slug}/" class="dm-btn dm-btn--ghost">Đặt lịch khám</a>
+                </article>`;
         })
         .join("");
 
-    rail.querySelectorAll("[data-book]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            alert(`(Demo) Đặt lịch bác sĩ ID: ${btn.dataset.book}`);
+    rail.querySelectorAll(".dm-btn").forEach((link) => {
+        link.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
         });
     });
 }
@@ -123,31 +117,26 @@ function renderSpecialties(list) {
     ul.innerHTML = list
         .map(
             (s) => `
-        <li class="spec-item">
-          <a href="#" class="spec-link" data-spec="${s.id}" aria-label="${s.name}">
-            <div class="spec-thumb">
-              <img src="${s.specialty_picture}" alt="${s.name}">
-            </div>
-            <div class="spec-name">${s.name}</div>
-          </a>
-        </li>
-      `
+                <li class="spec-item">
+                <a href="/appointments/?page=1&specialty=${s.slug}" 
+                    class="spec-link" 
+                    aria-label="${s.name}">
+                    <div class="spec-thumb">
+                    <img src="${s.specialty_picture}" alt="${s.name}">
+                    </div>
+                    <div class="spec-name">${s.name}</div>
+                </a>
+                </li>
+            `
         )
         .join("");
-
-    ul.querySelectorAll("[data-spec]").forEach((a) => {
-        a.addEventListener("click", (e) => {
-            e.preventDefault();
-            alert("(Demo) Chuyên khoa ID: " + a.dataset.spec);
-        });
-    });
 
     const toggleBtn = document.getElementById("toggleSpecsBtn");
     const specsMore = document.querySelector(".specs__more");
 
     if (list.length > 6) {
         ul.classList.add("collapsed");
-        specsMore.style.display = "block"; // hiện nút
+        specsMore.style.display = "block";
         toggleBtn.textContent = "Xem thêm";
 
         toggleBtn.onclick = () => {
@@ -156,7 +145,7 @@ function renderSpecialties(list) {
         };
     } else {
         ul.classList.remove("collapsed");
-        specsMore.style.display = "none"; // ẩn nút
+        specsMore.style.display = "none";
     }
 }
 

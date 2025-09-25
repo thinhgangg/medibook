@@ -55,15 +55,14 @@ body {
     height: 60px;
     padding: 10px 20px;
 }
-
 .nav-wrap {
     max-width: 1280px;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    user-select: none;
 }
-
 .nav-brand {
     display: inline-flex;
     align-items: center;
@@ -83,25 +82,21 @@ body {
     color: transparent;
     font-weight: 900;
 }
-
 .nav-links {
     display: flex;
     align-items: center;
     gap: 32px;
     list-style: none;
 }
-
 .nav-links a {
     color: #4a5568;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
 }
-
 .nav-links a:hover {
     color: #0071dc;
 }
-
 .nav-item {
     position: relative;
     text-decoration: none;
@@ -109,7 +104,6 @@ body {
     font-size: 16px;
     font-weight: 500;
 }
-
 .nav-link {
     display: inline-flex;
     align-items: center;
@@ -121,7 +115,6 @@ body {
     padding: 8px 2px;
     transition: color 0.2s ease;
 }
-
 .nav-link:hover,
 .nav-item.active > .nav-link {
     color: #0071dc;

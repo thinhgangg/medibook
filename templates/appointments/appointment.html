@@ -11,7 +11,7 @@
 
         <form class="search-bar" method="get" action="#">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" name="q" class="search-input" placeholder="Tìm theo triệu chứng, bác sĩ, bệnh viện..." />
+            <input type="text" name="q" class="search-input" placeholder="Tìm theo triệu chứng, bác sĩ..." />
             <button type="submit" class="search-btn">
                 <i class="fas fa-search"></i>
             </button>
@@ -41,6 +41,9 @@
     </section>
 </div>
 
+<!-- Pagination -->
+<div id="pagination" class="pagination-controls"></div>
+
 <!-- Modal -->
 <div id="filter-modal" class="modal">
     <div class="modal-content">
@@ -50,9 +53,7 @@
         </div>
         <div class="modal-body">
             <input type="text" id="modal-search" class="modal-search" placeholder="Tìm kiếm..." />
-            <div id="modal-options" class="options-list">
-                <!-- Options will be populated by JavaScript -->
-            </div>
+            <div id="modal-options" class="options-list"></div>
         </div>
         <div class="modal-footer">
             <button id="clear-filter" class="modal-btn clear-btn">Xóa bộ lọc</button>
@@ -61,5 +62,6 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.1.0"></script>
 <script src="{% static 'js/appointment.js' %}"></script>
 {% endblock %}

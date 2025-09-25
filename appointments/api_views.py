@@ -13,10 +13,11 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Appointment
+from .models import Appointment, AppointmentImage
 from .serializers import (
     AppointmentSerializer,
     AppointmentCreateSerializer,
+    AppointmentImageSerializer,
     _ensure_within_availability_and_grid,
 )
 
@@ -233,10 +234,15 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
             appt.start_at = new_start
             appt.end_at = new_end
-            appt.status = Appointment.Status.PENDING  # dời lịch -> cần xác nhận lại
+            appt.status = Appointment.Status.PENDING
             appt.save()
 
         return Response(AppointmentSerializer(appt).data)
+    
+class AppointmentImageViewSet(viewsets.ModelViewSet):
+    queryset = AppointmentImage.objects.all()
+    serializer_class = AppointmentImageSerializer
+    permission_classes = [IsAuthenticated]
     
 def send_appointment_confirmation(appointment):
     subject = 'Xác nhận lịch hẹn khám bệnh'

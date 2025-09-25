@@ -11,11 +11,11 @@ class Appointment(models.Model):
         COMPLETED = "COMPLETED", "Completed"
         CANCELLED = "CANCELLED", "Cancelled"
 
-    doctor     = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointments")
-    patient    = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments")
+    doctor     = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True, related_name="appointments")
+    patient    = models.ForeignKey(Patient, on_delete=models.SET_NULL, null=True, blank=True, related_name="appointments")
     start_at = models.DateTimeField(null=True, blank=True)
     end_at   = models.DateTimeField(null=True, blank=True)
-    reason = models.CharField(max_length=255, blank=True, null=True)
+    note     = models.TextField(blank=True, null=True)
     status     = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -23,5 +23,14 @@ class Appointment(models.Model):
         ordering = ["-start_at"]
 
     def __str__(self):
-        return f"{self.patient_id} with {self.doctor_id} on {self.start_at:%H:%M %d-%m-%Y}"
-    
+        doctor_name = self.doctor.user.full_name if self.doctor else "Unknown Doctor"
+        patient_name = self.patient.user.full_name if self.patient else "Unknown Patient"
+        return f"{patient_name} with {doctor_name} on {self.start_at:%H:%M %d-%m-%Y}" if self.start_at else f"{patient_name} with {doctor_name}"
+
+class AppointmentImage(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to="appointment_images/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for Appointment #{self.appointment_id} at {self.uploaded_at:%d-%m-%Y}"
