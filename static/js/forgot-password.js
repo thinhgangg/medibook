@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
         afterReset: "/accounts/login/?action=login",
     };
 
-    // CSRF
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const csrfToken = getCookie("csrftoken");
 
-    // Helpers
     async function postJSON(url, payload) {
         const headers = {
             "Content-Type": "application/json",
@@ -38,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return { ok: res.ok, status: res.status, data };
     }
 
-    // Elements
     const emailInput = document.querySelector("#forgot-password-form input[name='email']");
     const sendOtpButton = document.getElementById("send-otp");
     const regEmailErrorSpan = document.getElementById("reg-email-error");
@@ -50,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const setPasswordButton = document.getElementById("set-password");
 
-    // Validate email
     function validateEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
@@ -63,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     emailInput.addEventListener("input", checkConditions);
 
-    // Step navigation
     function goToStep(stepNumber) {
         document.querySelectorAll(".step-content").forEach((el) => el.classList.add("hidden"));
         document.querySelector(`.step-content[data-step="${stepNumber}"]`).classList.remove("hidden");
@@ -72,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector(`.steps .step[data-step="${stepNumber}"]`).classList.add("active");
     }
 
-    // Countdown
     function startCountdown(seconds) {
         let timeLeft = seconds;
         countdownElement.dataset.counting = "true";
@@ -93,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1000);
     }
 
-    // ===== SEND OTP =====
     sendOtpButton.addEventListener("click", async () => {
         const payload = { email: emailInput.value.trim() };
         regEmailErrorSpan.textContent = "";
@@ -126,7 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ===== RESEND OTP =====
     resendOtpLink.addEventListener("click", async (e) => {
         e.preventDefault();
         if (countdownElement.dataset.counting === "true") return;
@@ -137,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ===== VERIFY OTP =====
     verifyOtpButton.addEventListener("click", async () => {
         const otp = otpInput.value.trim();
         if (!otp) {
@@ -158,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ===== SET PASSWORD =====
     setPasswordButton.addEventListener("click", async () => {
         const passwordForm = document.getElementById("password-form");
         const password = passwordForm.querySelector("input[name='password']").value;

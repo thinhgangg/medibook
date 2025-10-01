@@ -1,11 +1,9 @@
-// ------------------- Filter Data -------------------
 const filterData = {
     gender: ["Nam", "Nữ"],
     experience: ["Dưới 5 năm", "5-10 năm", "10-15 năm", "Trên 15 năm"],
     rating: ["4.5+ sao", "4.0+ sao", "3.5+ sao", "3.0+ sao"],
 };
 
-// ------------------- DOM Elements -------------------
 const modal = document.getElementById("filter-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalOptions = document.getElementById("modal-options");
@@ -22,7 +20,6 @@ let doctorsCache = [];
 let specialtiesCache = [];
 let activeFilters = {};
 
-// ------------------- Helper Functions -------------------
 function getFilterTitle(filter) {
     const titles = {
         specialty: "Chuyên khoa",
@@ -105,7 +102,6 @@ function updateFilterButton(filter) {
     filterBtn.innerHTML = `<i class="${getFilterIcon(filter)}"></i> ${getFilterTitle(filter)}`;
 }
 
-// ------------------- Fetch Data -------------------
 async function fetchSpecialties() {
     if (specialtiesCache.length) return specialtiesCache;
     try {
@@ -200,7 +196,7 @@ function renderPaginationControls() {
     }
 }
 
-// ------------------- Modal & Filters -------------------
+// Modal & Filters
 document.querySelectorAll(".filter-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
         currentFilter = btn.dataset.filter;
@@ -334,7 +330,6 @@ function prepareAPIParams() {
     return params;
 }
 
-// ------------------- Initial Load -------------------
 window.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
 

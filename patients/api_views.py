@@ -26,16 +26,11 @@ class PatientViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
-        """
-        GET  /patients/me/  -> lấy hồ sơ bệnh nhân của chính mình
-        PATCH/patients/me/  -> cập nhật hồ sơ của chính mình
-        """
         obj = get_object_or_404(Patient, user=request.user)
 
         if request.method == 'GET':
             return Response(self.get_serializer(obj).data)
 
-        # PATCH
         serializer = self.get_serializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)

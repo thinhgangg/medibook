@@ -1,4 +1,3 @@
-# doctors/serializers.py
 from rest_framework import serializers
 from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
 from accounts.serializers import UserSerializer
@@ -108,7 +107,6 @@ class DoctorDayOffSerializer(serializers.ModelSerializer):
     def validate(self, data):
         s = data.get('start_time')
         e = data.get('end_time')
-        # Cả hai null -> nghỉ cả ngày (ok)
         if (s is None) ^ (e is None):
             raise serializers.ValidationError("Nếu nghỉ theo khung giờ, cần có cả start_time và end_time.")
         if s and e and e <= s:

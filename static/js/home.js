@@ -1,4 +1,3 @@
-// ===== Fetch doctors from API =====
 async function fetchDoctors() {
     try {
         const res = await fetch("http://127.0.0.1:8000/api/doctors/");
@@ -12,7 +11,6 @@ async function fetchDoctors() {
     }
 }
 
-// ===== Render doctors =====
 function renderDoctors(doctors) {
     const rail = document.getElementById("doctorRail");
     if (!rail) return;
@@ -45,7 +43,6 @@ function renderDoctors(doctors) {
     });
 }
 
-// ===== Generic rail controls (dùng cho doctor) =====
 function setupRail(railId, progressId) {
     const rail = document.getElementById(railId);
     const bar = document.getElementById(progressId);
@@ -95,7 +92,6 @@ function setupRail(railId, progressId) {
     );
 }
 
-// ===== Fetch specialties from API =====
 async function fetchSpecialties() {
     try {
         const response = await fetch("http://127.0.0.1:8000/api/specialties/", {
@@ -149,7 +145,6 @@ function renderSpecialties(list) {
     }
 }
 
-/* ===== Init ===== */
 document.addEventListener("DOMContentLoaded", async () => {
     const doctors = await fetchDoctors();
     renderDoctors(doctors);

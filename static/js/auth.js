@@ -1,4 +1,3 @@
-// static/js/auth.js
 document.addEventListener("DOMContentLoaded", () => {
     const ENDPOINTS = {
         me: "/api/accounts/me/",
@@ -46,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkAuthStatus();
 
-    // Xử lý logout
     const logoutLink = document.querySelector("#logoutLink");
     if (logoutLink) {
         logoutLink.addEventListener("click", async (e) => {

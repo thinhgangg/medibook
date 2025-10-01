@@ -143,25 +143,22 @@ class MeView(APIView):
     def patch(self, request):
         user = request.user
 
-        # 1) Update user cơ bản
         user_ser = UserUpdateSerializer(user, data=request.data, partial=True)
         user_ser.is_valid(raise_exception=True)
         user_ser.save()
 
         updated_doctor, updated_patient = None, None
 
-        # 2) Nếu user có hồ sơ Doctor
         if hasattr(user, "doctor_profile"):
             doc_ser = DoctorSerializer(
                 user.doctor_profile,
                 data=request.data,
                 partial=True,
-                context={"request": request},  # để xử lý file upload
+                context={"request": request},  
             )
             doc_ser.is_valid(raise_exception=True)
             updated_doctor = doc_ser.save()
 
-        # 3) Nếu user có hồ sơ Patient
         if hasattr(user, "patient_profile"):
             pat_ser = PatientSerializer(
                 user.patient_profile,
@@ -172,7 +169,6 @@ class MeView(APIView):
             pat_ser.is_valid(raise_exception=True)
             updated_patient = pat_ser.save()
 
-        # 4) Response
         resp = UserPublicSerializer(user).data
         if updated_doctor:
             resp["doctor"] = DoctorSerializer(updated_doctor).data
@@ -267,13 +263,11 @@ class PatientSetPasswordView(APIView):
         password = serializer.validated_data["password1"]
         temp_token = request.data.get("temp_token")
 
-        # check temp token
         try:
             UntypedToken(temp_token)
         except Exception:
             return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=400)
 
-        # check OTP verified
         try:
             otp_obj = OTPVerification.objects.get(email=email, is_verified=True)
         except OTPVerification.DoesNotExist:
@@ -282,12 +276,10 @@ class PatientSetPasswordView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({"detail": "Email đã được sử dụng. Vui lòng dùng email khác hoặc đăng nhập nếu bạn đã có tài khoản."}, status=400)
 
-        # tạo user bệnh nhân
         user = User(email=email, role="PATIENT")
         user.set_password(password)
         user.save()
 
-        # xóa OTP
         otp_obj.delete()
 
         refresh, access = issue_tokens(user)
@@ -308,7 +300,6 @@ class PatientProfileView(APIView):
 
         data = request.data
 
-        # update các field hồ sơ cơ bản
         user.full_name = data.get("full_name", user.full_name)
         user.phone_number = data.get("phone_number", user.phone_number)
         user.dob = data.get("dob", user.dob)
@@ -321,7 +312,6 @@ class PatientProfileView(APIView):
         user.ethnicity = data.get("ethnicity", user.ethnicity)
         user.save()
 
-        # tạo hoặc cập nhật profile patient
         patient, created = Patient.objects.get_or_create(user=user)
         patient.insurance_no = data.get("insurance_no", patient.insurance_no)
         patient.occupation = data.get("occupation", patient.occupation)
@@ -403,32 +393,26 @@ class ForgotPasswordSetPasswordView(APIView):
         password = serializer.validated_data["password1"]
         temp_token = request.data.get("temp_token")
 
-        # Check temp token
         try:
             UntypedToken(temp_token)
         except Exception:
             return Response({"detail": "Temp token không hợp lệ hoặc hết hạn."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check OTP verified
         try:
             otp_obj = OTPVerification.objects.get(email=email, is_verified=True)
         except OTPVerification.DoesNotExist:
             return Response({"detail": "OTP chưa được xác thực."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if user exists
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({"detail": "Email không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Set new password
         user.set_password(password)
         user.save()
 
-        # Delete OTP
         otp_obj.delete()
 
-        # Issue new tokens
         refresh, access = issue_tokens(user)
         return Response({
             "message": "Đặt lại mật khẩu thành công.",

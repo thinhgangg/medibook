@@ -1,4 +1,3 @@
-# appointments/serializers.py
 from django.utils import timezone
 from rest_framework import serializers
 from .models import Appointment, AppointmentImage
@@ -19,17 +18,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
         fields = ["id", "doctor_id", "patient_id", "start_at", "end_at", "note", "status", "created_at", "images"]
         read_only_fields = ["id", "doctor_id", "patient_id", "status", "created_at"]
 
-# ---------- helper kiểm tra availability & lưới slot ----------
 def _ensure_within_availability_and_grid(doctor, start_at, end_at):
-    """
-    - start/end cùng 1 ngày (local)
-    - Nằm trong ít nhất 1 availability (weekday & is_active & time range)
-    - Thời lượng là bội số của slot_minutes của availability khớp
-    - Giờ bắt đầu khớp lưới slot từ start_time của availability
-    """
     tz = timezone.get_current_timezone()
 
-    # đảm bảo aware theo TZ, rồi convert về localtime
     s = timezone.localtime(start_at, tz) if timezone.is_aware(start_at) else start_at
     e = timezone.localtime(end_at,   tz) if timezone.is_aware(end_at)   else end_at
 
@@ -44,7 +35,6 @@ def _ensure_within_availability_and_grid(doctor, start_at, end_at):
     s_time = s.time()
     e_time = e.time()
 
-    # tìm availability bao phủ khung giờ
     match = None
     for av in avails:
         if av.start_time <= s_time and av.end_time >= e_time:
@@ -55,24 +45,19 @@ def _ensure_within_availability_and_grid(doctor, start_at, end_at):
 
     slot = match.slot_minutes
 
-    # độ dài phải là bội số slot
     dur_min = int((e - s).total_seconds() // 60)
     if dur_min <= 0 or dur_min % slot != 0:
         raise serializers.ValidationError(f"Độ dài lịch phải là bội số của {slot} phút.")
 
-    # bắt đầu phải khớp lưới slot từ start_time của ca
     def _mins(t): return t.hour * 60 + t.minute
     offset = _mins(s_time) - _mins(match.start_time)
     if offset % slot != 0:
         raise serializers.ValidationError(f"Giờ bắt đầu phải khớp lưới {slot} phút từ {match.start_time}.")
     
-    # Chặn day-off:
     offs = doctor.day_offs.filter(date=s.date())
-    # nghỉ cả ngày
     if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
         raise serializers.ValidationError("Bác sĩ nghỉ cả ngày.")
 
-    # nghỉ theo khung
     def _mins(t): return t.hour * 60 + t.minute
     s_m = _mins(s.time()); e_m = _mins(e.time())
     for off in offs:
@@ -102,10 +87,8 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
         if not doctor.user.is_active:
             raise serializers.ValidationError("Tài khoản bác sĩ đang bị khóa.")
 
-        # 1) Nằm trong availability + đúng lưới slot
         _ensure_within_availability_and_grid(doctor, start, end)
 
-        # 2) Không trùng lịch (check mềm ở serializer; check cứng ở view với select_for_update)
         qs = doctor.appointments.exclude(status=Appointment.Status.CANCELLED)
         if qs.filter(start_at__lt=end, end_at__gt=start).exists():
             raise serializers.ValidationError("Khung giờ đã có người đặt. Vui lòng chọn giờ khác.")

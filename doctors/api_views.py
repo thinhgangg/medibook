@@ -73,21 +73,15 @@ class DoctorViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        # Luôn khóa về đúng user hiện tại
         serializer.save(user=self.request.user)
 
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
-        """
-        GET  /doctors/me/   -> lấy hồ sơ bác sĩ của chính mình
-        PATCH/doctors/me/   -> cập nhật hồ sơ của chính mình
-        """
         obj = get_object_or_404(Doctor, user=request.user)
 
         if request.method == 'GET':
             return Response(self.get_serializer(obj).data)
 
-        # PATCH
         serializer = self.get_serializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user) 
@@ -95,11 +89,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='slots')
     def slots(self, request, slug=None):
-        """
-        GET /doctors/{id}/slots/?date=YYYY-MM-DD
-        Trả list slot trống (đã loại các lịch hẹn confirmed/pending).
-        """
-        from appointments.models import Appointment  # tránh import vòng
+        from appointments.models import Appointment 
         doctor = self.get_object()
 
         date_str = request.query_params.get('date')
@@ -115,7 +105,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
         if not avails.exists():
             return Response([])
 
-        # Lấy các cuộc hẹn cùng ngày (trừ CANCELLED)
         start_of_day = datetime.combine(target_date, datetime.min.time())
         end_of_day   = datetime.combine(target_date, datetime.max.time())
         tz = timezone.get_current_timezone()
@@ -126,7 +115,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
             .filter(start_at__lt=end_of_day, end_at__gt=start_of_day)\
             .values_list("start_at", "end_at")
 
-        # Build danh sách slot
         now = timezone.now()
         busy = [(s, e) for s, e in taken]
         slots = []
@@ -140,12 +128,10 @@ class DoctorViewSet(viewsets.ModelViewSet):
                 slot_start = cur
                 slot_end   = cur + slot_len
 
-                # loại slot quá khứ (nếu là hôm nay)
                 if slot_end <= now:
                     cur += slot_len
                     continue
 
-                # check overlap với busy
                 overlap = any((slot_start < b_end and slot_end > b_start) for b_start, b_end in busy)
                 if not overlap:
                     slots.append({
@@ -154,13 +140,10 @@ class DoctorViewSet(viewsets.ModelViewSet):
                     })
                 cur += slot_len
 
-        # lấy day-off của ngày đó
         offs = doctor.day_offs.filter(date=target_date)
-        # Nếu nghỉ cả ngày -> không có slot
         if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
             return Response([])
 
-        # Biến day-off sang khoảng thời gian aware để kiểm tra overlap
         tz = timezone.get_current_timezone()
         off_intervals = []
         for off in offs:
@@ -168,7 +151,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
                 off_start = timezone.make_aware(datetime.combine(target_date, off.start_time), tz)
                 off_end   = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
                 off_intervals.append((off_start, off_end))
-        # Trong vòng while tạo slot, thêm điều kiện loại bỏ nếu trùng interval nghỉ:
         overlap_off = any((slot_start < o_end and slot_end > o_start) for o_start, o_end in off_intervals)
         if not overlap and not overlap_off:
             slots.append({"start_at": slot_start.isoformat(), "end_at": slot_end.isoformat()})
@@ -177,10 +159,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'], url_path='reviews')
     def reviews(self, request, slug=None):
-        """
-        GET /doctors/{id}/reviews/
-        Trả về danh sách các đánh giá của bác sĩ.
-        """
         doctor = self.get_object()
         reviews = doctor.reviews.filter(is_active=True)
         serializer = DoctorReviewSerializer(reviews, many=True)
