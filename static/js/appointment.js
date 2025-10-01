@@ -156,6 +156,8 @@ function renderDoctors(doctors, replace = true) {
     if (replace) doctorList.innerHTML = "";
 
     doctors.forEach((d) => {
+        const avgRating = d.average_rating ? `${d.average_rating}` : "Chưa có đánh giá";
+        const expYears = d.experience_years || 0;
         const card = document.createElement("div");
         card.className = "doctor-card";
         card.innerHTML = `
@@ -165,8 +167,8 @@ function renderDoctors(doctors, replace = true) {
                 <div class="doctor-specialty">${d.specialty?.name || "Chưa cập nhật"}</div>
                 <div class="doctor-address"><i class="fas fa-map-marker-alt"></i> ${d.user.full_address || "Chưa cập nhật"}</div>
                 <div class="doctor-stats">
-                    <div class="stat-item"><i class="fas fa-star rating"></i> <span>Chưa có đánh giá</span></div>
-                    <div class="stat-item"><i class="fas fa-clock"></i> <span>${d.experience_years || 0} năm kinh nghiệm</span></div>
+                    <div class="stat-item"><i class="fas fa-star rating"></i> <span>${avgRating}</span></div>
+                    <div class="stat-item"><i class="fas fa-clock"></i> <span>${expYears} năm kinh nghiệm</span></div>
                 </div>
             </div>
             <a href="/doctors/${d.slug}/" class="book-btn"><i class="fas fa-calendar-plus"></i> Đặt khám</a>

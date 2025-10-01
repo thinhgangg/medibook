@@ -9,6 +9,7 @@ async function fetchDoctorProfile() {
         if (!res.ok) throw new Error("Không lấy được dữ liệu bác sĩ");
         const data = await res.json();
         renderDoctorProfile(data);
+        enableAvatarPopup();
     } catch (error) {
         console.error(error);
         doctorProfile.innerHTML = "<p>Không thể tải thông tin bác sĩ.</p>";
@@ -151,6 +152,33 @@ async function fetchDoctorReviews(slug) {
     } catch {
         reviewsContainer.innerHTML = "<p class='muted'>Không thể tải đánh giá.</p>";
     }
+}
+
+function enableAvatarPopup() {
+    const avatar = document.querySelector(".doc-avatar img");
+    const modal = document.getElementById("imgModal");
+    const modalImg = document.getElementById("modalImg");
+    const closeBtn = document.querySelector(".img-modal .close");
+
+    if (avatar) {
+        avatar.addEventListener("click", () => {
+            modal.style.display = "flex";
+            modalImg.src = avatar.src;
+            modalImg.alt = avatar.alt;
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    }
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
 }
 
 fetchDoctorProfile();
