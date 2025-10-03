@@ -20,6 +20,27 @@ let doctorsCache = [];
 let specialtiesCache = [];
 let activeFilters = {};
 
+// Hàm debounce
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Hàm chuẩn hóa chuỗi
+function normalize(str) {
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
+
 function getFilterTitle(filter) {
     const titles = {
         specialty: "Chuyên khoa",
@@ -327,11 +348,66 @@ function prepareAPIParams() {
 
     if (activeFilters.min_rating !== undefined) params.min_rating = activeFilters.min_rating;
 
+    if (activeFilters.name) params.name = activeFilters.name;
+
     return params;
 }
-
 window.addEventListener("DOMContentLoaded", () => {
+    const doctorSearch = document.getElementById("doctor-search");
+    const searchForm = document.querySelector(".search-bar");
+    const searchBtn = document.querySelector(".search-btn");
+
+    if (!doctorSearch || !searchForm) {
+        console.error("Không tìm thấy doctorSearch hoặc searchForm!");
+        return;
+    }
+
+    doctorSearch.addEventListener(
+        "input",
+        debounce((e) => {
+            const name = e.target.value.trim();
+            if (name) {
+                activeFilters.name = normalize(name);
+            } else {
+                delete activeFilters.name;
+            }
+            currentPage = 1;
+            fetchDoctorsPage(prepareAPIParams());
+        }, 300)
+    );
+
+    searchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = doctorSearch.value.trim();
+        if (name) {
+            activeFilters.name = normalize(name);
+        } else {
+            delete activeFilters.name;
+        }
+        currentPage = 1;
+        fetchDoctorsPage(prepareAPIParams());
+    });
+
+    if (searchBtn) {
+        searchBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const name = doctorSearch.value.trim();
+            if (name) {
+                activeFilters.name = normalize(name);
+            } else {
+                delete activeFilters.name;
+            }
+            currentPage = 1;
+            fetchDoctorsPage(prepareAPIParams());
+        });
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("q")) {
+        const q = urlParams.get("q");
+        doctorSearch.value = q;
+        activeFilters.name = normalize(q);
+    }
 
     if (urlParams.get("specialty")) activeFilters.specialty = urlParams.get("specialty");
     if (urlParams.get("gender")) activeFilters.gender = urlParams.get("gender") === "MALE" ? "Nam" : "Nữ";
@@ -340,6 +416,5 @@ window.addEventListener("DOMContentLoaded", () => {
     if (urlParams.get("min_rating")) activeFilters.min_rating = parseFloat(urlParams.get("min_rating"));
 
     Object.keys(activeFilters).forEach(updateFilterButton);
-
     fetchDoctorsPage(prepareAPIParams());
 });

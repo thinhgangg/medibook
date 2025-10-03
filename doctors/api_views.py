@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Avg
@@ -25,6 +26,8 @@ class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
     pagination_class = DoctorPagination
     lookup_field = "slug"
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["user__full_name"]
     
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
@@ -40,12 +43,16 @@ class DoctorViewSet(viewsets.ModelViewSet):
             min_exp = self.request.query_params.get("min_experience")
             max_exp = self.request.query_params.get("max_experience")
             min_rating = self.request.query_params.get("min_rating")
+            name = self.request.query_params.get("name")
 
             if specialty:
                 qs = qs.filter(specialty__slug__iexact=specialty)
 
             if gender:
                 qs = qs.filter(user__gender__iexact=gender)
+
+            if name:
+                qs = qs.filter(user__full_name__icontains=name)
 
             today = timezone.now().date()
             qs = qs.annotate(
