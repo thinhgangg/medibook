@@ -16,6 +16,10 @@ async function fetchDoctorProfile() {
     }
 }
 
+function formatTextWithBreaks(text) {
+    return text ? text.replace(/\n/g, "<br>") : "";
+}
+
 function renderDoctorProfile(doctor) {
     document.title = `Bác sĩ ${doctor.user.full_name} - MediBook`;
 
@@ -26,9 +30,8 @@ function renderDoctorProfile(doctor) {
     const gender = genderMap[doctor.user.gender] || "Chưa cập nhật";
     const dobYear = doctor.user?.dob ? new Date(doctor.user.dob).getFullYear() : "Chưa cập nhật";
     const avgRating = doctor.average_rating ? `⭐ ${doctor.average_rating}` : "⭐ Chưa có đánh giá";
-    const expDetail = doctor.experience_detail
-        ? doctor.experience_detail.replace(/\n/g, "<br>")
-        : "Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.";
+    const bioText = formatTextWithBreaks(doctor.bio) || "Bác sĩ chưa cập nhật tiểu sử";
+    const expDetail = formatTextWithBreaks(doctor.experience_detail) || "Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.";
 
     doctorProfile.innerHTML = `
         <nav class="ym-breadcrumb">
@@ -70,7 +73,7 @@ function renderDoctorProfile(doctor) {
 
         <div class="card">
             <h3 class="section-title">Giới thiệu</h3>
-            <p>${doctor.bio || "Bác sĩ chưa cập nhật tiểu sử"}</p>
+            <p>${bioText}</p>
         </div>
 
         <div class="card">
