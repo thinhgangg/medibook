@@ -100,7 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 localStorage.setItem("access", access);
                 localStorage.setItem("refresh", refresh);
 
-                window.location.href = "/";
+                const urlParams = new URLSearchParams(window.location.search);
+                const nextUrl = urlParams.get("next");
+
+                if (nextUrl) {
+                    window.location.href = nextUrl;
+                } else {
+                    window.location.href = REDIRECTS.afterLogin;
+                }
             } else {
                 console.error("Đăng nhập thất bại.");
             }

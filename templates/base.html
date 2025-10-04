@@ -90,6 +90,10 @@
             </div>
         </footer>
 
+        <script>
+            window.isAuthenticated = {{ user.is_authenticated|lower }};
+        </script>
+
         <script src="{% static 'js/dropdown.js' %}"></script>
         <script src="{% static 'js/auth.js' %}"></script>
     </body>

@@ -1,30 +1,101 @@
-{% extends "base.html" %} {% load static %} {% block title %}Đặt lịch khám{% endblock %} {% block content %}
-<div class="container" style="max-width: 600px; margin: 50px auto">
-    <h2>Đặt lịch khám</h2>
-    {% if doctor_slug %}
-    <p>Bác sĩ: <strong>{{ doctor_slug }}</strong></p>
-    {% else %}
-    <p>Chưa chọn bác sĩ.</p>
-    {% endif %}
+{% extends 'base.html' %} {% load static %} {% block title %}Đặt lịch khám – MediBook{% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/appointment-booking.css' %}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group" style="margin-bottom: 15px">
-            <label>Ngày khám:</label>
-            <input type="date" name="date" class="form-control" required />
+<div class="appointment-page" data-doctor-slug="{{ doctor.slug }}" data-doctor-id="{{ doctor.id }}">
+    <div class="abk-page">
+        <div id="abkStepper" class="abk-stepper"></div>
+
+        <div class="abk-grid">
+            <div class="abk-main-col">
+                <div id="abkScheduleItem" class="abk-accordion-item">
+                    <div id="abkScheduleHeader" class="abk-accordion-header">
+                        <div class="abk-head-left">
+                            <span class="abk-head-index">1</span>
+                            <span class="abk-head-title">Ngày và giờ khám</span>
+                        </div>
+                        <i class="fa fa-chevron-down abk-accordion-icon"></i>
+                    </div>
+                    <div id="abkScheduleBody" class="abk-accordion-body">
+                        <div class="abk-date-nav">
+                            <div id="abkDateList" class="abk-date-list"></div>
+                        </div>
+                        <div class="abk-session-container">
+                            <div id="abkSlotGrid" class="abk-slots"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="abkProfileItem" class="abk-accordion-item">
+                    <div id="abkProfileHeader" class="abk-accordion-header">
+                        <div class="abk-head-left">
+                            <span class="abk-head-index">2</span>
+                            <span class="abk-head-title">Hồ sơ bệnh nhân</span>
+                        </div>
+                        <i class="fa fa-chevron-down abk-accordion-icon"></i>
+                    </div>
+                    <div id="abkProfileBody" class="abk-accordion-body">
+                        <div class="abk-form-group">
+                            <label for="abkNotes" class="abk-form-label">Thông tin bổ sung (không bắt buộc)</label>
+                            <textarea id="abkNotes" class="abk-textarea" placeholder="Triệu chứng, thuốc đang dùng, tiền sử, ..."></textarea>
+                        </div>
+                        <div class="abk-form-group">
+                            <label id="abkFileLabel" class="abk-form-label">Tệp tin đính kèm (0/5)</label>
+                            <input type="file" id="abkFileInput" multiple hidden accept=".png,.jpg,.jpeg,.pdf" />
+                            <div id="abkFileDropArea" class="abk-file-drop-area">
+                                <i class="fa fa-upload"></i>
+                                <p>Chọn tệp tin hoặc kéo thả vào đây</p>
+                                <span>PNG, JPG, PDF tối đa 15MB</span>
+                            </div>
+                            <div id="abkFilePreview" class="abk-file-preview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="abk-side abk-card">
+                <div class="abk-side-head">
+                    <span>Thông tin đặt khám</span>
+                </div>
+                <div class="abk-doctor">
+                    <img src="{{ doctor.profile_picture.url }}" alt="Bác sĩ {{ doctor.user.full_name }}" class="abk-doctor-avatar" />
+                    <div class="abk-doctor-info">
+                        <div class="abk-doctor-name">{{ doctor.user.full_name }}</div>
+                        <div class="abk-doctor-addr">{{ doctor.user.full_address|default:'Chưa cập nhật địa chỉ' }}</div>
+                    </div>
+                </div>
+                <div id="abkConfirmDetails" class="abk-confirm-details" style="display: none">
+                    <div class="abk-detail-row">
+                        <span>Ngày khám</span>
+                        <strong id="abkConfirmDate"></strong>
+                    </div>
+                    <div class="abk-detail-row">
+                        <span>Khung giờ</span>
+                        <strong id="abkConfirmTime"></strong>
+                    </div>
+                </div>
+                <div class="abk-side-cta">
+                    <button id="abkConfirmBtn" class="abk-confirm disabled">Xác nhận đặt khám</button>
+                    <p class="abk-terms">Bằng cách nhấn nút xác nhận, bạn đã đồng ý với các điều khoản và điều kiện đặt khám</p>
+                </div>
+            </aside>
         </div>
+    </div>
 
-        <div class="form-group" style="margin-bottom: 15px">
-            <label>Giờ khám:</label>
-            <input type="time" name="time" class="form-control" required />
-        </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="abk-loading-overlay">
+        <div class="abk-spinner"></div>
+        <div class="abk-loading-text">Đang xử lý đặt lịch...</div>
+        <div class="abk-loading-subtext">Quá trình này có thể mất một chút thời gian.</div>
+    </div>
 
-        <div class="form-group" style="margin-bottom: 15px">
-            <label>Ghi chú:</label>
-            <textarea name="note" class="form-control" rows="3"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Đặt lịch</button>
-    </form>
+    <!-- Toast Notification Container -->
+    <div id="abkToastContainer" class="abk-toast-container"></div>
 </div>
+
+<script>
+    window.isAuthenticated = {{ user.is_authenticated|lower }};
+</script>
+
+<script src="{% static 'js/appointment-booking.js' %}"></script>
 {% endblock %}

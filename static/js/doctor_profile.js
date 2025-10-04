@@ -103,11 +103,25 @@ function renderDoctorProfile(doctor) {
     `;
 
     if (ctaBtn) {
-        ctaBtn.href = `/appointments/new/?doctor=${doctor.slug}`;
+        ctaBtn.dataset.doctorSlug = doctor.slug;
     }
 
     fetchDoctorSlots(slug);
     fetchDoctorReviews(slug);
+}
+
+if (ctaBtn) {
+    ctaBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        const doctorSlug = this.dataset.doctorSlug;
+        if (isAuthenticated) {
+            window.location.href = `/appointments/new/?doctor=${doctorSlug}`;
+        } else {
+            const nextUrl = encodeURIComponent(`/appointments/new/?doctor=${doctorSlug}`);
+            window.location.href = `/accounts/login/?next=${nextUrl}`;
+        }
+    });
 }
 
 async function fetchDoctorSlots(slug) {

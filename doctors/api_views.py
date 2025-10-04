@@ -99,73 +99,94 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='slots')
     def slots(self, request, slug=None):
-        from appointments.models import Appointment 
         doctor = self.get_object()
-
-        date_str = request.query_params.get('date')
-        if not date_str:
-            return Response({"detail": "Missing query param: date=YYYY-MM-DD"}, status=400)
-        try:
-            target_date = date_cls.fromisoformat(date_str)
-        except ValueError:
-            return Response({"detail": "Invalid date format"}, status=400)
-
-        weekday = target_date.weekday()
-        avails = doctor.availabilities.filter(weekday=weekday, is_active=True)
-        if not avails.exists():
-            return Response([])
-
-        start_of_day = datetime.combine(target_date, datetime.min.time())
-        end_of_day   = datetime.combine(target_date, datetime.max.time())
         tz = timezone.get_current_timezone()
-        start_of_day = timezone.make_aware(start_of_day, tz)
-        end_of_day   = timezone.make_aware(end_of_day, tz)
-
-        taken = doctor.appointments.exclude(status="CANCELLED")\
-            .filter(start_at__lt=end_of_day, end_at__gt=start_of_day)\
-            .values_list("start_at", "end_at")
-
         now = timezone.now()
-        busy = [(s, e) for s, e in taken]
-        slots = []
 
-        for av in avails:
-            slot_len = timedelta(minutes=av.slot_minutes)
-            cur = timezone.make_aware(datetime.combine(target_date, av.start_time), tz)
-            limit = timezone.make_aware(datetime.combine(target_date, av.end_time), tz)
+        date_str = request.query_params.get("date")
+        start_str = request.query_params.get("start")
+        end_str = request.query_params.get("end")
 
-            while cur + slot_len <= limit:
-                slot_start = cur
-                slot_end   = cur + slot_len
+        if date_str:
+            try:
+                target_date = date_cls.fromisoformat(date_str)
+            except ValueError:
+                return Response({"detail": "Invalid date format"}, status=400)
+            days = [target_date]
 
-                if slot_end <= now:
+        elif start_str and end_str:
+            try:
+                start_date = date_cls.fromisoformat(start_str)
+                end_date = date_cls.fromisoformat(end_str)
+            except ValueError:
+                return Response({"detail": "Invalid date format"}, status=400)
+
+            if end_date < start_date:
+                return Response({"detail": "end must be >= start"}, status=400)
+
+            days = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+        else:
+            return Response({"detail": "Missing query param: date=YYYY-MM-DD hoặc start/end"}, status=400)
+
+        results = []
+
+        for target_date in days:
+            weekday = target_date.weekday()
+            avails = doctor.availabilities.filter(weekday=weekday, is_active=True)
+
+            if not avails.exists():
+                results.append({"date": str(target_date), "slots": []})
+                continue
+
+            start_of_day = timezone.make_aware(datetime.combine(target_date, datetime.min.time()), tz)
+            end_of_day   = timezone.make_aware(datetime.combine(target_date, datetime.max.time()), tz)
+
+            taken = doctor.appointments.exclude(status="CANCELLED")\
+                .filter(start_at__lt=end_of_day, end_at__gt=start_of_day)\
+                .values_list("start_at", "end_at")
+            busy = [(s, e) for s, e in taken]
+
+            offs = doctor.day_offs.filter(date=target_date)
+            if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
+                results.append({"date": str(target_date), "slots": []})
+                continue
+
+            off_intervals = []
+            for off in offs:
+                if off.start_time and off.end_time:
+                    off_start = timezone.make_aware(datetime.combine(target_date, off.start_time), tz)
+                    off_end   = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
+                    off_intervals.append((off_start, off_end))
+
+            slots = []
+            for av in avails:
+                slot_len = timedelta(minutes=av.slot_minutes)
+                cur = timezone.make_aware(datetime.combine(target_date, av.start_time), tz)
+                limit = timezone.make_aware(datetime.combine(target_date, av.end_time), tz)
+
+                while cur + slot_len <= limit:
+                    slot_start = cur
+                    slot_end   = cur + slot_len
+
+                    if slot_end <= now:
+                        cur += slot_len
+                        continue
+
+                    overlap_busy = any((slot_start < b_end and slot_end > b_start) for b_start, b_end in busy)
+                    overlap_off  = any((slot_start < o_end and slot_end > o_start) for o_start, o_end in off_intervals)
+
+                    if not overlap_busy and not overlap_off:
+                        slots.append({
+                            "start_at": slot_start.isoformat(),
+                            "end_at":   slot_end.isoformat()
+                        })
+
                     cur += slot_len
-                    continue
 
-                overlap = any((slot_start < b_end and slot_end > b_start) for b_start, b_end in busy)
-                if not overlap:
-                    slots.append({
-                        "start_at": slot_start.isoformat(),
-                        "end_at":   slot_end.isoformat()
-                    })
-                cur += slot_len
+            results.append({"date": str(target_date), "slots": slots})
 
-        offs = doctor.day_offs.filter(date=target_date)
-        if offs.filter(start_time__isnull=True, end_time__isnull=True).exists():
-            return Response([])
+        return Response(results)
 
-        tz = timezone.get_current_timezone()
-        off_intervals = []
-        for off in offs:
-            if off.start_time and off.end_time:
-                off_start = timezone.make_aware(datetime.combine(target_date, off.start_time), tz)
-                off_end   = timezone.make_aware(datetime.combine(target_date, off.end_time), tz)
-                off_intervals.append((off_start, off_end))
-        overlap_off = any((slot_start < o_end and slot_end > o_start) for o_start, o_end in off_intervals)
-        if not overlap and not overlap_off:
-            slots.append({"start_at": slot_start.isoformat(), "end_at": slot_end.isoformat()})
-
-        return Response(slots)
     
     @action(detail=True, methods=['get'], url_path='reviews')
     def reviews(self, request, slug=None):
