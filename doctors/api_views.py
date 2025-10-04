@@ -37,6 +37,9 @@ class DoctorViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = Doctor.objects.select_related("user", "specialty").filter(is_active=True)
 
+        if self.request.query_params.get("featured") == "true":
+            qs = qs.filter(is_featured=True)
+
         if self.action == "list":
             specialty = self.request.query_params.get("specialty")
             gender = self.request.query_params.get("gender")

@@ -1,9 +1,9 @@
 async function fetchDoctors() {
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/doctors/");
+        const res = await fetch("http://127.0.0.1:8000/api/doctors/?featured=true");
         if (!res.ok) throw new Error("Failed to fetch doctors");
         const data = await res.json();
-        return data.results.slice(0, 10);
+        return data.results;
     } catch (err) {
         console.error("Error fetching doctors:", err);
         doctorList.innerHTML = "<p>Không thể tải danh sách bác sĩ.</p>";

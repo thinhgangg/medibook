@@ -19,7 +19,8 @@ class Doctor(models.Model):
     experience_detail = models.TextField(default="Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.", blank=True, null=True)
     profile_picture = models.ImageField(upload_to='doctors/', blank=True, null=True)
     is_active = models.BooleanField(default=True, db_index=True)
-
+    is_featured = models.BooleanField(default=False)
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.user.full_name)
