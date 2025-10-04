@@ -11,9 +11,11 @@ const modalSearch = document.getElementById("modal-search");
 const closeBtn = document.querySelector(".close");
 const applyBtn = document.getElementById("apply-filter");
 const clearBtn = document.getElementById("clear-filter");
+const paginationContainer = document.getElementById("pagination");
 
 const doctorList = document.getElementById("doctor-list");
 const resultCount = document.querySelector(".result-count");
+const PAGE_SIZE = 10;
 
 let currentFilter = "";
 let doctorsCache = [];
@@ -139,10 +141,34 @@ async function fetchSpecialties() {
 let currentPage = 1;
 let totalPages = 1;
 
+// Render skeleton placeholders
+function renderSkeleton() {
+    doctorList.innerHTML = "";
+    for (let i = 0; i < 10; i++) {
+        const card = document.createElement("div");
+        card.className = "doctor-card skeleton";
+        card.innerHTML = `
+            <div class="doctor-avatar"></div>
+            <div class="doctor-info">
+                <h3 class="doctor-name"></h3>
+                <div class="doctor-specialty"></div>
+                <div class="doctor-address"></div>
+                <div class="doctor-stats">
+                    <div class="stat-item"></div>
+                    <div class="stat-item"></div>
+                </div>
+            </div>
+            <div class="book-btn"></div>
+        `;
+        doctorList.appendChild(card);
+    }
+}
+
 async function fetchDoctorsPage(filters = {}, page = 1) {
     const url = new URL("http://localhost:8000/api/doctors/");
     const params = prepareAPIParams(filters);
 
+    if (page < 1) page = 1;
     url.searchParams.append("page", page);
 
     Object.keys(params).forEach((key) => {
@@ -152,31 +178,44 @@ async function fetchDoctorsPage(filters = {}, page = 1) {
     });
 
     try {
+        renderSkeleton();
+        paginationContainer.innerHTML = "";
+
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch doctors");
         const data = await res.json();
-        doctorsCache = data.results;
-        renderDoctors(doctorsCache, page === 1);
+        doctorsCache = data.results || [];
+        renderDoctors(doctorsCache);
+
+        totalPages = data.count && typeof data.count === "number" ? Math.ceil(data.count / PAGE_SIZE) : 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
 
         const queryString = url.searchParams.toString();
         window.history.replaceState({}, "", `?${queryString}`);
-        currentPage = page;
-        totalPages = Math.ceil(data.count / 10);
         renderPaginationControls();
+        resultCount.innerHTML = `<div class="result-icon"><i class="fas fa-search"></i></div>Tìm thấy ${data.count || 0} bác sĩ`;
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
     } catch (err) {
         console.error(err);
+        paginationContainer.innerHTML = "<p>Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.</p>";
+        resultCount.innerHTML = `<div class="result-icon"><i class="fas fa-search"></i></div>Tìm thấy 0 bác sĩ`;
     }
 }
 
 // Render doctor cards
-function renderDoctors(doctors, replace = true) {
-    if (replace) doctorList.innerHTML = "";
+function renderDoctors(doctors) {
+    doctorList.innerHTML = "";
 
     doctors.forEach((d) => {
         const avgRating = d.average_rating ? `${d.average_rating}` : "Chưa có đánh giá";
         const expYears = d.experience_years || 0;
         const card = document.createElement("div");
-        card.className = "doctor-card";
+        card.className = "doctor-card fade-in";
         card.innerHTML = `
             <img src="${d.profile_picture}" alt="${d.user.full_name}" class="doctor-avatar" />
             <div class="doctor-info">
@@ -198,21 +237,64 @@ function renderDoctors(doctors, replace = true) {
 
 // Render pagination
 function renderPaginationControls() {
-    const paginationContainer = document.getElementById("pagination");
-    if (!paginationContainer) return;
-
+    if (!paginationContainer) {
+        console.error("Không tìm thấy container phân trang!");
+        return;
+    }
     paginationContainer.innerHTML = "";
+
+    if (!doctorsCache.length) {
+        paginationContainer.innerHTML = "<p>Không có bác sĩ nào được tìm thấy.</p>";
+        return;
+    }
+
+    const maxPagesToShow = 4;
+    const startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
     if (currentPage > 1) {
         const prev = document.createElement("button");
         prev.textContent = "« Trước";
-        prev.addEventListener("click", () => fetchDoctorsPage(currentPage - 1));
+        prev.addEventListener("click", () => fetchDoctorsPage(prepareAPIParams(), currentPage - 1));
         paginationContainer.appendChild(prev);
+    }
+
+    if (startPage > 1) {
+        const firstPage = document.createElement("button");
+        firstPage.textContent = "1";
+        firstPage.addEventListener("click", () => fetchDoctorsPage(prepareAPIParams(), 1));
+        paginationContainer.appendChild(firstPage);
+        if (startPage > 2) {
+            const dots = document.createElement("span");
+            dots.textContent = "...";
+            paginationContainer.appendChild(dots);
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement("button");
+        pageBtn.textContent = i;
+        if (i === currentPage) pageBtn.classList.add("active");
+        pageBtn.addEventListener("click", () => fetchDoctorsPage(prepareAPIParams(), i));
+        paginationContainer.appendChild(pageBtn);
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const dots = document.createElement("span");
+            dots.textContent = "...";
+            paginationContainer.appendChild(dots);
+        }
+        const lastPage = document.createElement("button");
+        lastPage.textContent = totalPages;
+        lastPage.addEventListener("click", () => fetchDoctorsPage(prepareAPIParams(), totalPages));
+        paginationContainer.appendChild(lastPage);
     }
 
     if (currentPage < totalPages) {
         const next = document.createElement("button");
         next.textContent = "Tiếp »";
-        next.addEventListener("click", () => fetchDoctorsPage(currentPage + 1));
+        next.addEventListener("click", () => fetchDoctorsPage(prepareAPIParams(), currentPage + 1));
         paginationContainer.appendChild(next);
     }
 }

@@ -441,6 +441,160 @@ body {
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
+/* Pagination */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 32px 0;
+    gap: 8px;
+    padding: 0 20px;
+}
+
+.pagination-controls button {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #4a5568;
+    cursor: pointer;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.pagination-controls button.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.pagination-controls button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.pagination-controls button:disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Nút Previous/Next với icon */
+.pagination-controls button:first-child,
+.pagination-controls button:last-child {
+    padding: 0 20px;
+    font-weight: 600;
+}
+
+.pagination-controls button:first-child::before {
+    margin-right: 6px;
+}
+
+.pagination-controls button:last-child::after {
+    margin-left: 6px;
+}
+
+/* Dots indicator */
+.pagination-controls .dots {
+    padding: 0 8px;
+    color: #a0aec0;
+    font-weight: 700;
+    cursor: default;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.pagination-controls .dots:hover {
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Skeleton Loading Styles */
+.doctor-card.skeleton {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton .doctor-avatar {
+    width: 80px;
+    height: 80px;
+    background-color: #ddd;
+    border-radius: 50%;
+    margin-right: 16px;
+}
+
+.skeleton .doctor-info {
+    flex: 1;
+}
+
+.skeleton .doctor-name {
+    width: 60%;
+    height: 20px;
+    background-color: #ddd;
+    margin-bottom: 8px;
+}
+
+.skeleton .doctor-specialty,
+.skeleton .doctor-address,
+.skeleton .stat-item {
+    width: 40%;
+    height: 16px;
+    background-color: #ddd;
+    margin-bottom: 8px;
+}
+
+.skeleton .book-btn {
+    width: 100px;
+    height: 40px;
+    background-color: #ddd;
+    border-radius: 4px;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Fade-in animation for real cards */
+.doctor-card.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .search-title {
@@ -468,5 +622,22 @@ body {
 
     .nav-links {
         display: none;
+    }
+
+    .pagination-controls {
+        gap: 6px;
+        margin: 24px 0;
+    }
+
+    .pagination-controls button {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+
+    .pagination-controls button:first-child,
+    .pagination-controls button:last-child {
+        padding: 0 14px;
     }
 }
