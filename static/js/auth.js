@@ -18,14 +18,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (data.id) {
                         document.getElementById("guest-buttons").style.display = "none";
                         const avatarContainer = document.getElementById("user-avatar");
-                        avatarContainer.style.display = "block";
+                        const userNameEl = document.getElementById("user-name");
+                        avatarContainer.style.display = "flex";
                         const avatarImg = avatarContainer.querySelector(".user-avatar");
                         if (data.role === "PATIENT") {
                             avatarImg.src = data.patient?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            userNameEl.textContent = data.patient?.user?.full_name || "Bệnh nhân";
                         } else if (data.role === "DOCTOR") {
                             avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
-                        } else {
-                            avatarImg.src = "/static/img/default-avatar.jpg";
+                            userNameEl.textContent = data.doctor?.user?.full_name || "Bác sĩ";
+                        } else if (data.role === "ADMIN") {
+                            avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            userNameEl.textContent = data.user?.full_name || "Admin";
                         }
 
                         const profileLink = document.getElementById("profileLink");
