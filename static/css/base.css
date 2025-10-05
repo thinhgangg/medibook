@@ -53,7 +53,7 @@ body {
     border-bottom: 1px solid #ccc;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
     height: 60px;
-    padding: 10px 20px;
+    padding: 8px 20px;
 }
 .nav-wrap {
     max-width: 1280px;
@@ -193,8 +193,8 @@ body {
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     object-fit: cover;
     border: 2.5px solid #667eea;
