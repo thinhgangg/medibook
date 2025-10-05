@@ -20,7 +20,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         const avatarContainer = document.getElementById("user-avatar");
                         avatarContainer.style.display = "block";
                         const avatarImg = avatarContainer.querySelector(".user-avatar");
-                        avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                        if (data.role === "PATIENT") {
+                            avatarImg.src = data.patient?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                        } else if (data.role === "DOCTOR") {
+                            avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                        } else {
+                            avatarImg.src = "/static/img/default-avatar.jpg";
+                        }
 
                         const profileLink = document.getElementById("profileLink");
                         if (data.role === "PATIENT") {
