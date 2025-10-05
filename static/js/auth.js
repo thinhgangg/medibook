@@ -42,6 +42,25 @@ document.addEventListener("DOMContentLoaded", () => {
                         } else {
                             profileLink.href = "/dashboard/";
                         }
+
+                        const newAppointmentsLink = document.getElementById("newAppointmentsLink");
+                        if (data.role === "PATIENT") {
+                            newAppointmentsLink.style.display = "block";
+                            newAppointmentsLink.href = "/appointments/";
+                        } else {
+                            newAppointmentsLink.style.display = "none";
+                        }
+
+                        const myAppointmentsLink = document.getElementById("myAppointmentsLink");
+                        if (data.role === "PATIENT") {
+                            myAppointmentsLink.style.display = "block";
+                            myAppointmentsLink.href = "/dashboard/#appointments";
+                        } else if (data.role === "DOCTOR") {
+                            myAppointmentsLink.style.display = "block";
+                            myAppointmentsLink.href = "/dashboard/#appointments";
+                        } else {
+                            myAppointmentsLink.style.display = "none";
+                        }
                     }
                 })
                 .catch(() => {

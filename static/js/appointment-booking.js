@@ -487,7 +487,7 @@ document.addEventListener("DOMContentLoaded", function () {
             toggleAccordion(1);
 
             setTimeout(() => {
-                window.location.href = `/appointments/history`;
+                window.location.href = `/dashboard/`;
             }, 1500);
         } catch (error) {
             console.error("Error creating appointment:", error);
