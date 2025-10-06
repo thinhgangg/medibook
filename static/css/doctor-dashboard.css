@@ -1,0 +1,147 @@
+/* --- BASE & UTILITIES --- */
+.font-inter { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+.card { background:#fff; border-radius:1rem; box-shadow:0 10px 20px rgba(0,0,0,.06); padding:1.5rem; }
+.card-title { font-weight:700; font-size:1.125rem; }
+
+/* --- SIDEBAR --- */
+.nav-item {
+  display:flex; align-items:center; gap:.75rem;
+  padding:.75rem 1rem; border-radius:.75rem;
+  font-weight:600; color:#1f2937; transition:.2s ease;
+  text-decoration: none;
+}
+.nav-item:hover { background:#f3f4f6; }
+.nav-item.is-active { background:#111827; color:#fff; }
+.nav-item .icon { width:1.25rem; text-align:center; }
+
+/* --- BUTTONS --- */
+.btn-primary, .btn-secondary {
+  display:inline-block; padding:.6rem 1rem; border-radius:.75rem;
+  font-weight:600; border:1px solid transparent; transition:.2s ease;
+  text-decoration: none;
+}
+.btn-primary { background:#111827; color:#fff; }
+.btn-primary:hover { background:#374151; }
+.btn-secondary { background:#f3f4f6; border-color: #e5e7eb; }
+.btn-secondary:hover { background:#e5e7eb; }
+
+/* --- NÂNG CẤP GIAO DIỆN MỚI --- */
+/* --- Appointments Panel --- */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.day-header {
+  text-align: center;
+  font-weight: 600;
+  padding: 0.5rem;
+  color: #6b7280;
+}
+.day-cell {
+  border: 1px solid #f3f4f6;
+  border-radius: 0.5rem;
+  min-height: 100px;
+  padding: 0.5rem;
+  font-weight: 600;
+}
+.day-cell.is-today {
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+}
+.day-cell.is-other-month {
+  color: #d1d5db;
+}
+.appointment-item {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-top: 0.25rem;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.appointment-item.status-pending { background-color: #f59e0b; } /* Màu cam cho trạng thái chờ */
+.appointment-item.status-confirmed { background-color: #3b82f6; } /* Màu xanh cho đã xác nhận */
+.appointment-item.status-completed { background-color: #10b981; } /* Màu xanh lá cho hoàn tất */
+.appointment-item.status-cancelled { background-color: #ef4444; } /* Màu đỏ cho đã hủy */
+
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.btn-confirm { background-color: #10b981; color: white; }
+.btn-confirm:hover { background-color: #059669; }
+.btn-complete { background-color: #3b82f6; color: white; }
+.btn-complete:hover { background-color: #2563eb; }
+.btn-cancel { background-color: #ef4444; color: white; }
+.btn-cancel:hover { background-color: #dc2626; }
+
+/* --- Patients Panel --- */
+.patient-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.patient-table th, .patient-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+.patient-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+.patient-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* --- Messages Panel --- */
+.message-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.message-contact-item:hover {
+  background-color: #f9fafb;
+}
+.message-contact-item.is-active {
+  background-color: #eff6ff;
+  border-right: 3px solid #3b82f6;
+}
+.unread-badge {
+  background-color: #3b82f6;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-bubble {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+}
+.chat-bubble.sent {
+  background-color: #3b82f6;
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 0.25rem;
+}
+.chat-bubble.received {
+  background-color: #e5e7eb;
+  color: #1f2937;
+  margin-right: auto;
+  border-bottom-left-radius: 0.25rem;
+}
