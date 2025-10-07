@@ -25,10 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             avatarImg.src = data.patient?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
                             userNameEl.textContent = data.patient?.user?.full_name || "Bệnh nhân";
                         } else if (data.role === "DOCTOR") {
-                            avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            avatarImg.src = data.doctor?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
                             userNameEl.textContent = data.doctor?.user?.full_name || "Bác sĩ";
                         } else if (data.role === "ADMIN") {
-                            avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            avatarImg.src = data.admin?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
                             userNameEl.textContent = data.user?.full_name || "Admin";
                         }
 
