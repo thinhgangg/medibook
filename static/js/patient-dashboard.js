@@ -59,13 +59,15 @@ function renderPatientProfile(patient) {
     if (profileSummary) {
         profileSummary.classList.remove("skeleton-bars");
         profileSummary.innerHTML = `
-            <p><strong>Họ và tên:</strong> <span>${patient.user?.full_name || "Chưa có thông tin"}</span></p>
-            <p><strong>Số điện thoại:</strong> <span>${patient.user?.phone_number || "Chưa có thông tin"}</span></p>
-            <p><strong>Ngày sinh:</strong> <span>${formatDateVN(patient.user?.dob) || "Chưa có thông tin"}</span></p>
-            <p><strong>Giới tính:</strong> <span>${
-                patient.user?.gender ? (patient.user.gender === "MALE" ? "Nam" : "Nữ") : "Chưa có thông tin"
-            }</span></p>
-            <p><strong>Địa chỉ:</strong> <span>${patient.user?.full_address || "Chưa có thông tin"}</span></p>
+            <ul class="overview-info">
+                <li><strong>Họ và tên:</strong> <span>${patient.user?.full_name || "Chưa có thông tin"}</span></li>
+                <li><strong>Số điện thoại:</strong> <span>${patient.user?.phone_number || "Chưa có thông tin"}</span></li>
+                <li><strong>Ngày sinh:</strong> <span>${formatDateVN(patient.user?.dob) || "Chưa có thông tin"}</span></li>
+                <li><strong>Giới tính:</strong> <span>${
+                    patient.user?.gender ? (patient.user.gender === "MALE" ? "Nam" : "Nữ") : "Chưa có thông tin"
+                }</span></li>
+                <li><strong>Địa chỉ:</strong> <span>${patient.user?.full_address || "Chưa có thông tin"}</span></li>
+            </ul>
         `;
     }
     document.getElementById("profile-error-overview")?.classList.add("hidden");
@@ -176,7 +178,37 @@ function renderOverviewAppointments(appointments) {
         .join("");
 }
 
-function renderAllAppointments(appointments) {
+function filterAppointments(appointments, status, startDate, endDate) {
+    let filteredAppointments = [...appointments];
+
+    // Filter by status
+    if (status && status !== "all") {
+        filteredAppointments = filteredAppointments.filter((apt) => apt.status === status);
+    }
+
+    // Filter by date range
+    if (startDate) {
+        // Parse dd/mm/yyyy to Date object
+        const [day, month, year] = startDate.split("/");
+        const start = new Date(`${year}-${month}-${day}`);
+        if (!isNaN(start)) {
+            filteredAppointments = filteredAppointments.filter((apt) => new Date(apt.start_at) >= start);
+        }
+    }
+    if (endDate) {
+        // Parse dd/mm/yyyy to Date object
+        const [day, month, year] = endDate.split("/");
+        const end = new Date(`${year}-${month}-${day}`);
+        if (!isNaN(end)) {
+            end.setHours(23, 59, 59, 999); // Include entire end date
+            filteredAppointments = filteredAppointments.filter((apt) => new Date(apt.start_at) <= end);
+        }
+    }
+
+    return filteredAppointments.sort((a, b) => new Date(b.start_at) - new Date(a.start_at));
+}
+
+function renderAllAppointments(appointments, statusFilter = "all", startDate = null, endDate = null) {
     const container = document.getElementById("all-appointments-content");
     const loading = document.getElementById("all-appointments-loading");
     const errorEl = document.getElementById("all-appointments-error");
@@ -186,18 +218,18 @@ function renderAllAppointments(appointments) {
     container.classList.remove("hidden");
     errorEl.classList.add("hidden");
 
-    if (appointments.length === 0) {
-        container.innerHTML = `<div class="no-data">Bạn chưa có lịch hẹn nào.</div>`;
+    const filteredAppointments = filterAppointments(appointments, statusFilter, startDate, endDate);
+
+    if (filteredAppointments.length === 0) {
+        container.innerHTML = `<div class="no-data">Không tìm thấy lịch hẹn phù hợp với bộ lọc.</div>`;
         return;
     }
 
-    const sortedAppointments = [...appointments].sort((a, b) => new Date(b.start_at) - new Date(a.start_at));
-
-    container.innerHTML = sortedAppointments
+    container.innerHTML = filteredAppointments
         .map((apt) => {
             const startDate = new Date(apt.start_at);
             const endDate = new Date(apt.end_at);
-            const doctor = doctorsMap[apt.doctor_id]?.user?.full_name;
+            const doctor = doctorsMap[apt.doctor_id]?.user?.full_name || `Doctor ID: ${apt.doctor_id}`;
             const statusClass = `status-${apt.status.toLowerCase()}`;
             let statusText;
             switch (apt.status) {
@@ -247,7 +279,7 @@ function renderAllAppointments(appointments) {
                 cancelAppointment(aptId, e.target);
             } else if (e.target.textContent === "Chi tiết") {
                 console.log(`Xem chi tiết lịch hẹn ID: ${aptId}`);
-                alert("Chức năng xem chi tiết lịch hẹn đang được phát triển.");
+                showErrorModal("Chức năng xem chi tiết lịch hẹn đang được phát triển.");
             }
         });
     });
@@ -570,7 +602,10 @@ async function fetchAppointmentsAndDoctorsForPanel() {
     document.getElementById("all-appointments-content").classList.add("hidden");
 
     if (allAppointments.length > 0 && Object.keys(doctorsMap).length > 0) {
-        renderAllAppointments(allAppointments);
+        const statusFilter = document.getElementById("status-filter")?.value || "all";
+        const startDate = document.getElementById("start-date-filter")?.value || null;
+        const endDate = document.getElementById("end-date-filter")?.value || null;
+        renderAllAppointments(allAppointments, statusFilter, startDate, endDate);
         return;
     }
 
@@ -596,7 +631,10 @@ async function fetchAppointmentsAndDoctorsForPanel() {
             }, {});
         }
 
-        renderAllAppointments(allAppointments);
+        const statusFilter = document.getElementById("status-filter")?.value || "all";
+        const startDate = document.getElementById("start-date-filter")?.value || null;
+        const endDate = document.getElementById("end-date-filter")?.value || null;
+        renderAllAppointments(allAppointments, statusFilter, startDate, endDate);
     } catch (err) {
         console.error("All Appointments fetch error:", err);
         document.getElementById("all-appointments-loading").classList.add("hidden");
@@ -619,12 +657,20 @@ async function cancelAppointment(appointmentId, buttonEl) {
             reject("User canceled");
         };
 
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                modal.style.display = "none";
+                if (buttonEl) buttonEl.disabled = false;
+                reject("User canceled");
+            }
+        };
+
         confirmBtn.onclick = async () => {
             modal.style.display = "none";
             try {
                 if (buttonEl) {
                     buttonEl.disabled = true;
-                    buttonEl.textContent = "Đang hủy...";
+                    buttonEl.innerHTML = `<span class="spinner"></span> Đang hủy...`;
                 }
 
                 const res = await fetchWithAuth(`${API_BASE_URL}/appointments/${appointmentId}/cancel/`, {
@@ -641,10 +687,16 @@ async function cancelAppointment(appointmentId, buttonEl) {
                 renderAllAppointments(allAppointments);
                 renderOverviewAppointments(allAppointments);
 
+                if (buttonEl) {
+                    buttonEl.disabled = false;
+                    buttonEl.textContent = "Đã hủy";
+                    buttonEl.classList.add("btn-disabled");
+                }
+
                 resolve("Canceled");
             } catch (err) {
                 console.error("Cancel appointment error:", err);
-                alert(`Hủy lịch hẹn thất bại: ${err.message}`);
+                showErrorModal(`Hủy lịch hẹn thất bại: ${err.message}`);
                 if (buttonEl) {
                     buttonEl.disabled = false;
                     buttonEl.textContent = "Hủy";
@@ -653,6 +705,27 @@ async function cancelAppointment(appointmentId, buttonEl) {
             }
         };
     });
+}
+
+function showErrorModal(message) {
+    const modal = document.getElementById("errorModal");
+    const messageEl = document.getElementById("errorModalMessage");
+    const closeBtn = document.getElementById("errorModalCloseBtn");
+
+    if (modal && messageEl && closeBtn) {
+        messageEl.textContent = message;
+        modal.style.display = "flex";
+
+        closeBtn.onclick = () => {
+            modal.style.display = "none";
+        };
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = "none";
+            }
+        };
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -684,7 +757,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("btn-edit-profile")?.addEventListener("click", (e) => {
         e.preventDefault();
-        alert("Chuyển đến trang chỉnh sửa hồ sơ bệnh nhân!");
+        showErrorModal("Chuyển đến trang chỉnh sửa hồ sơ bệnh nhân!");
     });
 
     document.querySelectorAll('a[href^="#"]').forEach((link) => {
@@ -700,6 +773,72 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.scrollTo({ top: 0, behavior: "smooth" });
             }
         });
+    });
+
+    const applyFilterBtn = document.getElementById("apply-filter");
+    const resetFilterBtn = document.getElementById("reset-filter");
+
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener("click", () => {
+            const statusFilter = document.getElementById("status-filter").value;
+            const startDate = document.getElementById("start-date-filter").value;
+            const endDate = document.getElementById("end-date-filter").value;
+
+            // Validate date format (dd/mm/yyyy)
+            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            if (startDate && !dateRegex.test(startDate)) {
+                showErrorModal("Vui lòng nhập ngày bắt đầu theo định dạng dd/mm/yyyy.");
+                return;
+            }
+            if (endDate && !dateRegex.test(endDate)) {
+                showErrorModal("Vui lòng nhập ngày kết thúc theo định dạng dd/mm/yyyy.");
+                return;
+            }
+
+            // Validate date range
+            if (startDate && endDate) {
+                const [startDay, startMonth, startYear] = startDate.split("/").map(Number);
+                const [endDay, endMonth, endYear] = endDate.split("/").map(Number);
+                const start = new Date(startYear, startMonth - 1, startDay);
+                const end = new Date(endYear, endMonth - 1, endDay);
+                if (start > end) {
+                    showErrorModal("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc.");
+                    return;
+                }
+            }
+
+            renderAllAppointments(allAppointments, statusFilter, startDate, endDate);
+        });
+    }
+
+    if (resetFilterBtn) {
+        resetFilterBtn.addEventListener("click", () => {
+            document.getElementById("status-filter").value = "all";
+            document.getElementById("start-date-filter").value = "";
+            document.getElementById("end-date-filter").value = "";
+            renderAllAppointments(allAppointments);
+        });
+    }
+
+    // Initialize Flatpickr for date inputs
+    flatpickr("#start-date-filter", {
+        dateFormat: "d/m/Y", // Display as dd/mm/yyyy
+        locale: "vn", // Vietnamese locale
+        placeholder: "dd/mm/yyyy",
+        allowInput: true, // Allow manual typing
+        onChange: (selectedDates, dateStr) => {
+            // Optional: Validate or trigger filtering on change
+        },
+    });
+
+    flatpickr("#end-date-filter", {
+        dateFormat: "d/m/Y", // Display as dd/mm/yyyy
+        locale: "vn", // Vietnamese locale
+        placeholder: "dd/mm/yyyy",
+        allowInput: true, // Allow manual typing
+        onChange: (selectedDates, dateStr) => {
+            // Optional: Validate or trigger filtering on change
+        },
     });
 
     window.addEventListener("hashchange", applyHash);

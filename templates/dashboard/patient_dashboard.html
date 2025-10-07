@@ -1,5 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Patient Dashboard{% endblock %} {% block content %}
 <link rel="stylesheet" href="{% static 'css/patient-dashboard.css' %}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
 <main class="dashboard-wrapper">
     <div class="dashboard-container">
@@ -39,7 +40,7 @@
                     <div class="card-section">
                         <div class="section-header">
                             <h2>Lịch hẹn sắp tới</h2>
-                            <a href="#appointments" class="btn-secondary" id="view-all-appointments-overview">Xem tất cả</a>
+                            <a href="#appointments" class="btn-primary" id="view-all-appointments-overview">Xem tất cả</a>
                         </div>
                         <div id="appointments-table" class="table">
                             <div class="row header">
@@ -83,7 +84,7 @@
                         <div class="card-section flex-item">
                             <div class="section-header">
                                 <h2>Thống kê lịch khám</h2>
-                                <a href="#stats" class="btn-secondary" id="view-stats-overview">Xem chi tiết</a>
+                                <a href="#stats" class="btn-primary" id="view-stats-overview">Xem chi tiết</a>
                             </div>
                             <div id="stats-overview"></div>
                             <div id="stats-error-overview" class="error-message hidden"></div>
@@ -128,7 +129,29 @@
                 <div class="card">
                     <div class="section-header">
                         <h1>Lịch hẹn của tôi</h1>
-                        <a href="#" class="btn-primary" id="btn-book-new">Đặt lịch mới</a>
+                        <a href="/appointments" class="btn-primary" id="btn-book-new">Đặt lịch mới</a>
+                    </div>
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label for="status-filter">Trạng thái:</label>
+                            <select id="status-filter">
+                                <option value="all">Tất cả</option>
+                                <option value="CONFIRMED">Đã xác nhận</option>
+                                <option value="PENDING">Chờ xác nhận</option>
+                                <option value="COMPLETED">Hoàn thành</option>
+                                <option value="CANCELLED">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="start-date-filter">Từ ngày:</label>
+                            <input type="text" id="start-date-filter" placeholder="dd/mm/yyyy" />
+                        </div>
+                        <div class="filter-group">
+                            <label for="end-date-filter">Đến ngày:</label>
+                            <input type="text" id="end-date-filter" placeholder="dd/mm/yyyy" />
+                        </div>
+                        <button id="apply-filters" class="btn-primary">Áp dụng</button>
+                        <button id="clear-filters" class="btn-secondary">Xóa bộ lọc</button>
                     </div>
                     <div id="all-appointments-table" class="table">
                         <div class="row header">
@@ -225,9 +248,20 @@
                 </div>
             </div>
         </div>
+        <div id="errorModal" class="modal" style="display: none">
+            <div class="modal-content">
+                <h2>Thông báo</h2>
+                <p id="errorModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="errorModalCloseBtn" class="btn-close">Đóng</button>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 <script src="{% static 'js/patient-dashboard.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
