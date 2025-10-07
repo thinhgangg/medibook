@@ -802,6 +802,13 @@ body {
     display: none !important;
 }
 
+.no-data {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: var(--spacing-lg);
+    font-size: 1rem;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .dashboard-container {

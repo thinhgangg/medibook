@@ -1,6 +1,6 @@
-let doctorsMap = {}; // Cache for doctor_id -> {id, name, specialty, profile_picture, user: {full_name}}
-let allAppointments = []; // Store all appointments
-let allDoctors = []; // Store all doctors
+let doctorsMap = {}; 
+let allAppointments = []; 
+let allDoctors = []; 
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
@@ -72,7 +72,6 @@ function renderPatientProfile(patient) {
     }
     document.getElementById("profile-error-overview")?.classList.add("hidden");
 
-    // Profile panel details
     const profilePicContainer = document.querySelector("#panel-profile .profile-pic");
     if (profilePicContainer) {
         if (patient.profile_picture) {
@@ -188,7 +187,6 @@ function filterAppointments(appointments, status, startDate, endDate) {
 
     // Filter by date range
     if (startDate) {
-        // Parse dd/mm/yyyy to Date object
         const [day, month, year] = startDate.split("/");
         const start = new Date(`${year}-${month}-${day}`);
         if (!isNaN(start)) {
@@ -196,11 +194,10 @@ function filterAppointments(appointments, status, startDate, endDate) {
         }
     }
     if (endDate) {
-        // Parse dd/mm/yyyy to Date object
         const [day, month, year] = endDate.split("/");
         const end = new Date(`${year}-${month}-${day}`);
         if (!isNaN(end)) {
-            end.setHours(23, 59, 59, 999); // Include entire end date
+            end.setHours(23, 59, 59, 999); 
             filteredAppointments = filteredAppointments.filter((apt) => new Date(apt.start_at) <= end);
         }
     }
@@ -271,7 +268,6 @@ function renderAllAppointments(appointments, statusFilter = "all", startDate = n
         })
         .join("");
 
-    // Add event listeners for action buttons
     container.querySelectorAll(".btn-small").forEach((button) => {
         button.addEventListener("click", (e) => {
             const aptId = e.target.dataset.appointmentId;
@@ -784,7 +780,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const startDate = document.getElementById("start-date-filter").value;
             const endDate = document.getElementById("end-date-filter").value;
 
-            // Validate date format (dd/mm/yyyy)
             const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
             if (startDate && !dateRegex.test(startDate)) {
                 showErrorModal("Vui lòng nhập ngày bắt đầu theo định dạng dd/mm/yyyy.");
@@ -795,7 +790,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Validate date range
             if (startDate && endDate) {
                 const [startDay, startMonth, startYear] = startDate.split("/").map(Number);
                 const [endDay, endMonth, endYear] = endDate.split("/").map(Number);
@@ -820,24 +814,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Initialize Flatpickr for date inputs
     flatpickr("#start-date-filter", {
-        dateFormat: "d/m/Y", // Display as dd/mm/yyyy
-        locale: "vn", // Vietnamese locale
+        dateFormat: "d/m/Y", 
+        locale: "vn", 
         placeholder: "dd/mm/yyyy",
-        allowInput: true, // Allow manual typing
+        allowInput: true, 
         onChange: (selectedDates, dateStr) => {
-            // Optional: Validate or trigger filtering on change
-        },
+        }
     });
 
     flatpickr("#end-date-filter", {
-        dateFormat: "d/m/Y", // Display as dd/mm/yyyy
-        locale: "vn", // Vietnamese locale
+        dateFormat: "d/m/Y", 
+        locale: "vn", 
         placeholder: "dd/mm/yyyy",
-        allowInput: true, // Allow manual typing
+        allowInput: true, 
         onChange: (selectedDates, dateStr) => {
-            // Optional: Validate or trigger filtering on change
         },
     });
 
