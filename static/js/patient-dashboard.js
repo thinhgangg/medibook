@@ -1,6 +1,6 @@
-let doctorsMap = {}; 
-let allAppointments = []; 
-let allDoctors = []; 
+let doctorsMap = {};
+let allAppointments = [];
+let allDoctors = [];
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
@@ -197,7 +197,7 @@ function filterAppointments(appointments, status, startDate, endDate) {
         const [day, month, year] = endDate.split("/");
         const end = new Date(`${year}-${month}-${day}`);
         if (!isNaN(end)) {
-            end.setHours(23, 59, 59, 999); 
+            end.setHours(23, 59, 59, 999);
             filteredAppointments = filteredAppointments.filter((apt) => new Date(apt.start_at) <= end);
         }
     }
@@ -771,8 +771,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    const applyFilterBtn = document.getElementById("apply-filter");
-    const resetFilterBtn = document.getElementById("reset-filter");
+    const applyFilterBtn = document.getElementById("apply-filters");
+    const clearFilterBtn = document.getElementById("clear-filters");
 
     if (applyFilterBtn) {
         applyFilterBtn.addEventListener("click", () => {
@@ -805,8 +805,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    if (resetFilterBtn) {
-        resetFilterBtn.addEventListener("click", () => {
+    if (clearFilterBtn) {
+        clearFilterBtn.addEventListener("click", () => {
             document.getElementById("status-filter").value = "all";
             document.getElementById("start-date-filter").value = "";
             document.getElementById("end-date-filter").value = "";
@@ -815,21 +815,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     flatpickr("#start-date-filter", {
-        dateFormat: "d/m/Y", 
-        locale: "vn", 
+        dateFormat: "d/m/Y",
+        locale: "vn",
         placeholder: "dd/mm/yyyy",
-        allowInput: true, 
-        onChange: (selectedDates, dateStr) => {
-        }
+        allowInput: true,
+        onChange: (selectedDates, dateStr) => {},
     });
 
     flatpickr("#end-date-filter", {
-        dateFormat: "d/m/Y", 
-        locale: "vn", 
+        dateFormat: "d/m/Y",
+        locale: "vn",
         placeholder: "dd/mm/yyyy",
-        allowInput: true, 
-        onChange: (selectedDates, dateStr) => {
-        },
+        allowInput: true,
+        onChange: (selectedDates, dateStr) => {},
     });
 
     window.addEventListener("hashchange", applyHash);
