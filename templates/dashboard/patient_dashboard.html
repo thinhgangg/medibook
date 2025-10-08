@@ -1,1 +1,267 @@
-<h1>Patient Dashboard</h1>
+{% extends 'base.html' %} {% load static %} {% block title %}Patient Dashboard{% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/patient-dashboard.css' %}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+
+<main class="dashboard-wrapper">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li>
+                        <a id="nav-overview" href="#overview" class="sidebar-nav-item active"> <span class="icon">🏠</span> Tổng quan </a>
+                    </li>
+                    <li>
+                        <a id="nav-profile" href="#profile" class="sidebar-nav-item"> <span class="icon">👤</span> Hồ sơ cá nhân </a>
+                    </li>
+                    <li>
+                        <a id="nav-appointments" href="#appointments" class="sidebar-nav-item"> <span class="icon">📅</span> Lịch khám </a>
+                    </li>
+                    <li>
+                        <a id="nav-notifications" href="#notifications" class="sidebar-nav-item"> <span class="icon">🔔</span> Thông báo </a>
+                    </li>
+                    <li>
+                        <a id="nav-stats" href="#stats" class="sidebar-nav-item"> <span class="icon">📊</span> Thống kê </a>
+                    </li>
+                    <li>
+                        <a id="nav-messages" href="#messages" class="sidebar-nav-item"> <span class="icon">💬</span> Tin nhắn </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Content -->
+        <section class="content">
+            <!-- PANEL: OVERVIEW -->
+            <div id="panel-overview" class="panel">
+                <div class="card">
+                    <h1>Xin chào, {{ patient.user.full_name|default:request.user.full_name }}</h1>
+
+                    <div class="card-section">
+                        <div class="section-header">
+                            <h2>Lịch hẹn sắp tới</h2>
+                            <a href="#appointments" class="btn-primary" id="view-all-appointments-overview">Xem tất cả</a>
+                        </div>
+                        <div id="appointments-table" class="table">
+                            <div class="row header">
+                                <div>Ngày</div>
+                                <div>Giờ</div>
+                                <div>Bác sĩ</div>
+                                <div>Trạng thái</div>
+                            </div>
+                            <div id="appointments-loading" class="skeleton-table">
+                                <div class="row shimmer">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div class="row shimmer">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                            <div id="appointments-content" class="table-body hidden"></div>
+                            <div id="appointments-error" class="error-message hidden"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex-row">
+                        <div class="card-section flex-item">
+                            <div class="section-header">
+                                <h2>Hồ sơ cá nhân</h2>
+                            </div>
+                            <div id="profile-summary" class="skeleton-bars">
+                                <div class="bar w-75 shimmer"></div>
+                                <div class="bar w-60 shimmer"></div>
+                                <div class="bar w-50 shimmer"></div>
+                            </div>
+                            <div id="profile-error-overview" class="error-message hidden"></div>
+                        </div>
+
+                        <div class="card-section flex-item">
+                            <div class="section-header">
+                                <h2>Thống kê lịch khám</h2>
+                                <a href="#stats" class="btn-primary" id="view-stats-overview">Xem chi tiết</a>
+                            </div>
+                            <div id="stats-overview"></div>
+                            <div id="stats-error-overview" class="error-message hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL: PROFILE -->
+            <div id="panel-profile" class="panel hidden">
+                <div class="card">
+                    <div class="profile-header">
+                        <div class="profile-pic">
+                            <!-- Content loaded by JS -->
+                        </div>
+                        <div class="profile-info">
+                            <h1 id="profile-name"></h1>
+                            <p class="role">Bệnh nhân</p>
+                            <a href="#" id="btn-edit-profile" class="btn-primary">Chỉnh sửa hồ sơ</a>
+                        </div>
+                    </div>
+                    <div class="profile-details">
+                        <div>
+                            <h2>Thông tin cơ bản</h2>
+                            <ul id="basic-info">
+                                <!-- Loaded by JS -->
+                            </ul>
+                        </div>
+                        <div>
+                            <h2>Thông tin bổ sung</h2>
+                            <ul id="extra-info">
+                                <!-- Loaded by JS -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="profile-error" class="error-message hidden"></div>
+                </div>
+            </div>
+
+            <!-- PANEL: APPOINTMENTS -->
+            <div id="panel-appointments" class="panel hidden">
+                <div class="card">
+                    <div class="section-header">
+                        <h1>Lịch hẹn của tôi</h1>
+                        <a href="/appointments" class="btn-primary" id="btn-book-new">Đặt lịch mới</a>
+                    </div>
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label for="status-filter">Trạng thái:</label>
+                            <select id="status-filter">
+                                <option value="all">Tất cả</option>
+                                <option value="CONFIRMED">Đã xác nhận</option>
+                                <option value="PENDING">Chờ xác nhận</option>
+                                <option value="COMPLETED">Hoàn thành</option>
+                                <option value="CANCELLED">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="start-date-filter">Từ ngày:</label>
+                            <input type="text" id="start-date-filter" placeholder="dd/mm/yyyy" />
+                        </div>
+                        <div class="filter-group">
+                            <label for="end-date-filter">Đến ngày:</label>
+                            <input type="text" id="end-date-filter" placeholder="dd/mm/yyyy" />
+                        </div>
+                        <button id="apply-filters" class="btn-primary">Áp dụng</button>
+                        <button id="clear-filters" class="btn-secondary">Xóa bộ lọc</button>
+                    </div>
+                    <div id="all-appointments-table" class="table">
+                        <div class="row header">
+                            <div>Ngày</div>
+                            <div>Giờ</div>
+                            <div>Bác sĩ</div>
+                            <div>Trạng thái</div>
+                            <div>Thao tác</div>
+                        </div>
+                        <div id="all-appointments-loading" class="skeleton-table">
+                            <div class="row shimmer">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                            <div class="row shimmer">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                        <div id="all-appointments-content" class="table-body hidden"></div>
+                        <div id="all-appointments-error" class="error-message hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL: STATS -->
+            <div id="panel-stats" class="panel hidden">
+                <div class="card">
+                    <h1>Thống kê</h1>
+                    <div id="stats-full" class="stats-grid">
+                        <div class="bar w-75 shimmer"></div>
+                        <div class="bar w-60 shimmer"></div>
+                        <div class="bar w-50 shimmer"></div>
+                    </div>
+                    <div id="stats-error" class="error-message hidden"></div>
+                </div>
+            </div>
+
+            <!-- PANEL: MESSAGES -->
+            <div id="panel-messages" class="panel hidden">
+                <div class="card">
+                    <h1>Tin nhắn</h1>
+                    <p>Chức năng đang được phát triển...</p>
+                </div>
+            </div>
+
+            <!-- PANEL: NOTIFICATIONS -->
+            <div id="panel-notifications" class="panel hidden">
+                <div class="card">
+                    <div class="section-header">
+                        <h1>Thông báo</h1>
+                        <a href="#" class="btn-secondary btn-small" id="btn-refresh-notifications">Làm mới</a>
+                    </div>
+                    <div id="notifications-table" class="table">
+                        <div class="row header">
+                            <div>Nội dung</div>
+                            <div>Thời gian</div>
+                            <div>Loại</div>
+                            <div>Trạng thái</div>
+                        </div>
+                        <div id="notifications-loading" class="skeleton-table">
+                            <div class="row shimmer">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                            <div class="row shimmer">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                        <div id="notifications-content" class="table-body hidden"></div>
+                        <div id="notifications-error" class="error-message hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div id="cancelModal" class="modal" style="display: none">
+            <div class="modal-content">
+                <h2>Xác nhận hủy lịch hẹn</h2>
+                <p>Bạn có chắc chắn muốn hủy lịch hẹn này không?</p>
+                <div class="modal-actions">
+                    <button id="cancelConfirmBtn" class="btn-cancel">Hủy</button>
+                    <button id="cancelCloseBtn" class="btn-close">Đóng</button>
+                </div>
+            </div>
+        </div>
+        <div id="errorModal" class="modal" style="display: none">
+            <div class="modal-content">
+                <h2>Thông báo</h2>
+                <p id="errorModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="errorModalCloseBtn" class="btn-close">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+<script src="{% static 'js/patient-dashboard.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
