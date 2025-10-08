@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Đặt lịch khám – MediBook{% endblock %} {% block content %}
-<link rel="stylesheet" href="{% static 'css/appointment-booking.css' %}" />
+<link rel="stylesheet" href="{% static 'css/new.css' %}" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
 <div class="appointment-page" data-doctor-slug="{{ doctor.slug }}" data-doctor-id="{{ doctor.id }}">
@@ -97,5 +97,5 @@
     window.isAuthenticated = {{ user.is_authenticated|lower }};
 </script>
 
-<script src="{% static 'js/appointment-booking.js' %}"></script>
+<script src="{% static 'js/new.js' %}"></script>
 {% endblock %}

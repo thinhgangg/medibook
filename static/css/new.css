@@ -1,0 +1,761 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    color: #1f2937;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+    position: relative;
+}
+
+.abk-page {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 120px 24px 60px;
+    position: relative;
+    z-index: 1;
+}
+
+.abk-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+    gap: 32px;
+    align-items: start;
+}
+
+.abk-main-col {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.abk-side {
+    position: sticky;
+    top: 120px;
+}
+
+.abk-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* === THANH TIẾN TRÌNH (STEPPER) === */
+.abk-stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding: 20px 28px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.abk-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.abk-step .abk-step-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    color: #64748b;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.abk-step.completed .abk-step-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+}
+
+.abk-step.completed .abk-step-text {
+    color: #10b981;
+}
+
+.abk-step.active .abk-step-icon {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+    transform: scale(1.1);
+}
+
+.abk-step.active .abk-step-text {
+    color: #6366f1;
+}
+
+.abk-stepper-line {
+    flex: 0 0 48px;
+    height: 3px;
+    background: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-radius: 2px;
+}
+
+/* === GIAO DIỆN ACCORDION === */
+.abk-accordion-item {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.abk-accordion-item.active {
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.2), 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.abk-accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.abk-accordion-header:hover {
+    background: rgba(249, 250, 251, 0.6);
+}
+
+.abk-head-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.abk-head-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: #6366f1;
+    font-weight: 800;
+    font-size: 18px;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2), 0 0 0 2px rgba(99, 102, 241, 0.3);
+    transition: all 0.3s ease;
+}
+
+.abk-accordion-item.active .abk-head-index {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4), 0 0 0 3px rgba(99, 102, 241, 0.2);
+    transform: scale(1.05);
+}
+
+.abk-head-title {
+    font-weight: 700;
+    font-size: 20px;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.abk-accordion-icon {
+    color: #94a3b8;
+    transition: transform 0.3s ease, color 0.3s ease;
+    font-size: 18px;
+}
+
+.abk-accordion-item.active .abk-accordion-icon {
+    transform: rotate(180deg);
+    color: #6366f1;
+}
+
+.abk-accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease;
+    padding: 0 28px;
+}
+
+.abk-accordion-item.active .abk-accordion-body {
+    max-height: 2500px;
+    padding: 0 28px 28px;
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+/* === LỊCH KHÁM (BƯỚC 1) === */
+.abk-date-nav {
+    overflow-x: auto;
+    margin: 20px -28px 0;
+    padding: 0 28px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+}
+
+.abk-date-nav::-webkit-scrollbar {
+    height: 8px;
+}
+
+.abk-date-nav::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.3);
+    border-radius: 10px;
+}
+
+.abk-date-nav::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 10px;
+}
+
+.abk-date-list {
+    display: flex;
+    gap: 16px;
+    padding: 8px 2px 24px;
+}
+
+.abk-date-item {
+    min-width: 150px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.abk-date-item:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+}
+
+.abk-date-item.disabled {
+    opacity: 0.5;
+    cursor: pointer;
+    transform: none;
+    box-shadow: none;
+}
+
+.abk-date-item.active {
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border-color: #6366f1;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25), 0 0 0 3px rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
+}
+
+.abk-date-item.active .abk-date-top {
+    color: #6366f1;
+}
+
+.abk-date-top {
+    font-weight: 750;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+.abk-date-sub {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.abk-date-item.full {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.abk-date-item.full .abk-date-sub {
+    color: #94a3b8;
+}
+
+.abk-session-container {
+    margin-top: 24px;
+}
+
+.abk-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 14px;
+}
+
+.abk-slot {
+    display: block;
+    width: 100%;
+    height: 52px;
+    line-height: 52px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    text-align: center;
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.abk-slot:hover {
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.2);
+}
+
+.abk-slot.selected {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border-color: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4), 0 0 0 3px rgba(99, 102, 241, 0.2);
+    transform: translateY(-2px) scale(1.02);
+}
+
+.abk-slot.disabled {
+    color: #94a3b8;
+    background: #f8fafc;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+    opacity: 0.5;
+}
+
+.abk-slot.disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.abk-empty {
+    color: #64748b;
+    text-align: center;
+    padding: 32px 20px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #f8fafc 100%);
+    font-weight: 500;
+}
+
+/* === HỒ SƠ BỆNH NHÂN (BƯỚC 2) === */
+.abk-form-group {
+    margin-bottom: 28px;
+}
+
+.abk-form-label {
+    display: block;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.abk-textarea {
+    width: 100%;
+    min-height: 140px;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    color: #1e293b;
+}
+
+.abk-textarea:focus {
+    border-color: #6366f1;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 20px rgba(99, 102, 241, 0.15);
+}
+
+.abk-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.abk-file-drop-area {
+    border: 3px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #fafafa 0%, #f8fafc 100%);
+}
+
+.abk-file-drop-area:hover {
+    border-color: #6366f1;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+}
+
+.abk-file-drop-area i {
+    font-size: 32px;
+    color: #6366f1;
+    margin-bottom: 8px;
+}
+
+.abk-file-drop-area p {
+    font-weight: 700;
+    color: #1e293b;
+    margin: 12px 0 6px;
+    font-size: 16px;
+}
+
+.abk-file-drop-area span {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.abk-file-preview {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.abk-file-item {
+    position: relative;
+    width: 90px;
+    height: 90px;
+}
+
+.abk-file-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.abk-file-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: #6366f1;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.abk-file-remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 3px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.abk-file-remove:hover {
+    transform: scale(1.15) rotate(90deg);
+}
+
+/* === SIDEBAR === */
+.abk-side-head {
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    font-weight: 800;
+    font-size: 20px;
+    color: #0f172a;
+    background: linear-gradient(135deg, #fafafa 0%, #f8fafc 100%);
+    border-radius: 24px 24px 0 0;
+}
+
+.abk-doctor {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 24px 28px;
+}
+
+.abk-doctor-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.abk-doctor-name {
+    font-weight: 800;
+    font-size: 17px;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.abk-doctor-addr {
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 6px;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.abk-confirm-details {
+    padding: 24px 28px;
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #f8fafc 100%);
+}
+
+.abk-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.abk-detail-row strong {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.abk-side-cta {
+    padding: 24px 28px;
+}
+
+.abk-confirm {
+    width: 100%;
+    height: 56px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+    color: #fff;
+    font-weight: 750;
+    font-size: 17px;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.abk-confirm:disabled {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    color: #94a3b8;
+}
+
+.abk-confirm:not(:disabled) {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35), 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.abk-confirm:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.45), 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.abk-confirm:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.abk-terms {
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 18px;
+    text-align: center;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Loading Overlay */
+.abk-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    visibility: hidden; /* Hidden by default */
+    opacity: 0; /* Hidden by default */
+    transition: visibility 0s, opacity 0.3s linear;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.abk-loading-overlay.visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+.abk-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #fff; /* White spinner */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+.abk-loading-text {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.abk-loading-subtext {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast Notification */
+.abk-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.abk-toast {
+    background-color: #4caf50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    min-width: 250px;
+    text-align: center;
+    pointer-events: auto;
+}
+
+.abk-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.abk-toast.hide {
+    opacity: 0;
+    transform: translateY(100%);
+}
+
+/* For error toasts */
+.abk-toast.error {
+    background-color: #f44336;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+    .abk-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .abk-side {
+        position: static;
+        order: -1;
+    }
+
+    .abk-page {
+        padding: 100px 20px 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .abk-stepper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 16px 20px;
+    }
+
+    .abk-stepper-line {
+        display: none;
+    }
+
+    .abk-step {
+        justify-content: flex-start;
+    }
+
+    .abk-slots {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .abk-slot {
+        height: 48px;
+        line-height: 48px;
+        font-size: 14px;
+    }
+
+    .abk-head-title {
+        font-size: 18px;
+    }
+
+    .abk-accordion-header {
+        padding: 20px;
+    }
+
+    .abk-accordion-body {
+        padding: 0 20px;
+    }
+
+    .abk-accordion-item.active .abk-accordion-body {
+        padding: 0 20px 20px;
+    }
+}
