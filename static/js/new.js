@@ -79,10 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //endregion
 
     //region - UI Utility Functions (New)
-    const showLoadingOverlay = (
-        message = "Đang xử lý đặt lịch...",
-        subMessage = "Quá trình này có thể mất một chút thời gian nếu có tệp đính kèm."
-    ) => {
+    const showLoadingOverlay = (message = "Đang xử lý...", subMessage = "Quá trình này có thể mất một chút thời gian.") => {
         if (dom.loadingOverlay) {
             dom.loadingOverlay.querySelector(".abk-loading-text").textContent = message;
             dom.loadingOverlay.querySelector(".abk-loading-subtext").textContent = subMessage;

@@ -43,6 +43,48 @@ function showPanel(name) {
     }
 }
 
+const showLoadingOverlay = (message = "Đang xử lý...", subMessage = "Quá trình này có thể mất một chút thời gian.") => {
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    if (loadingOverlay) {
+        loadingOverlay.querySelector(".loading-text").textContent = message;
+        loadingOverlay.querySelector(".loading-subtext").textContent = subMessage;
+        loadingOverlay.classList.add("visible");
+    }
+};
+
+const hideLoadingOverlay = () => {
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove("visible");
+    }
+};
+
+const showToast = (message, type = "", duration = 3000) => {
+    const toastContainer = document.getElementById("ToastContainer");
+    if (!toastContainer) return;
+
+    const toast = document.createElement("div");
+    toast.classList.add("toast");
+    if (type === "success") {
+        toast.classList.add("success");
+    } else if (type === "error") {
+        toast.classList.add("error");
+    }
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    void toast.offsetWidth;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.add("hide");
+        toast.addEventListener("transitionend", () => {
+            toast.remove();
+        });
+    }, duration);
+};
+
 function formatDateVN(dateStr) {
     if (!dateStr) return "Chưa có thông tin";
     const date = new Date(dateStr);
@@ -131,7 +173,7 @@ function renderOverviewAppointments(appointments) {
             let start = apt.start_at.includes("T") ? apt.start_at : apt.start_at.replace(" ", "T");
             return { ...apt, start_at_parsed: new Date(start) };
         })
-        .filter((apt) => apt.start_at_parsed > now && apt.status === "CONFIRMED")
+        .filter((apt) => (apt.start_at_parsed > now && apt.status === "CONFIRMED") || apt.status === "PENDING")
         .sort((a, b) => a.start_at_parsed - b.start_at_parsed)
         .slice(0, 3);
 
@@ -663,10 +705,10 @@ async function cancelAppointment(appointmentId, buttonEl) {
 
         confirmBtn.onclick = async () => {
             modal.style.display = "none";
+            showLoadingOverlay("Đang hủy lịch hẹn...");
             try {
                 if (buttonEl) {
                     buttonEl.disabled = true;
-                    buttonEl.innerHTML = `<span class="spinner"></span> Đang hủy...`;
                 }
 
                 const res = await fetchWithAuth(`${API_BASE_URL}/appointments/${appointmentId}/cancel/`, {
@@ -689,15 +731,19 @@ async function cancelAppointment(appointmentId, buttonEl) {
                     buttonEl.classList.add("btn-disabled");
                 }
 
+                showToast("Hủy lịch hẹn thành công!", "success");
                 resolve("Canceled");
             } catch (err) {
                 console.error("Cancel appointment error:", err);
+                showToast(`Hủy lịch hẹn thất bại: ${err.message}`, "error");
                 showErrorModal(`Hủy lịch hẹn thất bại: ${err.message}`);
                 if (buttonEl) {
                     buttonEl.disabled = false;
                     buttonEl.textContent = "Hủy";
                 }
                 reject(err);
+            } finally {
+                hideLoadingOverlay();
             }
         };
     });

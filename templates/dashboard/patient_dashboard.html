@@ -1,5 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Patient Dashboard{% endblock %} {% block content %}
 <link rel="stylesheet" href="{% static 'css/patient-dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'css/toast-message.css' %}" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
 <main class="dashboard-wrapper">
@@ -137,11 +138,11 @@
                         </div>
                         <div class="filter-group">
                             <label for="start-date-filter">Từ ngày:</label>
-                            <input type="text" id="start-date-filter" placeholder="dd/mm/yyyy" />
+                            <input type="text" id="start-date-filter" placeholder="dd / mm / yyyy" />
                         </div>
                         <div class="filter-group">
                             <label for="end-date-filter">Đến ngày:</label>
-                            <input type="text" id="end-date-filter" placeholder="dd/mm/yyyy" />
+                            <input type="text" id="end-date-filter" placeholder="dd / mm / yyyy" />
                         </div>
                         <button id="apply-filters" class="btn-primary">Áp dụng</button>
                         <button id="clear-filters" class="btn-secondary">Xóa bộ lọc</button>
@@ -230,6 +231,16 @@
                     <p>Chức năng đang được phát triển...</p>
                 </div>
             </div>
+
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <div class="loading-text">Đang xử lý...</div>
+                <div class="loading-subtext">Quá trình này có thể mất một chút thời gian.</div>
+            </div>
+
+            <!-- Toast Notification Container -->
+            <div id="ToastContainer" class="toast-container"></div>
         </section>
         <div id="cancelModal" class="modal" style="display: none">
             <div class="modal-content">
