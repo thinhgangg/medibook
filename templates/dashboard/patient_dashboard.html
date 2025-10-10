@@ -5,7 +5,6 @@
 
 <main class="dashboard-wrapper">
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <nav>
                 <ul>
@@ -32,7 +31,6 @@
         </aside>
 
         <section class="content">
-            <!-- PANEL: OVERVIEW -->
             <div id="panel-overview" class="panel">
                 <div class="card">
                     <h1>Xin chào, {{ patient.user.full_name|default:request.user.full_name }}</h1>
@@ -93,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- PANEL: PROFILE -->
             <div id="panel-profile" class="panel hidden">
                 <div class="card">
                     <div class="profile-header">
@@ -118,7 +115,6 @@
                 </div>
             </div>
 
-            <!-- PANEL: APPOINTMENTS -->
             <div id="panel-appointments" class="panel hidden">
                 <div class="card">
                     <div class="section-header">
@@ -177,7 +173,6 @@
                 </div>
             </div>
 
-            <!-- PANEL: NOTIFICATIONS -->
             <div id="panel-notifications" class="panel hidden">
                 <div class="card">
                     <div class="section-header">
@@ -211,7 +206,6 @@
                 </div>
             </div>
 
-            <!-- PANEL: STATS -->
             <div id="panel-stats" class="panel hidden">
                 <div class="card">
                     <h1>Thống kê</h1>
@@ -224,7 +218,6 @@
                 </div>
             </div>
 
-            <!-- PANEL: MESSAGES -->
             <div id="panel-messages" class="panel hidden">
                 <div class="card">
                     <h1>Tin nhắn</h1>
@@ -232,16 +225,15 @@
                 </div>
             </div>
 
-            <!-- Loading Overlay -->
             <div id="loadingOverlay" class="loading-overlay">
                 <div class="spinner"></div>
                 <div class="loading-text">Đang xử lý...</div>
                 <div class="loading-subtext">Quá trình này có thể mất một chút thời gian.</div>
             </div>
 
-            <!-- Toast Notification Container -->
             <div id="ToastContainer" class="toast-container"></div>
         </section>
+        
         <div id="cancelModal" class="modal" style="display: none">
             <div class="modal-content">
                 <h2>Xác nhận hủy lịch hẹn</h2>
@@ -266,6 +258,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-<script src="{% static 'js/patient-dashboard.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="{% static 'js/dashboard/patient/patient-dashboard.js' %}"></script>
 {% endblock %}

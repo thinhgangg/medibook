@@ -662,7 +662,7 @@ body {
 /* Toast Notification */
 .abk-toast-container {
     position: fixed;
-    top: 20px;
+    top: 60px;
     right: 20px;
     z-index: 10001;
     display: flex;

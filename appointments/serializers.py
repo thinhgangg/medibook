@@ -11,12 +11,34 @@ class AppointmentImageSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor_id  = serializers.IntegerField(source="doctor.id", read_only=True)
     patient_id = serializers.IntegerField(source="patient.id", read_only=True)
+    patient_name = serializers.CharField(source="patient.user.full_name", read_only=True)
+    doctor_name = serializers.CharField(source="doctor.user.full_name", read_only=True)
+    patient_phone = serializers.CharField(source="patient.user.phone", read_only=True)
+    patient_email = serializers.CharField(source="patient.user.email", read_only=True)
+    patient_avatar = serializers.ImageField(source="patient.user.avatar", read_only=True)
     images = AppointmentImageSerializer(many=True, read_only=True)
-
+    
     class Meta:
         model  = Appointment
-        fields = ["id", "doctor_id", "patient_id", "start_at", "end_at", "note", "status", "created_at", "images"]
+        fields = [
+            "id", "doctor_id", "doctor_name",
+            "patient_id", "patient_name", "patient_phone", "patient_email", "patient_avatar",
+            "start_at", "end_at", "note", "status", "created_at",
+            "images",
+        ]
         read_only_fields = ["id", "doctor_id", "patient_id", "status", "created_at"]
+
+    def get_patient_name(self, obj):
+        try:
+            return obj.patient.user.full_name
+        except AttributeError:
+            return "Không rõ"
+
+    def get_doctor_name(self, obj):
+        try:
+            return obj.doctor.user.full_name
+        except AttributeError:
+            return "Không rõ"
 
 def _ensure_within_availability_and_grid(doctor, start_at, end_at):
     tz = timezone.get_current_timezone()
