@@ -572,33 +572,28 @@ function cancelAppointment(id, triggerBtn) {
 }
 
 function renderAvailabilityPanelInit() {
-    if (!document.getElementById("avail-start")._flatpickr) {
-        flatpickr("#avail-start", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-            placeholder: "HH:MM",
-        });
-        flatpickr("#avail-end", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-            placeholder: "HH:MM",
-        });
-    }
+    const startInput = document.getElementById("avail-start");
+    const endInput = document.getElementById("avail-end");
 
-    if (!document.getElementById("btn-refresh-avail")._listenerAdded) {
-        document.getElementById("btn-refresh-avail")?.addEventListener("click", (e) => {
+    if (startInput && startInput.type !== "time") startInput.type = "time";
+    if (endInput && endInput.type !== "time") endInput.type = "time";
+
+    startInput?.setAttribute("placeholder", "Giờ bắt đầu");
+    endInput?.setAttribute("placeholder", "Giờ kết thúc");
+
+    const refreshBtn = document.getElementById("btn-refresh-avail");
+    if (refreshBtn && !refreshBtn._listenerAdded) {
+        refreshBtn.addEventListener("click", (e) => {
             e.preventDefault();
             loadAvailability(true);
         });
+
         document.getElementById("availability-form")?.addEventListener("submit", async (e) => {
             e.preventDefault();
             await submitAvailability();
         });
-        document.getElementById("btn-refresh-avail")._listenerAdded = true;
+
+        refreshBtn._listenerAdded = true;
     }
 }
 
@@ -838,14 +833,22 @@ async function deleteAvailability(id, triggerBtn) {
 }
 
 function renderDaysOffPanelInit() {
+    const startInput = document.getElementById("dayoff-start");
+    const endInput = document.getElementById("dayoff-end");
+
     if (!document.getElementById("dayoff-date")._flatpickr) {
         flatpickr("#dayoff-date", { dateFormat: "d/m/Y", locale: "vn", allowInput: true, placeholder: "dd/mm/yyyy" });
-        flatpickr("#dayoff-start", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, placeholder: "HH:MM" });
-        flatpickr("#dayoff-end", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, placeholder: "HH:MM" });
     }
 
-    if (!document.getElementById("btn-refresh-days-off")._listenerAdded) {
-        document.getElementById("btn-refresh-days-off")?.addEventListener("click", (e) => {
+    if (startInput && startInput.type !== "time") startInput.type = "time";
+    if (endInput && endInput.type !== "time") endInput.type = "time";
+
+    startInput?.setAttribute("placeholder", "Giờ bắt đầu");
+    endInput?.setAttribute("placeholder", "Giờ kết thúc");
+
+    const refreshBtn = document.getElementById("btn-refresh-days-off");
+    if (refreshBtn && !refreshBtn._listenerAdded) {
+        refreshBtn.addEventListener("click", (e) => {
             e.preventDefault();
             loadDaysOff(true);
         });
@@ -854,7 +857,8 @@ function renderDaysOffPanelInit() {
             e.preventDefault();
             await submitDayOff();
         });
-        document.getElementById("btn-refresh-days-off")._listenerAdded = true;
+
+        refreshBtn._listenerAdded = true;
     }
 }
 

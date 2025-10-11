@@ -210,17 +210,17 @@
 
                                 <div class="filter-group">
                                     <label>Bắt đầu</label>
-                                    <input id="avail-start" placeholder="07:00" required />
+                                    <input id="avail-start" type="time" required />
                                 </div>
 
                                 <div class="filter-group">
                                     <label>Kết thúc</label>
-                                    <input id="avail-end" placeholder="11:00" required />
+                                    <input id="avail-end" type="time" required />
                                 </div>
 
                                 <div class="filter-group">
                                     <label>Slot (phút)</label>
-                                    <input type="number" id="avail-slot" value="30" min="5" />
+                                    <input id="avail-slot" type="number" value="30" step="5" min="10" />
                                 </div>
                             </div>
 
@@ -278,24 +278,22 @@
 
                                 <div class="filter-group">
                                     <label for="dayoff-start">Bắt đầu</label>
-                                    <input type="text" id="dayoff-start" placeholder="07:00" />
+                                    <input id="dayoff-start" type="time" required />
                                 </div>
 
                                 <div class="filter-group">
                                     <label for="dayoff-end">Kết thúc</label>
-                                    <input type="text" id="dayoff-end" placeholder="11:00" />
+                                    <input id="dayoff-end" type="time" required />
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="filter-group" style="flex: 1">
-                                    <label for="dayoff-reason">Lý do</label>
-                                    <input type="text" id="dayoff-reason" placeholder="Ví dụ: nghỉ ốm, công tác..." />
-                                </div>
+                            <div class="filter-group" style="flex: 1">
+                                <label for="dayoff-reason">Lý do</label>
+                                <input type="text" id="dayoff-reason" placeholder="Ví dụ: nghỉ ốm, công tác..." />
                             </div>
 
-                            <div class="row" style="justify-content: flex-end">
-                                <button type="submit" class="btn-primary" id="btn-add-dayoff">Thêm ngày nghỉ</button>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
+                                <button class="btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
                             </div>
                         </form>
                     </div>
