@@ -95,7 +95,7 @@ class DoctorAvailabilitySerializer(serializers.ModelSerializer):
             qs = qs.exclude(pk=self.instance.pk)
 
         if qs.filter(start_time__lt=end, end_time__gt=start).exists():
-            raise serializers.ValidationError("Khung giờ bị chồng lấp với availability khác.")
+            raise serializers.ValidationError("Khung giờ này đã trùng với lịch làm việc khác.")
 
         return data
     

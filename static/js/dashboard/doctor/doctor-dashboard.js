@@ -82,21 +82,8 @@ export function showPanel(name) {
 }
 
 export function renderOverview() {
-    document.getElementById("view-all-appointments-overview")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        history.replaceState(null, "", "#appointments");
-        showPanel("appointments");
-    });
-    document.getElementById("view-stats-overview")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        history.replaceState(null, "", "#stats");
-        showPanel("stats");
-    });
-
     if (doctorProfile) renderProfileSummary(doctorProfile);
-    renderOverviewAppointments();
-    renderAvailabilityOverview(availabilityList);
-    renderOverviewStats();
+    loadAppointments();
 }
 
 export function renderProfileSummary(doc) {
@@ -107,7 +94,11 @@ export function renderProfileSummary(doc) {
             <ul class="overview-info">
                 <li><strong>Họ và tên:</strong> <span>${doc.user?.full_name || "Chưa cập nhật"}</span></li>
                 <li><strong>Số điện thoại:</strong> <span>${doc.user?.phone_number || "Chưa cập nhật"}</span></li>
+                <li><strong>Email:</strong> <span>${doc.user?.email || "Chưa cập nhật"}</span></li>
                 <li><strong>Chuyên khoa:</strong> <span>${doc.specialty?.name || "Chưa cập nhật"}</span></li>
+                <li><strong>Kinh nghiệm:</strong> <span>${doc.experience_years ? doc.experience_years + " năm" : "Chưa cập nhật"}</span></li>
+                <li><strong>Trạng thái:</strong> <span>${doc.is_active ? "Đang hoạt động" : "Đã khóa"}</span></li>
+                <li><strong>Mã phòng:</strong> <span>${doc.code || "Chưa cập nhật"}</span></li>
             </ul>
         `;
     }
@@ -262,6 +253,19 @@ export function renderOverviewAppointments() {
             </div>`;
         })
         .join("");
+
+    container.querySelectorAll("button[data-action]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            const id = btn.getAttribute("data-id");
+            const action = btn.getAttribute("data-action");
+
+            if (action === "confirm") confirmAppointment(id, btn);
+            else if (action === "cancel") cancelAppointment(id, btn);
+            else if (action === "detail") {
+                showErrorModal("Xem chi tiết đang được phát triển.");
+            }
+        });
+    });
 }
 
 export function renderAvailabilityOverview(list) {
@@ -439,18 +443,30 @@ async function confirmAppointment(id, btnEl) {
     try {
         btnEl.disabled = true;
         showLoadingOverlay("Đang xác nhận lịch hẹn...");
+
         const res = await fetchWithAuth(`${apiBase}/appointments/${id}/confirm/`, { method: "POST" });
+
         if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || `HTTP ${res.status}`);
+            let message = `HTTP ${res.status}`;
+            try {
+                const data = await res.json();
+                if (data.detail) message = data.detail;
+                else if (data.non_field_errors) message = data.non_field_errors.join(" ");
+            } catch {
+                const txt = await res.text();
+                if (txt) message = txt;
+            }
+            throw new Error(message);
         }
+
         setAllAppointments(allAppointments.map((a) => (String(a.id) === String(id) ? { ...a, status: "CONFIRMED" } : a)));
+
         renderAllAppointments();
         renderOverviewAppointments();
         renderOverviewStats();
         showToast("Xác nhận lịch hẹn thành công!", "success");
     } catch (err) {
-        showToast("Xác nhận lịch hẹn thất bại!", "error");
+        showErrorModal(err.message || "Không thể xác nhận lịch hẹn. Vui lòng thử lại sau.");
         btnEl.disabled = false;
         btnEl.textContent = "Xác nhận";
     } finally {
@@ -462,10 +478,22 @@ async function completeAppointment(id, btnEl) {
     try {
         btnEl.disabled = true;
         showLoadingOverlay("Đang hoàn tất lịch hẹn...");
+
         const res = await fetchWithAuth(`${apiBase}/appointments/${id}/complete/`, { method: "POST" });
         if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || `HTTP ${res.status}`);
+            let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+            try {
+                const data = await res.json();
+                if (data?.detail) {
+                    errorMessage = data.detail;
+                } else if (data?.message) {
+                    errorMessage = data.message;
+                }
+            } catch {
+                const text = await res.text();
+                if (text) errorMessage = text;
+            }
+            throw new Error(errorMessage);
         }
         setAllAppointments(allAppointments.map((a) => (String(a.id) === String(id) ? { ...a, status: "COMPLETED" } : a)));
         renderAllAppointments();
@@ -473,7 +501,7 @@ async function completeAppointment(id, btnEl) {
         renderOverviewStats();
         showToast("Hoàn tất lịch hẹn thành công!", "success");
     } catch (err) {
-        showToast("Hoàn tất lịch hẹn thất bại!", "error");
+        showErrorModal(err.message || "Không thể hoàn tất lịch hẹn. Vui lòng thử lại sau.");
         btnEl.disabled = false;
         btnEl.textContent = "Hoàn tất";
     } finally {
@@ -507,19 +535,32 @@ function cancelAppointment(id, triggerBtn) {
         if (triggerBtn) {
             triggerBtn.disabled = true;
         }
+
         try {
             const res = await fetchWithAuth(`${apiBase}/appointments/${id}/cancel/`, { method: "POST" });
             if (!res.ok) {
-                const txt = await res.text();
-                throw new Error(txt || `HTTP ${res.status}`);
+                let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+                try {
+                    const data = await res.json();
+                    if (data?.detail) {
+                        errorMessage = data.detail;
+                    } else if (data?.message) {
+                        errorMessage = data.message;
+                    }
+                } catch {
+                    const text = await res.text();
+                    if (text) errorMessage = text;
+                }
+                throw new Error(errorMessage);
             }
+
             setAllAppointments(allAppointments.map((a) => (String(a.id) === String(id) ? { ...a, status: "CANCELLED" } : a)));
             renderAllAppointments();
             renderOverviewAppointments();
             renderOverviewStats();
             showToast("Hủy lịch hẹn thành công!", "success");
         } catch (err) {
-            showToast("Hủy lịch hẹn thất bại!", "error");
+            showErrorModal(err.message || "Không thể hủy lịch hẹn. Vui lòng thử lại sau.");
             if (triggerBtn) {
                 triggerBtn.disabled = false;
                 triggerBtn.textContent = "Hủy";
@@ -635,6 +676,7 @@ export function renderAvailabilityList() {
 
 async function submitAvailability() {
     showLoadingOverlay("Đang thêm lịch làm việc...");
+
     const w = document.getElementById("avail-weekday")?.value;
     const start = document.getElementById("avail-start")?.value;
     const end = document.getElementById("avail-end")?.value;
@@ -662,15 +704,43 @@ async function submitAvailability() {
         is_active: true,
     };
 
+    const hasOverlap = availabilityList.some((a) => {
+        if (a.weekday !== Number(w)) return false;
+        const s1 = new Date(`2000/01/01 ${a.start_time}`);
+        const e1 = new Date(`2000/01/01 ${a.end_time}`);
+        return !(endTime <= s1 || startTime >= e1);
+    });
+
+    if (hasOverlap) {
+        showErrorModal(
+            "Khung giờ bị chồng lấp với lịch làm việc khác trong cùng ngày. Hãy chỉnh sửa hoặc xóa lịch cũ trước khi thêm mới.",
+            "warning"
+        );
+        hideLoadingOverlay();
+        return;
+    }
+
     try {
         const res = await fetchWithAuth(`${apiBase}/doctors/availability/`, {
             method: "POST",
             body: JSON.stringify(payload),
         });
+
         if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || `HTTP ${res.status}`);
+            let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+            try {
+                const data = await res.json();
+                if (data?.detail) errorMessage = data.detail;
+                else if (data?.message) errorMessage = data.message;
+                else if (Array.isArray(data?.non_field_errors)) errorMessage = data.non_field_errors.join(" ");
+                else if (typeof data === "object") errorMessage = Object.values(data).flat().join(" ");
+            } catch {
+                const text = await res.text();
+                if (text) errorMessage = text;
+            }
+            throw new Error(errorMessage);
         }
+
         await loadAvailability(true);
         document.getElementById("avail-weekday").value = "";
         document.getElementById("avail-start").value = "";
@@ -678,7 +748,7 @@ async function submitAvailability() {
         document.getElementById("avail-slot").value = 30;
         showToast("Thêm lịch làm việc thành công!", "success");
     } catch (err) {
-        showErrorModal(`Thêm lịch thất bại: ${err.message}`);
+        showErrorModal(err.message || "Không thể thêm lịch làm việc. Vui lòng thử lại sau.", "error");
     } finally {
         hideLoadingOverlay();
     }
@@ -709,24 +779,62 @@ async function toggleAvailability(id, btn) {
     }
 }
 
-async function deleteAvailability(id, btn) {
-    if (!confirm("Xóa lịch làm việc này?")) return;
-    showLoadingOverlay("Đang xóa lịch làm việc...");
-    try {
-        btn.disabled = true;
-        const res = await fetchWithAuth(`${apiBase}/doctors/availability/${id}/`, { method: "DELETE" });
-        if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || `HTTP ${res.status}`);
+async function deleteAvailability(id, triggerBtn) {
+    const modal = document.getElementById("deleteModal");
+    const confirmBtn = document.getElementById("deleteConfirmBtn");
+    const closeBtn = document.getElementById("deleteCloseBtn");
+    if (!modal || !confirmBtn || !closeBtn) return;
+
+    modal.style.display = "flex";
+
+    const cleanup = () => {
+        modal.style.display = "none";
+        confirmBtn.onclick = null;
+        closeBtn.onclick = null;
+        window.onclick = null;
+    };
+
+    closeBtn.onclick = () => cleanup();
+    window.onclick = (e) => {
+        if (e.target === modal) cleanup();
+    };
+
+    confirmBtn.onclick = async () => {
+        cleanup();
+        showLoadingOverlay("Đang xóa lịch làm việc...");
+        if (triggerBtn) {
+            triggerBtn.disabled = true;
         }
-        await loadAvailability(true);
-        showToast("Xóa lịch làm việc thành công!", "success");
-    } catch (err) {
-        showErrorModal(`Xóa thất bại: ${err.message}`);
-        btn.disabled = false;
-    } finally {
-        hideLoadingOverlay();
-    }
+
+        try {
+            const res = await fetchWithAuth(`${apiBase}/doctors/availability/${id}/`, { method: "DELETE" });
+            if (!res.ok) {
+                let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+                try {
+                    const data = await res.json();
+                    if (data?.detail) {
+                        errorMessage = data.detail;
+                    } else if (data?.message) {
+                        errorMessage = data.message;
+                    }
+                } catch {
+                    const text = await res.text();
+                    if (text) errorMessage = text;
+                }
+                throw new Error(errorMessage);
+            }
+            await loadAvailability(true);
+            showToast("Xóa lịch làm việc thành công!", "success");
+        } catch (err) {
+            showErrorModal(err.message || "Không thể xóa lịch làm việc. Vui lòng thử lại sau.");
+            if (triggerBtn) {
+                triggerBtn.disabled = false;
+                triggerBtn.textContent = "Xóa";
+            }
+        } finally {
+            hideLoadingOverlay();
+        }
+    };
 }
 
 function renderDaysOffPanelInit() {
@@ -1010,6 +1118,16 @@ document.addEventListener("DOMContentLoaded", () => {
             showPanel(panel);
             window.scrollTo({ top: 0, behavior: "smooth" });
         });
+    });
+
+    document.getElementById("view-all-appointments-overview")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.hash = "#appointments";
+    });
+
+    document.getElementById("view-stats-overview")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.hash = "#stats";
     });
 
     window.addEventListener("hashchange", () => {

@@ -120,7 +120,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
 
         if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
-            return Response({"detail": "Chỉ bác sĩ của lịch được xác nhận."}, status=403)
+            return Response({"detail": "Chỉ bác sĩ của lịch mới có thể xác nhận."}, status=403)
 
         if appt.status in (Appointment.Status.CANCELLED, Appointment.Status.COMPLETED):
             return Response({"detail": "Không thể xác nhận ở trạng thái hiện tại."}, status=400)
@@ -137,11 +137,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def complete(self, request, pk=None):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
         if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
-            return Response({"detail": "Chỉ bác sĩ của lịch được đánh dấu hoàn tất."}, status=403)
+            return Response({"detail": "Chỉ bác sĩ của lịch mới có thể đánh dấu hoàn tất."}, status=403)
         if appt.status == Appointment.Status.CANCELLED:
-            return Response({"detail": "Lịch đã bị hủy."}, status=400)
+            return Response({"detail": "Lịch hẹn đã bị hủy."}, status=400)
         if appt.start_at > timezone.now():
-            return Response({"detail": "Chưa tới giờ khám, không thể hoàn tất."}, status=400)
+            return Response({"detail": "Chưa đến thời gian khám, không thể hoàn tất lịch hẹn."}, status=400)
         if appt.status != Appointment.Status.COMPLETED:
             appt.status = Appointment.Status.COMPLETED
             appt.save()
@@ -162,9 +162,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Không có quyền hủy."}, status=403)
 
         if appt.status == Appointment.Status.COMPLETED:
-            return Response({"detail": "Không thể hủy lịch đã hoàn tất."}, status=400)
+            return Response({"detail": "Lịch hẹn này đã được hoàn tất, không thể hủy."}, status=400)
         if appt.start_at <= timezone.now():
-            return Response({"detail": "Không thể hủy vì lịch đã quá giờ bắt đầu."}, status=400)
+            return Response({"detail": "Lịch hẹn đã bắt đầu hoặc đã qua giờ khám, không thể hủy."}, status=400)
 
         if appt.status != Appointment.Status.CANCELLED:
             appt.status = Appointment.Status.CANCELLED

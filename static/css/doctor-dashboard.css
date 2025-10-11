@@ -484,6 +484,25 @@ body {
     cursor: default;
 }
 
+.dayoff-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dayoff-form .row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 160px;
+}
+
 /* Filter section */
 .filter-section {
     display: flex;

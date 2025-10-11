@@ -10,7 +10,7 @@ import {
     allAppointments,
     availabilityList,
     daysOffList,
-    mockNotifications, 
+    mockNotifications,
 } from "./_config.js";
 
 import {
@@ -62,8 +62,11 @@ export async function loadAppointments(forceReload = false) {
 
     try {
         const res = await fetchWithAuth(`${apiBase}/appointments/`);
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        let data = await res.json();
+
+        const data = await res.json();
+
         setAllAppointments(Array.isArray(data.results) ? data.results : data);
 
         renderAllAppointments();

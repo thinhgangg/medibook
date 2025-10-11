@@ -222,10 +222,10 @@
                                     <label>Slot (phút)</label>
                                     <input type="number" id="avail-slot" value="30" min="5" />
                                 </div>
+                            </div>
 
-                                <div style="display: flex; align-items: end">
-                                    <button class="btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
-                                </div>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
+                                <button class="btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
                             </div>
                         </form>
                     </div>
@@ -269,8 +269,8 @@
 
                     <div class="card-section">
                         <h2>Thêm ngày nghỉ</h2>
-                        <form id="dayoff-form">
-                            <div class="filter-section" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
+                        <form id="dayoff-form" class="dayoff-form">
+                            <div class="row">
                                 <div class="filter-group">
                                     <label for="dayoff-date">Ngày</label>
                                     <input type="text" id="dayoff-date" placeholder="dd / mm / yyyy" required />
@@ -285,15 +285,17 @@
                                     <label for="dayoff-end">Kết thúc</label>
                                     <input type="text" id="dayoff-end" placeholder="11:00" />
                                 </div>
+                            </div>
 
-                                <div class="filter-group">
+                            <div class="row">
+                                <div class="filter-group" style="flex: 1">
                                     <label for="dayoff-reason">Lý do</label>
-                                    <input type="text" id="dayoff-reason" placeholder="" />
+                                    <input type="text" id="dayoff-reason" placeholder="Ví dụ: nghỉ ốm, công tác..." />
                                 </div>
+                            </div>
 
-                                <div style="display: flex; align-items: end">
-                                    <button class="btn-primary" id="btn-add-dayoff">Thêm ngày nghỉ</button>
-                                </div>
+                            <div class="row" style="justify-content: flex-end">
+                                <button type="submit" class="btn-primary" id="btn-add-dayoff">Thêm ngày nghỉ</button>
                             </div>
                         </form>
                     </div>
@@ -390,6 +392,17 @@
                 <div class="modal-actions">
                     <button id="cancelConfirmBtn" class="btn-cancel">Hủy</button>
                     <button id="cancelCloseBtn" class="btn-close">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteModal" class="modal" style="display: none">
+            <div class="modal-content">
+                <h2>Xác nhận xóa lịch làm việc</h2>
+                <p>Bạn có chắc chắn muốn xóa lịch làm việc này không?</p>
+                <div class="modal-actions">
+                    <button id="deleteConfirmBtn" class="btn-cancel">Xóa</button>
+                    <button id="deleteCloseBtn" class="btn-close">Đóng</button>
                 </div>
             </div>
         </div>
