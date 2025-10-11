@@ -20,6 +20,12 @@ class Doctor(models.Model):
     profile_picture = models.ImageField(upload_to='doctors/', blank=True, null=True)
     is_active = models.BooleanField(default=True, db_index=True)
     is_featured = models.BooleanField(default=False)
+    room_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Số phòng khám hoặc phòng làm việc trong bệnh viện"
+    )
     
     def save(self, *args, **kwargs):
         if not self.slug:

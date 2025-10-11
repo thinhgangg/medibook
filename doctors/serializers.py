@@ -44,7 +44,7 @@ class DoctorSerializer(serializers.ModelSerializer):
             "bio", "started_practice", "experience_years", "experience_detail",
             "average_rating",
             "profile_picture", "profile_picture_thumbs", 
-            "address", "is_active"
+            "address", "room_number", "is_active"
         ]
         read_only_fields = ["id", "slug", "user", "profile_picture", "experience_years", "average_rating"]
 

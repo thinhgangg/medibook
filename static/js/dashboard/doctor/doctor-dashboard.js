@@ -98,7 +98,7 @@ export function renderProfileSummary(doc) {
                 <li><strong>Chuyên khoa:</strong> <span>${doc.specialty?.name || "Chưa cập nhật"}</span></li>
                 <li><strong>Kinh nghiệm:</strong> <span>${doc.experience_years ? doc.experience_years + " năm" : "Chưa cập nhật"}</span></li>
                 <li><strong>Trạng thái:</strong> <span>${doc.is_active ? "Đang hoạt động" : "Đã khóa"}</span></li>
-                <li><strong>Mã phòng:</strong> <span>${doc.code || "Chưa cập nhật"}</span></li>
+                <li><strong>Mã phòng:</strong> <span>${doc.room_number || "Chưa cập nhật"}</span></li>
             </ul>
         `;
     }
