@@ -194,6 +194,5 @@ class AdminStatisticsView(APIView):
             'today_appointments': Appointment.objects.filter(start_at__date=today).count(),
             'pending_appointments': Appointment.objects.filter(status='PENDING').count(),
             'completed_appointments': Appointment.objects.filter(status='COMPLETED').count(),
-
         }
         return Response(stats)
