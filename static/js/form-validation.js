@@ -145,7 +145,6 @@ class FormValidator {
             }
         }
 
-        // Update UI
         this.updateFieldValidation(field, errorElement, isValid, errorMessage);
         return isValid;
     }

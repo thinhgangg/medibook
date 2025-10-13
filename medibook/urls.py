@@ -18,6 +18,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('api/dashboard/', include('dashboard.api_urls')),
     path('api/specialties/', include('doctors.specialty_api_urls')),
+    path('api/admin/', include('dashboard.admin_api_urls')),
 ]
 
 if settings.DEBUG:

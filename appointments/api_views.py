@@ -29,12 +29,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             return None
         return timezone.make_aware(dt, timezone.get_current_timezone()) if timezone.is_naive(dt) else dt
 
-    # ---------------- Queryset & Serializer ----------------
     def get_queryset(self):
         user = self.request.user
         base = Appointment.objects.select_related("doctor", "patient")
 
-        # Quyền xem
         if user.is_staff or user.is_superuser:
             qs = base
         elif hasattr(user, "doctor_profile"):
@@ -44,7 +42,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         else:
             return Appointment.objects.none()
 
-        # ----- Filters -----
         p = self.request.query_params
         status_q = p.get("status")
         doctor_id = p.get("doctor_id")
@@ -61,7 +58,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if patient_id and patient_id.isdigit():
             qs = qs.filter(patient_id=int(patient_id))
 
-        # Lọc theo ngày (YYYY-MM-DD) – dựa vào start_at__date
         try:
             if date_from:
                 df = date_cls.fromisoformat(date_from)
@@ -80,7 +76,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         return AppointmentCreateSerializer if self.action == "create" else AppointmentSerializer
 
-    # ---------------- Create ----------------
     def perform_create(self, serializer):
         user = self.request.user
         if not hasattr(user, "patient_profile"):
@@ -120,13 +115,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(ser.data)
         return Response(detail, status=status.HTTP_201_CREATED, headers=headers)
 
-    # ---------------- Actions: confirm / complete / cancel / reschedule ----------------
     @action(detail=True, methods=["post"])
     def confirm(self, request, pk=None):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
 
         if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
-            return Response({"detail": "Chỉ bác sĩ của lịch được xác nhận."}, status=403)
+            return Response({"detail": "Chỉ bác sĩ của lịch mới có thể xác nhận."}, status=403)
 
         if appt.status in (Appointment.Status.CANCELLED, Appointment.Status.COMPLETED):
             return Response({"detail": "Không thể xác nhận ở trạng thái hiện tại."}, status=400)
@@ -143,11 +137,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def complete(self, request, pk=None):
         appt = get_object_or_404(self.get_queryset(), pk=pk)
         if not hasattr(request.user, "doctor_profile") or appt.doctor_id != request.user.doctor_profile.id:
-            return Response({"detail": "Chỉ bác sĩ của lịch được đánh dấu hoàn tất."}, status=403)
+            return Response({"detail": "Chỉ bác sĩ của lịch mới có thể đánh dấu hoàn tất."}, status=403)
         if appt.status == Appointment.Status.CANCELLED:
-            return Response({"detail": "Lịch đã bị hủy."}, status=400)
+            return Response({"detail": "Lịch hẹn đã bị hủy."}, status=400)
         if appt.start_at > timezone.now():
-            return Response({"detail": "Chưa tới giờ khám, không thể hoàn tất."}, status=400)
+            return Response({"detail": "Chưa đến thời gian khám, không thể hoàn tất lịch hẹn."}, status=400)
         if appt.status != Appointment.Status.COMPLETED:
             appt.status = Appointment.Status.COMPLETED
             appt.save()
@@ -168,9 +162,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Không có quyền hủy."}, status=403)
 
         if appt.status == Appointment.Status.COMPLETED:
-            return Response({"detail": "Không thể hủy lịch đã hoàn tất."}, status=400)
+            return Response({"detail": "Lịch hẹn này đã được hoàn tất, không thể hủy."}, status=400)
         if appt.start_at <= timezone.now():
-            return Response({"detail": "Không thể hủy vì lịch đã quá giờ bắt đầu."}, status=400)
+            return Response({"detail": "Lịch hẹn đã bắt đầu hoặc đã qua giờ khám, không thể hủy."}, status=400)
 
         if appt.status != Appointment.Status.CANCELLED:
             appt.status = Appointment.Status.CANCELLED
@@ -196,11 +190,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if new_start < timezone.now():
             return Response({"detail": "Không được dời lịch vào thời điểm quá khứ."}, status=400)
 
-        # Chỉ đc dời khi chưa COMPLETED/CANCELLED
         if appt.status in (Appointment.Status.COMPLETED, Appointment.Status.CANCELLED):
             return Response({"detail": "Không thể dời lịch ở trạng thái hiện tại."}, status=400)
 
-        # Quyền: bệnh nhân/bác sĩ của lịch (hoặc admin)
         u = request.user
         is_party = (
             (hasattr(u, "patient_profile") and appt.patient_id == u.patient_profile.id)
@@ -211,13 +203,11 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if not is_party:
             return Response({"detail": "Không có quyền"}, status=403)
 
-        # Phải nằm trong availability & khớp lưới slot
         _ensure_within_availability_and_grid(appt.doctor, new_start, new_end)
 
         buffer = timedelta(minutes=getattr(settings, "APPOINTMENT_BUFFER_MINUTES", 0))
 
         with transaction.atomic():
-            # Khoá & kiểm tra chồng lấp (có buffer), loại trừ chính cuộc hẹn này
             clash = (
                 Appointment.objects.select_for_update()
                 .filter(doctor=appt.doctor)

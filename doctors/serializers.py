@@ -1,4 +1,3 @@
-# doctors/serializers.py
 from rest_framework import serializers
 from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty
 from accounts.serializers import UserSerializer
@@ -45,7 +44,7 @@ class DoctorSerializer(serializers.ModelSerializer):
             "bio", "started_practice", "experience_years", "experience_detail",
             "average_rating",
             "profile_picture", "profile_picture_thumbs", 
-            "address", "is_active"
+            "address", "room_number", "is_active"
         ]
         read_only_fields = ["id", "slug", "user", "profile_picture", "experience_years", "average_rating"]
 
@@ -96,7 +95,7 @@ class DoctorAvailabilitySerializer(serializers.ModelSerializer):
             qs = qs.exclude(pk=self.instance.pk)
 
         if qs.filter(start_time__lt=end, end_time__gt=start).exists():
-            raise serializers.ValidationError("Khung giờ bị chồng lấp với availability khác.")
+            raise serializers.ValidationError("Khung giờ này đã trùng với lịch làm việc khác.")
 
         return data
     
@@ -108,7 +107,6 @@ class DoctorDayOffSerializer(serializers.ModelSerializer):
     def validate(self, data):
         s = data.get('start_time')
         e = data.get('end_time')
-        # Cả hai null -> nghỉ cả ngày (ok)
         if (s is None) ^ (e is None):
             raise serializers.ValidationError("Nếu nghỉ theo khung giờ, cần có cả start_time và end_time.")
         if s and e and e <= s:

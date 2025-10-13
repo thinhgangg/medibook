@@ -1,4 +1,3 @@
-// static/js/auth.js
 document.addEventListener("DOMContentLoaded", () => {
     const ENDPOINTS = {
         me: "/api/accounts/me/",
@@ -19,9 +18,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (data.id) {
                         document.getElementById("guest-buttons").style.display = "none";
                         const avatarContainer = document.getElementById("user-avatar");
-                        avatarContainer.style.display = "block";
+                        const userNameEl = document.getElementById("user-name");
+                        avatarContainer.style.display = "flex";
                         const avatarImg = avatarContainer.querySelector(".user-avatar");
-                        avatarImg.src = data.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                        if (data.role === "PATIENT") {
+                            avatarImg.src = data.patient?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            userNameEl.textContent = data.patient?.user?.full_name || "Bệnh nhân";
+                        } else if (data.role === "DOCTOR") {
+                            avatarImg.src = data.doctor?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            userNameEl.textContent = data.doctor?.user?.full_name || "Bác sĩ";
+                        } else if (data.role === "ADMIN") {
+                            avatarImg.src = data.admin?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
+                            userNameEl.textContent = data.user?.full_name || "Admin";
+                        }
 
                         const profileLink = document.getElementById("profileLink");
                         if (data.role === "PATIENT") {
@@ -32,6 +41,25 @@ document.addEventListener("DOMContentLoaded", () => {
                             profileLink.href = "/dashboard/";
                         } else {
                             profileLink.href = "/dashboard/";
+                        }
+
+                        const newAppointmentsLink = document.getElementById("newAppointmentsLink");
+                        if (data.role === "PATIENT") {
+                            newAppointmentsLink.style.display = "block";
+                            newAppointmentsLink.href = "/appointments/";
+                        } else {
+                            newAppointmentsLink.style.display = "none";
+                        }
+
+                        const myAppointmentsLink = document.getElementById("myAppointmentsLink");
+                        if (data.role === "PATIENT") {
+                            myAppointmentsLink.style.display = "block";
+                            myAppointmentsLink.href = "/dashboard/#appointments";
+                        } else if (data.role === "DOCTOR") {
+                            myAppointmentsLink.style.display = "block";
+                            myAppointmentsLink.href = "/dashboard/#appointments";
+                        } else {
+                            myAppointmentsLink.style.display = "none";
                         }
                     }
                 })
@@ -46,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkAuthStatus();
 
-    // Xử lý logout
     const logoutLink = document.querySelector("#logoutLink");
     if (logoutLink) {
         logoutLink.addEventListener("click", async (e) => {

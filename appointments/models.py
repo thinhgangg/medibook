@@ -25,7 +25,10 @@ class Appointment(models.Model):
     def __str__(self):
         doctor_name = self.doctor.user.full_name if self.doctor else "Unknown Doctor"
         patient_name = self.patient.user.full_name if self.patient else "Unknown Patient"
-        return f"{patient_name} with {doctor_name} on {self.start_at:%H:%M %d-%m-%Y}" if self.start_at else f"{patient_name} with {doctor_name}"
+        if self.start_at:
+            start_local = timezone.localtime(self.start_at)
+            return f"{patient_name} with {doctor_name} on {start_local:%H:%M %d-%m-%Y}"
+        return f"{patient_name} with {doctor_name}"
 
 class AppointmentImage(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name="images")

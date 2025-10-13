@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
         dashboard: "/dashboard/",
     };
 
-    // CSRF Token
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const csrfToken = getCookie("csrftoken");
 
-    // ====== POST JSON ======
     async function postJSON(url, payload, includeAuth = false) {
         const headers = {
             "Content-Type": "application/json",
@@ -50,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return { ok: res.ok, status: res.status, data };
     }
 
-    // ====== PATCH JSON ======
     async function patchJSON(url, payload, includeAuth = false) {
         const headers = {
             "Content-Type": "application/json",
@@ -81,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return { ok: res.ok, status: res.status, data };
     }
 
-    // ====== Login ======
     const loginForm = document.querySelector("#login-form");
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
@@ -104,14 +100,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 localStorage.setItem("access", access);
                 localStorage.setItem("refresh", refresh);
 
-                window.location.href = "/";
+                const urlParams = new URLSearchParams(window.location.search);
+                const nextUrl = urlParams.get("next");
+
+                if (nextUrl) {
+                    window.location.href = nextUrl;
+                } else {
+                    window.location.href = REDIRECTS.afterLogin;
+                }
             } else {
                 console.error("Đăng nhập thất bại.");
             }
         });
     }
 
-    // ====== Register ======
     const regForm = document.querySelector("#patient-register-form");
     if (regForm) {
         const btn = regForm.querySelector("button[type=submit]");
@@ -145,7 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Toggle between sections
     const emailInput = document.querySelector("#register input[name='email']");
     const termsCheckbox = document.getElementById("terms");
     const sendOtpButton = document.getElementById("send-otp");
@@ -266,7 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ====== Set Password ======
     setPasswordButton.addEventListener("click", async (e) => {
         e.preventDefault();
 
@@ -368,7 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ====== Tỉnh/Thành phố và Quận/Huyện, Phường/Xã ======
     async function getProvinces() {
         try {
             const res = await fetch("https://provinces.open-api.vn/api/p/");

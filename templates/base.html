@@ -31,8 +31,11 @@
                 <div class="nav-cta">
                     <div id="user-avatar" class="avatar-container" style="display: none">
                         <img src="" alt="User Avatar" class="user-avatar" />
+                        <span id="user-name" class="user-name"></span>
                         <div id="avatar-dropdown" class="dropdown-content">
                             <a href="#" id="profileLink">Hồ sơ</a>
+                            <a href="#" id="myAppointmentsLink">Quản lý lịch khám</a>
+                            <a href="#" id="newAppointmentsLink">Lịch khám mới</a>
                             <a href="#" id="logoutLink">Đăng xuất</a>
                         </div>
                     </div>
@@ -89,6 +92,10 @@
                 <p>&copy; 2025 Công ty TNHH MediBook Việt Nam. All rights reserved.</p>
             </div>
         </footer>
+
+        <script>
+            window.isAuthenticated = {{ user.is_authenticated|lower }};
+        </script>
 
         <script src="{% static 'js/dropdown.js' %}"></script>
         <script src="{% static 'js/auth.js' %}"></script>

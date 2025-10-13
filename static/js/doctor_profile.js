@@ -9,10 +9,15 @@ async function fetchDoctorProfile() {
         if (!res.ok) throw new Error("Không lấy được dữ liệu bác sĩ");
         const data = await res.json();
         renderDoctorProfile(data);
+        enableAvatarPopup();
     } catch (error) {
         console.error(error);
         doctorProfile.innerHTML = "<p>Không thể tải thông tin bác sĩ.</p>";
     }
+}
+
+function formatTextWithBreaks(text) {
+    return text ? text.replace(/\n/g, "<br>") : "";
 }
 
 function renderDoctorProfile(doctor) {
@@ -25,9 +30,8 @@ function renderDoctorProfile(doctor) {
     const gender = genderMap[doctor.user.gender] || "Chưa cập nhật";
     const dobYear = doctor.user?.dob ? new Date(doctor.user.dob).getFullYear() : "Chưa cập nhật";
     const avgRating = doctor.average_rating ? `⭐ ${doctor.average_rating}` : "⭐ Chưa có đánh giá";
-    const expDetail = doctor.experience_detail
-        ? doctor.experience_detail.replace(/\n/g, "<br>")
-        : "Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.";
+    const bioText = formatTextWithBreaks(doctor.bio) || "Bác sĩ chưa cập nhật tiểu sử";
+    const expDetail = formatTextWithBreaks(doctor.experience_detail) || "Bác sĩ chưa cập nhật thông tin chi tiết về kinh nghiệm.";
 
     doctorProfile.innerHTML = `
         <nav class="ym-breadcrumb">
@@ -69,7 +73,7 @@ function renderDoctorProfile(doctor) {
 
         <div class="card">
             <h3 class="section-title">Giới thiệu</h3>
-            <p>${doctor.bio || "Bác sĩ chưa cập nhật tiểu sử"}</p>
+            <p>${bioText}</p>
         </div>
 
         <div class="card">
@@ -99,11 +103,25 @@ function renderDoctorProfile(doctor) {
     `;
 
     if (ctaBtn) {
-        ctaBtn.href = `/appointments/new/?doctor=${doctor.slug}`;
+        ctaBtn.dataset.doctorSlug = doctor.slug;
     }
 
     fetchDoctorSlots(slug);
     fetchDoctorReviews(slug);
+}
+
+if (ctaBtn) {
+    ctaBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        const doctorSlug = this.dataset.doctorSlug;
+        if (isAuthenticated) {
+            window.location.href = `/appointments/new/?doctor=${doctorSlug}`;
+        } else {
+            const nextUrl = encodeURIComponent(`/appointments/new/?doctor=${doctorSlug}`);
+            window.location.href = `/accounts/login/?next=${nextUrl}`;
+        }
+    });
 }
 
 async function fetchDoctorSlots(slug) {
@@ -151,6 +169,33 @@ async function fetchDoctorReviews(slug) {
     } catch {
         reviewsContainer.innerHTML = "<p class='muted'>Không thể tải đánh giá.</p>";
     }
+}
+
+function enableAvatarPopup() {
+    const avatar = document.querySelector(".doc-avatar img");
+    const modal = document.getElementById("imgModal");
+    const modalImg = document.getElementById("modalImg");
+    const closeBtn = document.querySelector(".img-modal .close");
+
+    if (avatar) {
+        avatar.addEventListener("click", () => {
+            modal.style.display = "flex";
+            modalImg.src = avatar.src;
+            modalImg.alt = avatar.alt;
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    }
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
 }
 
 fetchDoctorProfile();

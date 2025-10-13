@@ -4,9 +4,8 @@ from .decorators import role_required
 from doctors.models import Doctor
 from patients.models import Patient
 from appointments.models import Appointment
-from django.db.models import Count # Vẫn cần Count nếu các view HTML hiển thị tổng hợp
+from django.db.models import Count
 
-# Dashboard view để chuyển hướng dựa trên vai trò (vẫn giữ nguyên)
 @login_required
 def dashboard_view(request):
     user = request.user
@@ -19,7 +18,6 @@ def dashboard_view(request):
     else:
         return render(request, 'dashboard/error.html', {'message': 'Không có dashboard phù hợp cho vai trò của bạn.'})
 
-# Dashboard dành cho bác sĩ (Trả về HTML)
 @login_required
 @role_required('DOCTOR')
 def doctor_dashboard(request):
@@ -34,7 +32,6 @@ def doctor_dashboard(request):
 
     return render(request, 'dashboard/doctor_dashboard.html', context)
 
-# Dashboard dành cho bệnh nhân (Trả về HTML)
 @login_required
 @role_required('PATIENT')
 def patient_dashboard(request):
@@ -49,16 +46,19 @@ def patient_dashboard(request):
 
     return render(request, 'dashboard/patient_dashboard.html', context)
 
-# Dashboard dành cho Admin (Trả về HTML)
 @login_required
 @role_required('ADMIN')
 def admin_dashboard(request):
+    from accounts.models import CustomUser
+    
+    total_users = CustomUser.objects.count()
     total_doctors = Doctor.objects.count()
     total_patients = Patient.objects.count()
     total_appointments = Appointment.objects.count()
     appointments_by_status = Appointment.objects.values('status').annotate(count=Count('status'))
 
     context = {
+        'total_users': total_users,
         'total_doctors': total_doctors,
         'total_patients': total_patients,
         'total_appointments': total_appointments,
