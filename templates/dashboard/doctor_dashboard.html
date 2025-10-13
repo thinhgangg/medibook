@@ -108,16 +108,31 @@
                             <a href="#" id="btn-edit-profile" class="btn-primary">Chỉnh sửa hồ sơ</a>
                         </div>
                     </div>
-                    <div class="profile-details">
-                        <div>
-                            <h2>Thông tin cơ bản</h2>
-                            <ul id="basic-info"></ul>
+
+                    <div class="profile-main-content">
+                        <div class="profile-main-info">
+                            <div class="profile-section-card">
+                                <h2>Thông tin cơ bản</h2>
+                                <ul id="basic-info" class="profile-info-list"></ul>
+                            </div>
+                            <div class="profile-section-card profile-section-bio">
+                                <h2>Giới thiệu chung</h2>
+                                <div id="doctor-bio" class="multiline-text-display"></div>
+                            </div>
                         </div>
-                        <div>
-                            <h2>Thông tin bổ sung</h2>
-                            <ul id="extra-info"></ul>
+
+                        <div class="profile-extra-info">
+                            <div class="profile-section-card">
+                                <h2>Thông tin bổ sung</h2>
+                                <ul id="extra-info" class="profile-info-list"></ul>
+                            </div>
+                            <div class="profile-section-card profile-section-experience">
+                                <h2>Kinh nghiệm chuyên môn</h2>
+                                <div id="doctor-experience" class="multiline-text-display"></div>
+                            </div>
                         </div>
                     </div>
+
                     <div id="profile-error" class="error-message hidden"></div>
                 </div>
             </div>

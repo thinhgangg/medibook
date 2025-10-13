@@ -206,7 +206,7 @@ export function renderOverviewAppointments() {
             const start = apt.start_at.includes("T") ? apt.start_at : apt.start_at.replace(" ", "T");
             return { ...apt, start_at_parsed: new Date(start) };
         })
-        .filter((apt) => (apt.start_at_parsed > now && apt.status === "CONFIRMED") || apt.status === "PENDING")
+        .filter((apt) => apt.start_at_parsed > now && (apt.status === "CONFIRMED" || apt.status === "PENDING"))
         .sort((a, b) => a.start_at_parsed - b.start_at_parsed)
         .slice(0, 3);
 
@@ -293,23 +293,35 @@ export function renderDoctorProfilePanel(doc) {
     const basic = document.getElementById("basic-info");
     if (basic) {
         basic.innerHTML = `
-            <li><strong>Họ và tên:</strong> <span>${doc.user?.full_name || "Chưa cập nhật"}</span></li>
+            <li><strong>Email:</strong> <span>${doc.user?.email || "Chưa cập nhật"}</span></li>
             <li><strong>Số điện thoại:</strong> <span>${doc.user?.phone_number || "Chưa cập nhật"}</span></li>
             <li><strong>Ngày sinh:</strong> <span>${formatDateVN(doc.user?.dob) || "Chưa cập nhật"}</span></li>
             <li><strong>Giới tính:</strong> <span>${doc.user?.gender ? (doc.user.gender === "MALE" ? "Nam" : "Nữ") : "Chưa cập nhật"}</span></li>
+            <li><strong>Dân tộc:</strong> <span>${doc.user?.ethnicity || "Chưa cập nhật"}</span></li>
             <li><strong>Địa chỉ:</strong> <span>${doc.user?.full_address || "Chưa cập nhật"}</span></li>
         `;
+    }
+
+    const bioEl = document.getElementById("doctor-bio");
+    if (bioEl) {
+        bioEl.textContent = doc.bio || "Bác sĩ chưa có thông tin giới thiệu chung.";
+    }
+
+    const experienceEl = document.getElementById("doctor-experience");
+    if (experienceEl) {
+        experienceEl.innerHTML = `<p>${doc.experience_detail || "Bác sĩ chưa có chi tiết kinh nghiệm chuyên môn."}</p>`;
     }
 
     const extra = document.getElementById("extra-info");
     if (extra) {
         extra.innerHTML = `
             <li><strong>Chuyên khoa:</strong> <span>${doc.specialty?.name || "Chưa cập nhật"}</span></li>
-            <li><strong>Học vị:</strong> <span>${doc.degree || "Chưa cập nhật"}</span></li>
-            <li><strong>Mã phòng:</strong> <span>${doc.code || "Chưa cập nhật"}</span></li>
-            <li><strong>Giấy phép hành nghề:</strong> <span>${doc.license_no || "Chưa cập nhật"}</span></li>
+            <li><strong>Kinh nghiệm:</strong> <span>${doc.experience_years ? `${doc.experience_years} năm` : "Chưa cập nhật"}</li>
+            <li><strong>Mã phòng:</strong> <span>${doc.room_number || "Chưa cập nhật"}</span></li>
+            <li><strong>Trạng thái:</strong> <span>${doc.is_active ? "Đang hoạt động" : "Đã khóa"}</span></li>
         `;
     }
+
     document.getElementById("profile-error")?.classList.add("hidden");
     document.getElementById("btn-edit-profile")?.addEventListener("click", (e) => {
         e.preventDefault();

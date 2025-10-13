@@ -191,9 +191,9 @@ body {
 }
 
 .card h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-color);
     margin-bottom: var(--spacing-md);
 }
 
@@ -222,7 +222,7 @@ body {
 .section-header h2 {
     font-weight: 700;
     font-size: 1.3rem;
-    color: #1f2937;
+    color: var(--primary-color);
     margin: 0;
 }
 
@@ -623,8 +623,9 @@ body {
 /* Stats */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
 }
 
 .stat-card {

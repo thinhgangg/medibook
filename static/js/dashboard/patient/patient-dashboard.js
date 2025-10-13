@@ -128,7 +128,7 @@ export function renderOverviewAppointments(appointments) {
             let start = apt.start_at.includes("T") ? apt.start_at : apt.start_at.replace(" ", "T");
             return { ...apt, start_at_parsed: new Date(start) };
         })
-        .filter((apt) => (apt.start_at_parsed > now && apt.status === "CONFIRMED") || apt.status === "PENDING")
+        .filter((apt) => apt.start_at_parsed > now && (apt.status === "CONFIRMED" || apt.status === "PENDING"))
         .sort((a, b) => a.start_at_parsed - b.start_at_parsed)
         .slice(0, 3);
 
