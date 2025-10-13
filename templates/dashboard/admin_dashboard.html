@@ -1,5 +1,10 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Admin Dashboard{% endblock %} {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}" />
 
 <main class="dashboard-wrapper">
@@ -12,27 +17,13 @@
             </div>
             <nav>
                 <ul>
-                    <li>
-                        <a id="nav-overview" href="#overview" class="sidebar-nav-item active"><i class="fas fa-chart-pie icon"></i> Tổng quan</a>
-                    </li>
-                    <li>
-                        <a id="nav-users" href="#users" class="sidebar-nav-item"><i class="fas fa-users icon"></i> Quản lý Users</a>
-                    </li>
-                    <li>
-                        <a id="nav-doctors" href="#doctors" class="sidebar-nav-item"><i class="fas fa-user-md icon"></i> Quản lý Bác sĩ</a>
-                    </li>
-                    <li>
-                        <a id="nav-appointments" href="#appointments" class="sidebar-nav-item"><i class="fas fa-calendar-alt icon"></i> Lịch hẹn</a>
-                    </li>
-                    <li>
-                        <a id="nav-specialties" href="#specialties" class="sidebar-nav-item"><i class="fas fa-stethoscope icon"></i> Chuyên khoa</a>
-                    </li>
-                    <li>
-                        <a id="nav-reviews" href="#reviews" class="sidebar-nav-item"><i class="fas fa-star icon"></i> Đánh giá</a>
-                    </li>
-                    <li>
-                        <a id="nav-reports" href="#reports" class="sidebar-nav-item"><i class="fas fa-chart-line icon"></i> Báo cáo</a>
-                    </li>
+                    <li><a id="nav-overview" href="#overview" class="sidebar-nav-item active"><i class="fas fa-chart-pie icon"></i> Tổng quan</a></li>
+                    <li><a id="nav-users" href="#users" class="sidebar-nav-item"><i class="fas fa-users icon"></i> Quản lý Users</a></li>
+                    <li><a id="nav-doctors" href="#doctors" class="sidebar-nav-item"><i class="fas fa-user-md icon"></i> Quản lý Bác sĩ</a></li>
+                    <li><a id="nav-appointments" href="#appointments" class="sidebar-nav-item"><i class="fas fa-calendar-alt icon"></i> Lịch hẹn</a></li>
+                    <li><a id="nav-specialties" href="#specialties" class="sidebar-nav-item"><i class="fas fa-stethoscope icon"></i> Chuyên khoa</a></li>
+                    <li><a id="nav-reviews" href="#reviews" class="sidebar-nav-item"><i class="fas fa-star icon"></i> Đánh giá</a></li>
+                    <li><a id="nav-reports" href="#reports" class="sidebar-nav-item"><i class="fas fa-chart-line icon"></i> Báo cáo</a></li>
                 </ul>
             </nav>
         </aside>
@@ -51,12 +42,9 @@
         <!-- Modals -->
         <div id="form-modal" class="modal hidden">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="form-modal-title"></h2>
-                    <button class="modal-close-btn">&times;</button>
-                </div>
+                <div class="modal-header"><h2 id="form-modal-title"></h2><button class="modal-close-btn">&times;</button></div>
                 <form id="modal-form">
-                    <input type="hidden" id="edit-id" />
+                    <input type="hidden" id="edit-id">
                     <div id="form-modal-body" class="modal-body"></div>
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary modal-close-btn">Hủy</button>
@@ -67,7 +55,7 @@
         </div>
 
         <div id="confirm-modal" class="modal hidden">
-            <div class="modal-content" style="max-width: 400px">
+             <div class="modal-content" style="max-width: 400px;">
                 <h2 id="confirm-modal-title">Xác nhận</h2>
                 <p id="confirm-modal-body"></p>
                 <div class="modal-actions">
