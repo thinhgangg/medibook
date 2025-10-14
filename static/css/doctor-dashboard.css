@@ -1018,3 +1018,59 @@ body {
         height: 250px;
     }
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  /* ... (Phần responsive cũ) ... */
+  .chart-container.full-width {
+      height: 250px;
+  }
+}
+
+/* ===== DÁN ĐOẠN CODE MỚI NÀY VÀO CUỐI FILE ===== */
+.profile-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-base);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+hr.full-width {
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 1rem 0;
+}

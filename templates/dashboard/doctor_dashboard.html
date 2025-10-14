@@ -405,13 +405,58 @@
             </div>
         </div>
 
-        <div id="errorModal" class="modal" style="display: none">
-            <div class="modal-content">
-                <h2>Thông báo</h2>
-                <p id="errorModalMessage"></p>
-                <div class="modal-actions">
-                    <button id="errorModalCloseBtn" class="btn-close">Đóng</button>
-                </div>
+        <div id="edit-profile-modal" class="modal" style="display: none">
+            <div class="modal-content" style="max-width: 700px">
+                <form id="edit-profile-form">
+                    <h2>Chỉnh sửa Hồ sơ cá nhân</h2>
+                    <div class="profile-edit-grid">
+                        <div class="form-group">
+                            <label for="edit-full-name">Họ và tên</label>
+                            <input type="text" id="edit-full-name" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-phone-number">Số điện thoại</label>
+                            <input type="tel" id="edit-phone-number" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-dob">Ngày sinh</label>
+                            <input type="text" id="edit-dob" placeholder="dd/mm/yyyy" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-gender">Giới tính</label>
+                            <select id="edit-gender">
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="edit-full-address">Địa chỉ</label>
+                            <input type="text" id="edit-full-address" />
+                        </div>
+                        <hr class="full-width" />
+                        <div class="form-group">
+                            <label for="edit-degree">Học vị</label>
+                            <input type="text" id="edit-degree" />
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-experience-years">Số năm kinh nghiệm</label>
+                            <input type="number" id="edit-experience-years" min="0" />
+                        </div>
+                         <div class="form-group">
+                            <label for="edit-room-number">Số phòng</label>
+                            <input type="text" id="edit-room-number" />
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-clinic-address">Địa chỉ phòng khám</label>
+                            <input type="text" id="edit-clinic-address" />
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="edit-profile-cancel-btn" class="btn-close">Hủy</button>
+                        <button type="submit" class="btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

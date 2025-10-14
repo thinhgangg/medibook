@@ -1,5 +1,3 @@
-// static/js/patient-dashboard.js (Main File)
-
 import {
     doctorsMap,
     allAppointments,
@@ -15,7 +13,22 @@ import {
     setMockNotifications,
 } from "./_config.js";
 
-import { fetchPatientProfile, fetchAppointmentsAndDoctors, loadNotificationsData } from "./_data_loader.js";
+import { fetchPatientProfile, fetchAppointmentsAndDoctors, loadNotificationsData, updatePatientProfile } from "./_data_loader.js";
+
+// *** BƯỚC 1: TẠO BỘ NGÔN NGỮ TÙY CHỈNH CHO FLATICKR ***
+const customVnLocale = {
+    ...flatpickr.l10ns.vn,
+    months: {
+        ...flatpickr.l10ns.vn.months,
+        longhand: [
+            "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+        ],
+    },
+};
+
+// MỚI: API để lấy dữ liệu địa chỉ của Việt Nam
+const ADDRESS_API_BASE_URL = "https://provinces.open-api.vn/api/";
 
 export function showPanel(name) {
     const panels = {
@@ -52,6 +65,9 @@ export function showPanel(name) {
         case "notifications":
             renderNotificationsPanel();
             break;
+        case "profile":
+            fetchPatientProfile();
+            break;
     }
 }
 
@@ -63,7 +79,7 @@ export function renderPatientProfile(patient) {
             <ul class="overview-info">
                 <li><strong>Họ và tên:</strong> <span>${patient.user?.full_name || "Chưa có thông tin"}</span></li>
                 <li><strong>Số điện thoại:</strong> <span>${patient.user?.phone_number || "Chưa có thông tin"}</span></li>
-                <li><strong>Ngày sinh:</strong> <span>${formatDateVN(patient.user?.dob) || "Chưa có thông tin"}</span></li>
+                <li><strong>Ngày sinh:</strong> <span>${patient.user?.dob ? formatDateVN(patient.user.dob) : "Chưa có thông tin"}</span></li>
                 <li><strong>Giới tính:</strong> <span>${
                     patient.user?.gender ? (patient.user.gender === "MALE" ? "Nam" : "Nữ") : "Chưa có thông tin"
                 }</span></li>
@@ -91,7 +107,7 @@ export function renderPatientProfile(patient) {
         basicList.innerHTML = `
             <li><strong>Họ và tên:</strong> <span>${patient.user?.full_name || "Chưa có thông tin"}</span></li>
             <li><strong>Số điện thoại:</strong> <span>${patient.user?.phone_number || "Chưa có thông tin"}</span></li>
-            <li><strong>Ngày sinh:</strong> <span>${formatDateVN(patient.user?.dob) || "Chưa có thông tin"}</span></li>
+            <li><strong>Ngày sinh:</strong> <span>${patient.user?.dob ? formatDateVN(patient.user.dob) : "Chưa có thông tin"}</span></li>
             <li><strong>Giới tính:</strong> <span>${
                 patient.user?.gender ? (patient.user.gender === "MALE" ? "Nam" : "Nữ") : "Chưa có thông tin"
             }</span></li>
@@ -110,8 +126,19 @@ export function renderPatientProfile(patient) {
         `;
     }
     document.getElementById("profile-error")?.classList.add("hidden");
+
+    // Add edit profile button event listener
+    const editButton = document.getElementById("btn-edit-profile");
+    if (editButton && !editButton._listenerAdded) {
+        editButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            handleEditProfile(patient);
+        });
+        editButton._listenerAdded = true;
+    }
 }
 
+// ... (các hàm renderOverviewAppointments, filterAppointments, renderAllAppointments, cancelAppointment, initAppointmentPanelListeners giữ nguyên)
 export function renderOverviewAppointments(appointments) {
     const container = document.getElementById("appointments-content");
     const loading = document.getElementById("appointments-loading");
@@ -244,11 +271,12 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             }
 
             let actionsHtml = "";
-            if (apt.status === "PENDING") {
-                actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Hủy</button>`;
+            if (apt.status === "PENDING" || apt.status === "CONFIRMED") {
+                 actionsHtml = `<button class="btn-secondary btn-small btn-cancel-appointment" data-appointment-id="${apt.id}">Hủy</button>`;
             } else {
-                actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Chi tiết</button>`;
+                 actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Chi tiết</button>`;
             }
+
 
             return `
             <div class="row">
@@ -265,14 +293,16 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
         })
         .join("");
 
-    container.querySelectorAll(".btn-small").forEach((button) => {
+    container.querySelectorAll(".btn-cancel-appointment").forEach((button) => {
         button.addEventListener("click", (e) => {
             const aptId = e.target.dataset.appointmentId;
-            if (e.target.textContent === "Hủy") {
-                cancelAppointment(aptId, e.target);
-            } else if (e.target.textContent === "Chi tiết") {
-                showErrorModal("Chức năng xem chi tiết lịch hẹn đang được phát triển.");
-            }
+            cancelAppointment(aptId, e.target);
+        });
+    });
+
+    container.querySelectorAll(".btn-small:not(.btn-cancel-appointment)").forEach((button) => {
+        button.addEventListener("click", (e) => {
+             showErrorModal("Chức năng xem chi tiết lịch hẹn đang được phát triển.");
         });
     });
 }
@@ -284,70 +314,64 @@ function cancelAppointment(appointmentId, buttonEl) {
 
     modal.style.display = "flex";
 
-    return new Promise((resolve, reject) => {
-        closeBtn.onclick = () => {
-            modal.style.display = "none";
+    const closeHandler = () => {
+        modal.style.display = "none";
+        confirmBtn.onclick = null;
+        closeBtn.onclick = null;
+        window.onclick = null;
+    };
+
+    closeBtn.onclick = closeHandler;
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            closeHandler();
+        }
+    };
+
+    confirmBtn.onclick = async () => {
+        closeHandler();
+        showLoadingOverlay("Đang hủy lịch hẹn...");
+        try {
+            if (buttonEl) buttonEl.disabled = true;
+
+            const res = await fetchWithAuth(`${API_BASE_URL}/appointments/${appointmentId}/cancel/`, {
+                method: "POST",
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ detail: "Hủy lịch hẹn thất bại" }));
+                throw new Error(`HTTP ${res.status}: ${errorData.detail}`);
+            }
+
+            // Cập nhật lại trạng thái trong mảng allAppointments
+            const updatedAppointments = allAppointments.map((apt) =>
+                apt.id === Number(appointmentId) ? { ...apt, status: "CANCELLED" } : apt
+            );
+            setAllAppointments(updatedAppointments);
+
+
+            renderAllAppointments(allAppointments);
+            renderOverviewAppointments(allAppointments);
+            renderOverviewStats();
+            renderStatsPanel();
+
+
+            showToast("Hủy lịch hẹn thành công!", "success");
+        } catch (err) {
+            showErrorModal(err.message || "Có lỗi xảy ra, vui lòng thử lại.");
+            showToast("Hủy lịch hẹn thất bại!", "error");
             if (buttonEl) buttonEl.disabled = false;
-            reject("User canceled");
-        };
-
-        window.onclick = (event) => {
-            if (event.target === modal) {
-                modal.style.display = "none";
-                if (buttonEl) buttonEl.disabled = false;
-                reject("User canceled");
-            }
-        };
-
-        confirmBtn.onclick = async () => {
-            modal.style.display = "none";
-            showLoadingOverlay("Đang hủy lịch hẹn...");
-            try {
-                if (buttonEl) {
-                    buttonEl.disabled = true;
-                }
-
-                const res = await fetchWithAuth(`${API_BASE_URL}/appointments/${appointmentId}/cancel/`, {
-                    method: "POST",
-                });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text || "Hủy lịch hẹn thất bại"}`);
-                }
-
-                setAllAppointments(allAppointments.map((apt) => (apt.id === Number(appointmentId) ? { ...apt, status: "CANCELLED" } : apt)));
-
-                renderAllAppointments(allAppointments);
-                renderOverviewAppointments(allAppointments);
-                renderOverviewStats();
-
-                if (buttonEl) {
-                    buttonEl.disabled = false;
-                    buttonEl.textContent = "Đã hủy";
-                    buttonEl.classList.add("btn-disabled");
-                }
-
-                showToast("Hủy lịch hẹn thành công!", "success");
-                resolve("Canceled");
-            } catch (err) {
-                showToast("Hủy lịch hẹn thất bại!", "error");
-                if (buttonEl) {
-                    buttonEl.disabled = false;
-                    buttonEl.textContent = "Hủy";
-                }
-                reject(err);
-            } finally {
-                hideLoadingOverlay();
-            }
-        };
-    });
+        } finally {
+            hideLoadingOverlay();
+        }
+    };
 }
+
 
 function initAppointmentPanelListeners() {
     if (!document.getElementById("start-date-filter")._flatpickr) {
-        flatpickr("#start-date-filter", { dateFormat: "d/m/Y", locale: "vn", placeholder: "dd/mm/yyyy", allowInput: true });
-        flatpickr("#end-date-filter", { dateFormat: "d/m/Y", locale: "vn", placeholder: "dd/mm/yyyy", allowInput: true });
+        flatpickr("#start-date-filter", { dateFormat: "d/m/Y", locale: customVnLocale, placeholder: "dd/mm/yyyy", allowInput: true });
+        flatpickr("#end-date-filter", { dateFormat: "d/m/Y", locale: customVnLocale, placeholder: "dd/mm/yyyy", allowInput: true });
     }
 
     const applyFilterBtn = document.getElementById("apply-filters");
@@ -359,7 +383,7 @@ function initAppointmentPanelListeners() {
             const startDate = document.getElementById("start-date-filter").value;
             const endDate = document.getElementById("end-date-filter").value;
 
-            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
             if ((startDate && !dateRegex.test(startDate)) || (endDate && !dateRegex.test(endDate))) {
                 showErrorModal("Vui lòng nhập ngày theo định dạng dd/mm/yyyy.");
                 return;
@@ -377,20 +401,24 @@ function initAppointmentPanelListeners() {
 
             renderAllAppointments(allAppointments, statusFilter, startDate, endDate);
         });
-
-        clearFilterBtn.addEventListener("click", () => {
-            document.getElementById("status-filter").value = "all";
-            document.getElementById("start-date-filter").value = "";
-            document.getElementById("end-date-filter").value = "";
-            renderAllAppointments(allAppointments);
-        });
         applyFilterBtn._listenerAdded = true;
     }
+
+     if (!clearFilterBtn._listenerAdded) {
+        clearFilterBtn.addEventListener("click", () => {
+            document.getElementById("status-filter").value = "all";
+            document.getElementById("start-date-filter")._flatpickr.clear();
+            document.getElementById("end-date-filter")._flatpickr.clear();
+            renderAllAppointments(allAppointments);
+        });
+        clearFilterBtn._listenerAdded = true;
+    }
 }
+// ... (Các hàm thống kê và thông báo giữ nguyên)
 
 /* -------------------------
-   Stats Render
-   ------------------------- */
+    Stats Render
+    ------------------------- */
 
 export function renderOverviewStats() {
     const container = document.getElementById("stats-overview");
@@ -412,9 +440,15 @@ export function renderOverviewStats() {
         `;
         const ctx = document.getElementById("appointment-chart")?.getContext("2d");
         if (ctx) {
+             // Hủy chart cũ nếu đã tồn tại để tránh lỗi
+            if (window.myDoughnutChart) {
+                window.myDoughnutChart.destroy();
+            }
+
             Chart.register({
                 id: "centerText",
                 afterDraw: function (chart) {
+                    if (chart.config.type !== 'doughnut') return;
                     const ctx = chart.ctx;
                     ctx.save();
                     const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
@@ -433,7 +467,7 @@ export function renderOverviewStats() {
                 },
             });
 
-            new Chart(ctx, {
+            window.myDoughnutChart = new Chart(ctx, {
                 type: "doughnut",
                 data: {
                     labels: ["Đã xác nhận", "Chờ xác nhận", "Hoàn thành", "Đã hủy"],
@@ -455,7 +489,7 @@ export function renderOverviewStats() {
                             callbacks: {
                                 label: function (context) {
                                     const value = context.parsed;
-                                    const percentage = ((value / total) * 100).toFixed(2) + "%";
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(2) + "%" : "0.00%";
                                     return `${context.label}: ${value} (${percentage})`;
                                 },
                             },
@@ -486,7 +520,8 @@ export function renderStatsPanel() {
         const pending = allAppointments.filter((a) => a.status === "PENDING").length;
         const completed = allAppointments.filter((a) => a.status === "COMPLETED").length;
         const cancelled = allAppointments.filter((a) => a.status === "CANCELLED").length;
-        const upcoming = allAppointments.filter((a) => new Date(a.start_at) > new Date()).length;
+        const upcoming = allAppointments.filter((a) => new Date(a.start_at) > new Date() && (a.status === "CONFIRMED" || a.status === "PENDING")).length;
+
 
         container.innerHTML = `
             <div class="stat-card">
@@ -621,6 +656,203 @@ export function renderNotificationsPanel() {
     }, 500);
 }
 
+
+// MỚI: Hàm fetch dữ liệu từ API địa chỉ
+async function fetchAddressData(endpoint) {
+    try {
+        const response = await fetch(`${ADDRESS_API_BASE_URL}${endpoint}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to fetch address data:", error);
+        return [];
+    }
+}
+
+// MỚI: Hàm điền option vào select
+function populateSelectWithOptions(selectElement, options, placeholder) {
+    selectElement.innerHTML = `<option value="">-- ${placeholder} --</option>`;
+    options.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.code; // Lưu code làm value
+        option.textContent = item.name; // Hiển thị name
+        selectElement.appendChild(option);
+    });
+}
+
+// MỚI: Các hàm để tải và hiển thị từng cấp địa chỉ
+async function initializeAddressDropdowns(patient) {
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+
+    // Tải danh sách Tỉnh/Thành phố
+    const cities = await fetchAddressData('p/');
+    populateSelectWithOptions(citySelect, cities, 'Chọn Tỉnh/Thành phố');
+
+    // Nếu có dữ liệu tỉnh/thành phố của bệnh nhân
+    if (patient.user?.city_code) {
+        citySelect.value = patient.user.city_code;
+        // Tải danh sách Quận/Huyện tương ứng
+        const districts = await fetchAddressData(`p/${patient.user.city_code}?depth=2`);
+        if (districts.districts) {
+             populateSelectWithOptions(districtSelect, districts.districts, 'Chọn Quận/Huyện');
+        }
+
+        // Nếu có dữ liệu quận/huyện
+        if (patient.user?.district_code) {
+            districtSelect.value = patient.user.district_code;
+            // Tải danh sách Phường/Xã tương ứng
+            const wards = await fetchAddressData(`d/${patient.user.district_code}?depth=2`);
+            if(wards.wards){
+                populateSelectWithOptions(wardSelect, wards.wards, 'Chọn Phường/Xã');
+            }
+             // Nếu có dữ liệu phường/xã
+            if(patient.user?.ward_code){
+                wardSelect.value = patient.user.ward_code;
+            }
+        }
+    }
+}
+
+// MỚI: Hàm reset trạng thái validation của form
+function resetFormValidation(formElement) {
+    const fields = formElement.querySelectorAll("[data-validate]");
+    fields.forEach(field => {
+        field.style.borderColor = ""; // Trả về màu viền mặc định
+        const errorElement = document.getElementById(`${field.name}-error`);
+        if (errorElement) {
+            errorElement.textContent = "";
+            errorElement.style.display = "none";
+        }
+    });
+}
+
+// ---------- SỬA LẠI HOÀN TOÀN HÀM handleEditProfile ----------
+async function handleEditProfile(patient) {
+    const modal = document.getElementById('edit-profile-modal');
+    const form = document.getElementById('edit-profile-form');
+    if (!modal || !form || !patient) return;
+
+    // MỚI: Reset validation UI trước khi điền dữ liệu
+    resetFormValidation(form);
+
+    // --- Phần điền dữ liệu vào form ---
+    form.querySelector("#edit-full-name").value = patient.user?.full_name || '';
+    form.querySelector("#edit-phone-number").value = patient.user?.phone_number || '';
+    form.querySelector("#edit-dob").value = patient.user?.dob ? formatDateVN(patient.user.dob, 'dd/mm/yyyy') : '';
+    form.querySelector("#edit-gender").value = patient.user?.gender || '';
+    form.querySelector("#edit-address-detail").value = patient.user?.address_detail || '';
+    form.querySelector("#edit-email").value = patient.user?.email || '';
+    form.querySelector("#edit-id-number").value = patient.user?.id_number || '';
+    form.querySelector("#edit-ethnicity").value = patient.user?.ethnicity || '';
+    form.querySelector("#edit-insurance-no").value = patient.insurance_no || '';
+    form.querySelector("#edit-occupation").value = patient.occupation || '';
+
+    // MỚI: Khởi tạo và điền dữ liệu cho dropdown địa chỉ
+    await initializeAddressDropdowns(patient);
+
+    // Khởi tạo Flatpickr cho ngày sinh
+    const dobInput = document.querySelector("#edit-dob");
+    if (dobInput._flatpickr) {
+        dobInput._flatpickr.destroy();
+    }
+    flatpickr(dobInput, {
+        dateFormat: "d/m/Y",
+        locale: customVnLocale,
+        allowInput: true,
+        maxDate: "today",
+    });
+
+    // Hiển thị modal
+    modal.style.display = "flex";
+
+    // Nút Hủy
+    const cancelBtn = modal.querySelector("#edit-profile-cancel-btn");
+    cancelBtn.onclick = () => { modal.style.display = "none"; };
+
+    // Xử lý submit form
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        // Validate form trước khi submit
+        const validator = new FormValidator();
+        if (!validator.validateForm(form)) {
+            showToast("Vui lòng kiểm tra lại các trường thông tin", "warning");
+            return;
+        }
+
+        showLoadingOverlay("Đang cập nhật hồ sơ...");
+
+        const formData = new FormData(form);
+        const dobValue = formData.get('dob');
+        let formattedDob = null;
+        if (dobValue) {
+            const parts = dobValue.split("/");
+            if (parts.length === 3) {
+                formattedDob = `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+            }
+        }
+
+        // MỚI: Lấy cả text và value của các select địa chỉ
+        const citySelect = form.querySelector("#city");
+        const districtSelect = form.querySelector("#district");
+        const wardSelect = form.querySelector("#ward");
+
+        const city_code = citySelect.value;
+        const city_name = city_code ? citySelect.options[citySelect.selectedIndex].text : '';
+        const district_code = districtSelect.value;
+        const district_name = district_code ? districtSelect.options[districtSelect.selectedIndex].text : '';
+        const ward_code = wardSelect.value;
+        const ward_name = ward_code ? wardSelect.options[wardSelect.selectedIndex].text : '';
+
+        // Ghép full_address
+        const address_detail = formData.get('address_detail').trim();
+        const fullAddress = [address_detail, ward_name, district_name, city_name].filter(Boolean).join(", ");
+
+        const payload = {
+            full_name: formData.get('full_name').trim(),
+            phone_number: formData.get('phone_number').trim(),
+            dob: formattedDob,
+            gender: formData.get('gender'),
+            email: formData.get('email').trim(),
+            id_number: formData.get('id_number').trim(),
+            ethnicity: formData.get('ethnicity').trim(),
+            
+            // Dữ liệu địa chỉ chi tiết
+            address_detail: address_detail,
+            ward: ward_name,
+            district: district_name,
+            city: city_name,
+            full_address: fullAddress,
+
+            // Giả sử backend chấp nhận các code này để lưu trữ
+            ward_code: ward_code,
+            district_code: district_code,
+            city_code: city_code,
+
+            patient: {
+                insurance_no: formData.get('insurance_no').trim(),
+                occupation: formData.get('occupation').trim(),
+            },
+        };
+
+        try {
+            await updatePatientProfile(payload);
+            modal.style.display = "none";
+            showToast("Cập nhật hồ sơ thành công!", "success");
+        } catch (err) {
+            showErrorModal(`Lỗi: ${err.message || "Không thể cập nhật hồ sơ"}`);
+        } finally {
+            hideLoadingOverlay();
+        }
+    };
+}
+// ---------------------------------------------------------------------
+
+// ... (phần DOMContentLoaded và FormValidator giữ nguyên)
 document.addEventListener("DOMContentLoaded", () => {
     const applyHash = () => {
         const hash = location.hash.slice(1) || "overview";
@@ -629,37 +861,239 @@ document.addEventListener("DOMContentLoaded", () => {
     applyHash();
 
     document.querySelectorAll(".sidebar-nav-item").forEach((nav) => {
-        nav.addEventListener("click", (e) => {
-            e.preventDefault();
-            const panel = nav.getAttribute("href").slice(1);
-            history.replaceState(null, "", `#${panel}`);
-            showPanel(panel);
-        });
-    });
-
-    document.getElementById("btn-edit-profile")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        showErrorModal("Chuyển đến trang chỉnh sửa hồ sơ bệnh nhân!");
+        if (!nav._listenerAdded) {
+            nav.addEventListener("click", (e) => {
+                e.preventDefault();
+                const panel = nav.getAttribute("href").slice(1);
+                history.replaceState(null, "", `#${panel}`);
+                showPanel(panel);
+                nav._listenerAdded = true;
+            });
+        }
     });
 
     window.addEventListener("hashchange", applyHash);
 
     document.querySelectorAll('a[href^="#"]').forEach((link) => {
-        link.addEventListener("click", (e) => {
-            const target = link.getAttribute("href").substring(1);
-            if (["overview", "profile", "appointments", "notifications", "stats", "messages"].includes(target)) {
-                e.preventDefault();
-
-                showPanel(target);
-
-                window.location.hash = `#${target}`;
-
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-        });
+        if (!link._listenerAdded) {
+            link.addEventListener("click", (e) => {
+                const target = link.getAttribute("href").substring(1);
+                if (["overview", "profile", "appointments", "notifications", "stats", "messages"].includes(target)) {
+                    e.preventDefault();
+                    showPanel(target);
+                    window.location.hash = `#${target}`;
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+                link._listenerAdded = true;
+            });
+        }
     });
+    
+     // MỚI: Thêm event listener cho các dropdown địa chỉ trong modal
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+
+    citySelect.addEventListener('change', async () => {
+        const cityCode = citySelect.value;
+        // Reset quận và phường
+        populateSelectWithOptions(districtSelect, [], 'Chọn Quận/Huyện');
+        populateSelectWithOptions(wardSelect, [], 'Chọn Phường/Xã');
+        if (cityCode) {
+            const data = await fetchAddressData(`p/${cityCode}?depth=2`);
+            if(data.districts) {
+                populateSelectWithOptions(districtSelect, data.districts, 'Chọn Quận/Huyện');
+            }
+        }
+    });
+
+    districtSelect.addEventListener('change', async () => {
+        const districtCode = districtSelect.value;
+        // Reset phường
+        populateSelectWithOptions(wardSelect, [], 'Chọn Phường/Xã');
+        if (districtCode) {
+            const data = await fetchAddressData(`d/${districtCode}?depth=2`);
+            if (data.wards) {
+                populateSelectWithOptions(wardSelect, data.wards, 'Chọn Phường/Xã');
+            }
+        }
+    });
+
 
     fetchPatientProfile();
     fetchAppointmentsAndDoctors();
     loadNotificationsData();
+});
+
+class FormValidator {
+    constructor() {
+        this.rules = {
+            name: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Tên không hợp lệ",
+            },
+            email: {
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Vui lòng nhập email hợp lệ",
+            },
+            password: {
+                minLength: 8,
+                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+                message: "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt",
+            },
+            confirm_password: {
+                message: "Mật khẩu xác nhận không khớp",
+            },
+            phone: {
+                pattern: /^(0[3|5|7|8|9])+([0-9]{8})$/,
+                message: "Số điện thoại không hợp lệ",
+            },
+            id: {
+                pattern: /^[0-9]{9,12}$/,
+                message: "CMND/CCCD phải có 9-12 chữ số",
+            },
+            otp: {
+                pattern: /^[0-9]{6}$/,
+                message: "Mã OTP phải có 6 chữ số",
+            },
+            insurance_no: {
+                pattern: /^[A-Z0-9]{15}$/,
+                message: "Mã BHYT không hợp lệ (ví dụ: GD4797924181234)",
+            },
+            ethnicity: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Dân tộc không hợp lệ",
+            },
+            address_detail: {
+                minLength: 2,
+                message: "Địa chỉ không hợp lệ",
+            },
+            occupation: {
+                minLength: 2,
+                pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
+                message: "Nghề nghiệp không hợp lệ",
+            },
+        };
+
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        document.addEventListener("input", (e) => {
+            if (e.target.hasAttribute("data-validate")) {
+                this.validateField(e.target);
+            }
+        });
+         document.addEventListener("change", (e) => {
+            if (e.target.hasAttribute("data-validate") && e.target.tagName === 'SELECT') {
+                this.validateField(e.target);
+            }
+        });
+    }
+
+    validateField(field) {
+        const validateType = field.getAttribute("data-validate");
+        const value = field.value.trim();
+        const errorElement = document.getElementById(this.getErrorId(field));
+
+        let isValid = true;
+        let errorMessage = "";
+
+        if (validateType === "select") {
+            if (!value) {
+                isValid = false;
+                errorMessage = "Vui lòng chọn một tùy chọn";
+            }
+        } else if (validateType === "date") {
+            if (!value) {
+                isValid = field.required ? false : true;
+                if (!isValid) errorMessage = "Vui lòng chọn ngày sinh";
+            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) {
+                 isValid = false;
+                 errorMessage = "Định dạng ngày dd/mm/yyyy không đúng";
+            } else {
+                const age = this.calculateAge(value);
+                if (age < 16) {
+                    isValid = false;
+                    errorMessage = "Bạn phải từ 16 tuổi trở lên";
+                } else if (age > 120) {
+                    isValid = false;
+                    errorMessage = "Ngày sinh không hợp lệ";
+                }
+            }
+        } else {
+            const rule = this.rules[validateType];
+            if (rule) {
+                if (field.required && !value) {
+                    isValid = false;
+                    errorMessage = "Trường này là bắt buộc";
+                } else if (value) { // Chỉ validate nếu có giá trị
+                    if (rule.minLength && value.length < rule.minLength) {
+                        isValid = false;
+                        errorMessage = rule.message || `Phải có ít nhất ${rule.minLength} ký tự`;
+                    } else if (rule.pattern && !rule.pattern.test(value)) {
+                        isValid = false;
+                        errorMessage = rule.message;
+                    }
+                }
+            }
+        }
+
+        this.updateFieldValidation(field, errorElement, isValid, errorMessage);
+        return isValid;
+    }
+
+    updateFieldValidation(field, errorElement, isValid, errorMessage) {
+        if (isValid) {
+            field.style.borderColor = "#10b981";
+            if (errorElement) {
+                errorElement.style.display = "none";
+                errorElement.textContent = "";
+            }
+        } else {
+            field.style.borderColor = "#ef4444";
+            if (errorElement) {
+                errorElement.style.display = "block";
+                errorElement.textContent = errorMessage;
+            }
+        }
+    }
+
+    getErrorId(field) {
+        return `${field.name}-error`;
+    }
+
+    calculateAge(dobString) { // dobString is "dd/mm/yyyy"
+        const parts = dobString.split("/");
+        if (parts.length !== 3) return 0;
+        const birthDate = new Date(+parts[2], parts[1] - 1, +parts[0]);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
+    validateForm(form) {
+        const fields = form.querySelectorAll("[data-validate]");
+        let isFormValid = true;
+        fields.forEach((field) => {
+            if (!this.validateField(field)) {
+                isFormValid = false;
+            }
+        });
+        return isFormValid;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    new FormValidator();
 });

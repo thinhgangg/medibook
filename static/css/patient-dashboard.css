@@ -177,7 +177,6 @@ body {
     border-radius: var(--border-radius);
     padding: var(--spacing-2xl);
     box-shadow: var(--shadow-lg);
-    /* margin-bottom: var(--spacing-lg); */
 }
 
 .card h1 {
@@ -436,13 +435,11 @@ body {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23333' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 16px;
     padding-right: 2.5rem;
-
     cursor: pointer;
 }
 
@@ -508,11 +505,11 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Optional: Style the Flatpickr calendar */
 .flatpickr-calendar {
     font-family: sans-serif;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1001; /* Ensure calendar appears above modal */
 }
 
 .flatpickr-day.selected,
@@ -640,7 +637,7 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-.stat-card h3 {
+.stat-card .stat-label {
     font-size: 0.875rem;
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -761,9 +758,11 @@ body {
     padding: var(--spacing-2xl);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-xl);
-    max-width: 500px;
+    max-width: 700px;
     width: 90%;
     animation: slideUp 0.3s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -791,15 +790,16 @@ body {
     display: flex;
     gap: var(--spacing-md);
     justify-content: flex-end;
+    margin-top: 1.5rem;
 }
 
 /* Error Messages */
 .error-message {
-    background: #fee2e2;
-    color: #991b1b;
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-sm);
-    border-left: 4px solid var(--danger-color);
+    color: #ef4444; /* Màu đỏ */
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none; /* Mặc định ẩn đi */
+    min-height: 1rem;
 }
 
 /* Hidden Class */
@@ -827,8 +827,8 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 10000;
-    visibility: hidden; /* Hidden by default */
-    opacity: 0; /* Hidden by default */
+    visibility: hidden;
+    opacity: 0;
     transition: visibility 0s, opacity 0.3s linear;
     color: white;
     text-align: center;
@@ -843,7 +843,7 @@ body {
 
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid #fff; /* White spinner */
+    border-top: 4px solid #fff;
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -871,6 +871,81 @@ body {
     }
 }
 
+/* Profile Edit Form */
+.profile-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-base);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+hr.full-width {
+    grid-column: 1 / -1;
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1rem 0;
+}
+
+
+/* THAY ĐỔI: Bố cục 3 ô địa chỉ trên cùng một hàng */
+.address-selects {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.address-selects select {
+    flex: 1;
+    min-width: 150px;
+}
+
+.error-inline-group {
+    display: flex;
+    gap: 1rem;
+}
+.error-message-inline {
+    flex: 1;
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block; /* Luôn hiển thị để giữ layout */
+    min-height: 1rem;
+}
+
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .dashboard-container {
@@ -891,6 +966,10 @@ body {
         flex: 1;
         min-width: 120px;
         justify-content: center;
+    }
+
+    .profile-edit-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -946,5 +1025,27 @@ body {
 
     .chart-container.full-width {
         height: 250px;
+    }
+
+    .modal-content {
+        padding: var(--spacing-lg);
+        width: 95%;
+    }
+
+    .profile-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group input,
+    .form-group select {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+     .address-selects {
+        flex-direction: column;
+    }
+    .error-inline-group {
+        flex-direction: column;
+        gap: 0;
     }
 }

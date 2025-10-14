@@ -3,12 +3,14 @@
 export const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 // Global state variables (mutable)
+export let patientProfile = null; // Biến mới để lưu hồ sơ bệnh nhân
 export let doctorsMap = {};
 export let allAppointments = [];
 export let allDoctors = [];
 export let mockNotifications = [];
 
 // State setters
+export const setPatientProfile = (data) => (patientProfile = data); // Setter mới
 export const setDoctorsMap = (map) => (doctorsMap = map);
 export const setAllAppointments = (data) => (allAppointments = data);
 export const setAllDoctors = (data) => (allDoctors = data);
@@ -69,9 +71,9 @@ export const showToast = (message, type = "", duration = 3000) => {
 };
 
 export function formatDateVN(dateStr) {
-    if (!dateStr) return "Chưa có thông tin";
+    if (!dateStr) return null;
     const date = new Date(dateStr);
-    if (isNaN(date)) return "Chưa có thông tin";
+    if (isNaN(date)) return null;
 
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");

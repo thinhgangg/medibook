@@ -1,5 +1,3 @@
-// static/js/doctor-dashboard.js (Main File)
-
 import {
     doctorProfile,
     allAppointments,
@@ -18,9 +16,25 @@ import {
     formatTimeHM,
 } from "./_config.js";
 
-import { fetchDoctorProfile, loadAppointments, loadAvailability, loadDaysOff, loadNotifications } from "./_data_loader.js";
+import { fetchDoctorProfile, loadAppointments, loadAvailability, loadDaysOff, loadNotifications, updateDoctorProfile } from "./_data_loader.js";
+
+// *** BƯỚC 1: TẠO BỘ NGÔN NGỮ TÙY CHỈNH CHO FLATICKR ***
+// Chúng ta sẽ đặt nó ở đầu file để có thể tái sử dụng ở nhiều nơi.
+const customVnLocale = {
+    ...flatpickr.l10ns.vn, // Sao chép tất cả cài đặt tiếng Việt có sẵn
+    months: {
+        ...flatpickr.l10ns.vn.months, // Sao chép các cài đặt tháng
+        // Ghi đè tên tháng dài bằng định dạng số
+        longhand: [
+            "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+        ],
+    },
+};
+
 
 export function showPanel(name) {
+    console.log(`Showing panel: ${name}`); // Debug log
     const panels = {
         overview: document.getElementById("panel-overview"),
         profile: document.getElementById("panel-profile"),
@@ -43,11 +57,17 @@ export function showPanel(name) {
         messages: document.getElementById("nav-messages"),
     };
 
-    Object.values(panels).forEach((p) => p?.classList.add("hidden"));
-    Object.values(navs).forEach((n) => n?.classList.remove("active"));
+    // Hide all panels and remove active class from all nav items
+    Object.values(panels).forEach((p) => {
+        if (p) p.classList.add("hidden");
+    });
+    Object.values(navs).forEach((n) => {
+        if (n) n.classList.remove("active");
+    });
 
-    panels[name]?.classList.remove("hidden");
-    navs[name]?.classList.add("active");
+    // Show the selected panel and activate the corresponding nav item
+    if (panels[name]) panels[name].classList.remove("hidden");
+    if (navs[name]) navs[name].classList.add("active");
 
     switch (name) {
         case "overview":
@@ -78,6 +98,8 @@ export function showPanel(name) {
         case "messages":
             // Nội dung tĩnh trong HTML
             break;
+        default:
+            if (panels[name]) panels[name].innerHTML = `<div class="card"><h1>Chức năng '${name}' đang được phát triển</h1></div>`;
     }
 }
 
@@ -90,8 +112,8 @@ export function renderProfileSummary(doc) {
     const profileSummary = document.getElementById("profile-summary");
     if (profileSummary) {
         profileSummary.classList.remove("skeleton-bars");
-        profileSummary.innerHTML = `
-            <ul class="overview-info">
+        profileSummary.innerHTML =
+            `<ul class="overview-info">
                 <li><strong>Họ và tên:</strong> <span>${doc.user?.full_name || "Chưa cập nhật"}</span></li>
                 <li><strong>Số điện thoại:</strong> <span>${doc.user?.phone_number || "Chưa cập nhật"}</span></li>
                 <li><strong>Email:</strong> <span>${doc.user?.email || "Chưa cập nhật"}</span></li>
@@ -99,8 +121,7 @@ export function renderProfileSummary(doc) {
                 <li><strong>Kinh nghiệm:</strong> <span>${doc.experience_years ? doc.experience_years + " năm" : "Chưa cập nhật"}</span></li>
                 <li><strong>Trạng thái:</strong> <span>${doc.is_active ? "Đang hoạt động" : "Đã khóa"}</span></li>
                 <li><strong>Mã phòng:</strong> <span>${doc.room_number || "Chưa cập nhật"}</span></li>
-            </ul>
-        `;
+            </ul>`;
     }
     document.getElementById("profile-error-overview")?.classList.add("hidden");
 }
@@ -118,11 +139,10 @@ export function renderOverviewStats() {
         const cancelled = allAppointments.filter((a) => a.status === "CANCELLED").length;
 
         container.classList.remove("skeleton-bars");
-        container.innerHTML = `
-            <div class="chart-container full-width">
+        container.innerHTML =
+            `<div class="chart-container full-width">
                 <canvas id="overview-appointment-chart"></canvas>
-            </div>
-        `;
+            </div>`;
 
         const ctx = document.getElementById("overview-appointment-chart")?.getContext("2d");
         if (ctx) {
@@ -239,16 +259,12 @@ export function renderOverviewAppointments() {
                 <div>${patientName}</div>
                 <div><span class="status ${statusClass}">${statusText}</span></div>
                 <div>
-                    ${
-                        apt.status === "PENDING"
-                            ? `
-                            <button class="btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>
-                            <button class="btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>
-                          `
-                            : `
-                            <button class="btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>
-                          `
-                    }
+                    ${apt.status === "PENDING"
+                    ? `
+                    <button class="btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>
+                    <button class="btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`
+                    : `<button class="btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>`
+                }
                 </div>
             </div>`;
         })
@@ -311,16 +327,23 @@ export function renderDoctorProfilePanel(doc) {
         `;
     }
     document.getElementById("profile-error")?.classList.add("hidden");
-    document.getElementById("btn-edit-profile")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        showErrorModal("Chức năng chỉnh sửa hồ sơ đang được phát triển.");
-    });
+
+    // Add edit profile button event listener
+    const editButton = document.getElementById("btn-edit-profile");
+    if (editButton && !editButton._listenerAdded) {
+        editButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            handleEditProfile();
+        });
+        editButton._listenerAdded = true;
+    }
 }
 
 function renderAppointmentsPanelInit() {
+    // *** BƯỚC 2: CẬP NHẬT FLATICKR TRONG HÀM NÀY ***
     if (!document.getElementById("start-date-filter")._flatpickr) {
-        flatpickr("#start-date-filter", { dateFormat: "d/m/Y", locale: "vn", allowInput: true });
-        flatpickr("#end-date-filter", { dateFormat: "d/m/Y", locale: "vn", allowInput: true });
+        flatpickr("#start-date-filter", { dateFormat: "d/m/Y", locale: customVnLocale, allowInput: true });
+        flatpickr("#end-date-filter", { dateFormat: "d/m/Y", locale: customVnLocale, allowInput: true });
     }
 
     if (!document.getElementById("btn-refresh-appointments")._listenerAdded) {
@@ -422,8 +445,7 @@ export function renderAllAppointments() {
                     <div data-label="Bệnh nhân" class="patient-name">${patientName}</div>
                     <div data-label="Trạng thái"><span class="status ${statusClass}">${statusLabel}</span></div>
                     <div data-label="Thao tác">${actions.join(" ")}</div>
-                </div>
-            `;
+                </div>`;
         })
         .join("");
 
@@ -649,8 +671,7 @@ export function renderAvailabilityList() {
                         <button class="btn-small btn-secondary" data-act="update" data-id="${a.id}">Sửa</button>
                         <button class="btn-small btn-secondary" data-act="delete" data-id="${a.id}">Xóa</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         })
         .join("");
 
@@ -836,8 +857,9 @@ function renderDaysOffPanelInit() {
     const startInput = document.getElementById("dayoff-start");
     const endInput = document.getElementById("dayoff-end");
 
+    // *** BƯỚC 2: CẬP NHẬT FLATICKR TRONG HÀM NÀY ***
     if (!document.getElementById("dayoff-date")._flatpickr) {
-        flatpickr("#dayoff-date", { dateFormat: "d/m/Y", locale: "vn", allowInput: true, placeholder: "dd/mm/yyyy" });
+        flatpickr("#dayoff-date", { dateFormat: "d/m/Y", locale: customVnLocale, allowInput: true, placeholder: "dd/mm/yyyy" });
     }
 
     if (startInput && startInput.type !== "time") startInput.type = "time";
@@ -888,8 +910,7 @@ export function renderDaysOffList() {
                         <button class="btn-small btn-secondary" data-act="update" data-id="${d.id}">Sửa</button>
                         <button class="btn-small btn-secondary" data-act="delete" data-id="${d.id}">Xóa</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         })
         .join("");
 
@@ -1047,8 +1068,7 @@ export function renderNotifications(notifications) {
                 <div>${fmtTime(n.created_at)}</div>
                 <div>${typeLabel(n.type)}</div>
                 <div>${statusBadge(n.status)}</div>
-            </div>
-        `
+            </div>`
         )
         .join("");
 }
@@ -1107,6 +1127,93 @@ export function renderStatsPanel() {
     }, 300);
 }
 
+function handleEditProfile() {
+    const doc = doctorProfile;
+    const modal = document.getElementById('edit-profile-modal');
+    const form = document.getElementById('edit-profile-form');
+    if (!modal || !form || !doc) return;
+
+    // User fields
+    form.querySelector("#edit-full-name").value = doc.user?.full_name || '';
+    form.querySelector("#edit-phone-number").value = doc.user?.phone_number || '';
+    form.querySelector("#edit-dob").value = doc.user?.dob ? formatDateVN(doc.user.dob) : '';
+    form.querySelector("#edit-gender").value = doc.user?.gender || 'MALE';
+    form.querySelector("#edit-full-address").value = doc.user?.full_address || '';
+
+    // Doctor fields
+    form.querySelector("#edit-degree").value = doc.degree || '';
+    form.querySelector("#edit-experience-years").value = doc.experience_years || '';
+    form.querySelector("#edit-room-number").value = doc.room_number || '';
+    form.querySelector("#edit-clinic-address").value = doc.clinic_address || '';
+
+    // *** BƯỚC 2: CẬP NHẬT FLATICKR TRONG HÀM NÀY ***
+    flatpickr("#edit-dob", {
+        dateFormat: "d/m/Y",
+        locale: customVnLocale, // Sử dụng bộ ngôn ngữ tùy chỉnh
+        allowInput: true,       // Cho phép nhập tay
+        defaultDate: doc.user?.dob
+    });
+
+    modal.style.display = "flex";
+
+    const cancelBtn = modal.querySelector("#edit-profile-cancel-btn");
+    if (cancelBtn && !cancelBtn._listenerAdded) {
+        cancelBtn.onclick = () => {
+            modal.style.display = "none";
+        };
+        cancelBtn._listenerAdded = true;
+    }
+
+    if (!form._listenerAdded) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            showLoadingOverlay("Đang cập nhật...");
+
+            let formattedDob = null;
+            const dobValue = form.querySelector("#edit-dob").value;
+
+            if (dobValue) {
+                const dobParts = dobValue.split('/');
+                if (dobParts.length === 3 && dobParts[0].length === 2 && dobParts[1].length === 2 && dobParts[2].length === 4) {
+                    formattedDob = `${dobParts[2]}-${dobParts[1].padStart(2, '0')}-${dobParts[0].padStart(2, '0')}`;
+                } else {
+                    showErrorModal("Định dạng ngày sinh không hợp lệ. Vui lòng dùng dd/mm/yyyy.");
+                    hideLoadingOverlay();
+                    return;
+                }
+            }
+
+            const userPayload = {
+                full_name: form.querySelector("#edit-full-name").value,
+                phone_number: form.querySelector("#edit-phone-number").value,
+                dob: formattedDob,
+                gender: form.querySelector("#edit-gender").value,
+                full_address: form.querySelector("#edit-full-address").value,
+            };
+
+            const doctorPayload = {
+                degree: form.querySelector("#edit-degree").value,
+                experience_years: parseInt(form.querySelector("#edit-experience-years").value) || null,
+                room_number: form.querySelector("#edit-room-number").value,
+                clinic_address: form.querySelector("#edit-clinic-address").value,
+            };
+
+            try {
+                await updateDoctorProfile(userPayload, doctorPayload);
+                modal.style.display = "none";
+                showToast("Cập nhật thành công!", "success");
+                await fetchDoctorProfile();
+            } catch (err) {
+                showErrorModal(`Lỗi: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
+            }
+        };
+        form._listenerAdded = true;
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
     const applyHash = () => {
         const hash = location.hash.slice(1) || "overview";
@@ -1114,14 +1221,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     applyHash();
 
-    document.querySelectorAll(".sidebar-nav-item").forEach((nav) => {
-        nav.addEventListener("click", (e) => {
-            e.preventDefault();
-            const panel = nav.getAttribute("href").slice(1);
-            history.replaceState(null, "", `#${panel}`);
-            showPanel(panel);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        });
+    const navItems = document.querySelectorAll(".sidebar-nav-item");
+    console.log(`Attaching listeners to ${navItems.length} nav items`);
+    navItems.forEach((nav) => {
+        if (!nav._listenerAdded) {
+            nav.addEventListener("click", (e) => {
+                e.preventDefault();
+                const panel = nav.getAttribute("href").slice(1);
+                console.log(`Clicking nav for panel: ${panel}`);
+                window.location.hash = panel;
+                showPanel(panel);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                nav._listenerAdded = true;
+            });
+        }
     });
 
     document.getElementById("view-all-appointments-overview")?.addEventListener("click", (e) => {
@@ -1140,18 +1253,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelectorAll('a[href^="#"]').forEach((link) => {
-        link.addEventListener("click", (e) => {
-            const target = link.getAttribute("href").substring(1);
-            if (["overview", "profile", "appointments", "notifications", "stats", "messages"].includes(target)) {
-                e.preventDefault();
-
-                showPanel(target);
-
-                window.location.hash = `#${target}`;
-
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-        });
+        if (!link._listenerAdded) {
+            link.addEventListener("click", (e) => {
+                const target = link.getAttribute("href").substring(1);
+                if (["overview", "profile", "appointments", "availability", "days-off", "notifications", "stats", "messages"].includes(target)) {
+                    e.preventDefault();
+                    window.location.hash = target;
+                    showPanel(target);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+                link._listenerAdded = true;
+            });
+        }
     });
 
     fetchDoctorProfile();

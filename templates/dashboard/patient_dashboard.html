@@ -134,11 +134,11 @@
                         </div>
                         <div class="filter-group">
                             <label for="start-date-filter">Từ ngày:</label>
-                            <input type="text" id="start-date-filter" placeholder="dd / mm / yyyy" />
+                            <input type="text" id="start-date-filter" placeholder="dd/mm/yyyy" />
                         </div>
                         <div class="filter-group">
                             <label for="end-date-filter">Đến ngày:</label>
-                            <input type="text" id="end-date-filter" placeholder="dd / mm / yyyy" />
+                            <input type="text" id="end-date-filter" placeholder="dd/mm/yyyy" />
                         </div>
                         <button id="apply-filters" class="btn-primary">Áp dụng</button>
                         <button id="clear-filters" class="btn-secondary">Xóa bộ lọc</button>
@@ -233,7 +233,172 @@
 
             <div id="ToastContainer" class="toast-container"></div>
         </section>
+        <div id="edit-profile-modal" class="modal" style="display: none">
+            <div class="modal-content" style="max-width: 700px">
+                <form id="edit-profile-form" data-validate-form>
+                    <h2>Chỉnh sửa Hồ sơ cá nhân</h2>
         
+                    <div class="profile-edit-grid">
+                        <div class="form-group">
+                            <label for="edit-full-name">Họ và tên</label>
+                            <input
+                                type="text"
+                                id="edit-full-name"
+                                name="full_name"
+                                data-validate="name"
+                                required
+                            />
+                            <small class="error-message" id="full-name-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-phone-number">Số điện thoại</label>
+                            <input
+                                type="tel"
+                                id="edit-phone-number"
+                                name="phone_number"
+                                data-validate="phone"
+                                required
+                            />
+                            <small class="error-message" id="phone-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-dob">Ngày sinh</label>
+                            <input
+                                type="text"
+                                id="edit-dob"
+                                name="dob"
+                                data-validate="date"
+                                placeholder="dd/mm/yyyy"
+                                required
+                            />
+                            <small class="error-message" id="dob-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-gender">Giới tính</label>
+                            <select
+                                id="edit-gender"
+                                name="gender"
+                                data-validate="select"
+                                required
+                            >
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="MALE">Nam</option>
+                                <option value="FEMALE">Nữ</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                            <small class="error-message" id="gender-error"></small>
+                        </div>
+        
+                        <div class="form-group full-width">
+                            <label>Địa chỉ</label>
+                            <div class="address-selects">
+                                <select id="city" name="city" data-validate="select" required>
+                                    <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                </select>
+                                <select id="district" name="district" data-validate="select" required>
+                                    <option value="">-- Chọn Quận/Huyện --</option>
+                                </select>
+                                <select id="ward" name="ward" data-validate="select" required>
+                                    <option value="">-- Chọn Phường/Xã --</option>
+                                </select>
+                            </div>
+                            <div class="error-inline-group">
+                                <small class="error-message-inline" id="city-error"></small>
+                                <small class="error-message-inline" id="district-error"></small>
+                                <small class="error-message-inline" id="ward-error"></small>
+                            </div>
+                        </div>
+        
+                        <div class="form-group full-width">
+                            <label for="edit-address-detail">Địa chỉ chi tiết (số nhà, tên đường)</label>
+                            <input
+                                type="text"
+                                id="edit-address-detail"
+                                name="address_detail"
+                                data-validate="address_detail"
+                                required
+                            />
+                            <small class="error-message" id="address-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-email">Email</label>
+                            <input
+                                type="email"
+                                id="edit-email"
+                                name="email"
+                                data-validate="email"
+                                required
+                            />
+                            <small class="error-message" id="email-error"></small>
+                        </div>
+        
+                        <hr class="full-width" />
+        
+                        <div class="form-group">
+                            <label for="edit-insurance-no">Mã BHYT</label>
+                            <input
+                                type="text"
+                                id="edit-insurance-no"
+                                name="insurance_no"
+                                data-validate="insurance_no"
+                            />
+                            <small class="error-message" id="insurance-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-id-number">Số CMND/CCCD</label>
+                            <input
+                                type="text"
+                                id="edit-id-number"
+                                name="id_number"
+                                data-validate="id"
+                            />
+                            <small class="error-message" id="id-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-ethnicity">Dân tộc</label>
+                            <input
+                                type="text"
+                                id="edit-ethnicity"
+                                name="ethnicity"
+                                data-validate="ethnicity"
+                            />
+                            <small class="error-message" id="ethnicity-error"></small>
+                        </div>
+        
+                        <div class="form-group">
+                            <label for="edit-occupation">Nghề nghiệp</label>
+                            <input
+                                type="text"
+                                id="edit-occupation"
+                                name="occupation"
+                                data-validate="occupation"
+                            />
+                            <small class="error-message" id="occupation-error"></small>
+                        </div>
+                    </div>
+        
+                    <div class="modal-actions">
+                        <button
+                            type="button"
+                            id="edit-profile-cancel-btn"
+                            class="btn-close"
+                        >
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        
+
         <div id="cancelModal" class="modal" style="display: none">
             <div class="modal-content">
                 <h2>Xác nhận hủy lịch hẹn</h2>

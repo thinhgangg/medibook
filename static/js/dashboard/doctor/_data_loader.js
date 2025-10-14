@@ -26,6 +26,40 @@ import {
     renderNotifications,
 } from "./doctor-dashboard.js";
 
+export async function updateDoctorProfile(userPayload, doctorPayload) {
+    try {
+        // Update user fields
+        const userRes = await fetchWithAuth(`${apiBase}/accounts/me/`, {
+            method: 'PATCH',
+            body: JSON.stringify(userPayload)
+        });
+        if (!userRes.ok) {
+            const errorData = await userRes.json().catch(() => ({}));
+            const errorMessage = Object.values(errorData).flat().join('\n');
+            throw new Error(errorMessage || `Lỗi cập nhật user: ${userRes.status}`);
+        }
+
+        // Update doctor fields
+        const doctorRes = await fetchWithAuth(`${apiBase}/doctors/me/`, {
+            method: 'PATCH',
+            body: JSON.stringify(doctorPayload)
+        });
+        if (!doctorRes.ok) {
+            const errorData = await doctorRes.json().catch(() => ({}));
+            const errorMessage = Object.values(errorData).flat().join('\n');
+            throw new Error(errorMessage || `Lỗi cập nhật doctor: ${doctorRes.status}`);
+        }
+
+        // Fetch updated profile
+        const updatedDoctorProfileRes = await fetchWithAuth(`${apiBase}/doctors/me/`);
+        const data = await updatedDoctorProfileRes.json();
+        setDoctorProfile(data); // Update global state
+        return data;
+    } catch (err) {
+        throw err;
+    }
+}
+
 export async function fetchDoctorProfile() {
     try {
         const res = await fetchWithAuth(`${apiBase}/doctors/me/`);
@@ -62,13 +96,9 @@ export async function loadAppointments(forceReload = false) {
 
     try {
         const res = await fetchWithAuth(`${apiBase}/appointments/`);
-
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
         const data = await res.json();
-
         setAllAppointments(Array.isArray(data.results) ? data.results : data);
-
         renderAllAppointments();
         renderOverviewAppointments();
         renderOverviewStats();
