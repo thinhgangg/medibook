@@ -110,6 +110,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } else {
                 console.error("Đăng nhập thất bại.");
+                const errorBox = document.getElementById("login-error");
+                let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
+
+                if (data?.detail) {
+                    errorMessage = data.detail;
+                } else if (data?.non_field_errors && Array.isArray(data.non_field_errors)) {
+                    errorMessage = data.non_field_errors[0];
+                }
+
+                if (errorBox) {
+                    errorBox.textContent = errorMessage;
+                    errorBox.style.display = "block";
+                }
             }
         });
     }
@@ -445,4 +458,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initAddressSelects();
+
+    flatpickr("#dob", {
+        altInput: true,
+        altFormat: "d/m/Y",
+        dateFormat: "Y-m-d",
+        locale: "vn",
+        maxDate: "today",
+        allowInput: true,
+    });
 });
