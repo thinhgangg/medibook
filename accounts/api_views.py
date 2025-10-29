@@ -43,19 +43,24 @@ def issue_tokens(user):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-        response = super().post(request, *args, **kwargs)
-
-        user = serializer.user
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "Email hoặc mật khẩu không đúng."}, status=status.HTTP_401_UNAUTHORIZED)
+        if not user.check_password(password):
+            return Response({"detail": "Email hoặc mật khẩu không đúng."}, status=status.HTTP_401_UNAUTHORIZED)
+        if not user.is_active:
+            return Response({"detail": "Tài khoản của bạn đã bị vô hiệu hóa."}, status=status.HTTP_403_FORBIDDEN)
+        refresh, access = issue_tokens(user)
         login(request, user)
-
-        response.data['success'] = True
-        response.data['message'] = 'Login successful'
-        response.data['user'] = UserSerializer(user).data
-
-        return response
+        return Response({
+            "refresh": refresh,
+            "access": access,
+            "user": UserSerializer(user).data,
+        }, status=status.HTTP_200_OK)
 
 class DoctorRegisterView(APIView):
     permission_classes = [IsAdminUser]
