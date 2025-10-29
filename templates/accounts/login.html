@@ -1,6 +1,7 @@
 {% extends "base.html" %} {% load static %} {% block title %}Đăng nhập - MediBook{% endblock %} {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/login.css' %}?v=7" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
 <div class="auth-container">
     <div class="form-container">
@@ -111,7 +112,7 @@
                 </form>
             </div>
 
-            <!-- Step 3: Profile - Xóa phần form-step trùng lặp -->
+            <!-- Step 3: Profile -->
             <div id="profile-section" class="step-content hidden" data-step="3">
                 <form id="profile-form" class="profile-grid">
                     <!-- Cột trái -->
@@ -127,7 +128,7 @@
                     </div>
                     <div class="form-group">
                         <label>Ngày sinh <span class="required">*</span></label>
-                        <input type="date" name="dob" required class="input-field" data-validate="date" />
+                        <input type="text" id="dob" name="dob" required class="input-field" data-validate="date" placeholder="dd / mm / yyyy" />
                         <span class="error" id="dob-error"></span>
                     </div>
                     <div class="form-group gender-group">
@@ -145,19 +146,27 @@
                     </div>
                     <div class="form-group">
                         <label>Số CMND/CCCD</label>
-                        <input type="text" name="id_number" placeholder="Số CMND/CCCD" class="input-field" data-validate="id" />
+                        <input
+                            type="text"
+                            name="id_number"
+                            placeholder="Số CMND/CCCD"
+                            class="input-field"
+                            data-validate="id"
+                            required
+                            class="input-field"
+                        />
                         <span class="error" id="id-error"></span>
                     </div>
                     <div class="form-group">
                         <label>Dân tộc</label>
-                        <input type="text" name="ethnicity" placeholder="Nhập dân tộc" class="input-field" data-validate="ethnicity" />
+                        <input type="text" name="ethnicity" placeholder="Nhập dân tộc" required class="input-field" data-validate="ethnicity" />
                         <span class="error" id="ethnicity-error"></span>
                     </div>
 
                     <!-- Cột phải -->
                     <div class="form-group">
                         <label>Mã thẻ bảo hiểm y tế</label>
-                        <input type="text" name="insurance_no" placeholder="Mã số BHYT" class="input-field" data-validate="insurance_no" />
+                        <input type="text" name="insurance_no" placeholder="Mã số BHYT" required class="input-field" data-validate="insurance_no" />
                         <span class="error" id="insurance-error"></span>
                     </div>
                     <div class="form-group">
@@ -200,6 +209,8 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 <script src="{% static 'js/login.js' %}"></script>
 <script src="{% static 'js/form-validation.js' %}"></script>
 {% endblock content %}

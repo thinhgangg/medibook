@@ -458,4 +458,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     initAddressSelects();
+
+    flatpickr("#dob", {
+        altInput: true,
+        altFormat: "d/m/Y",
+        dateFormat: "Y-m-d",
+        locale: "vn",
+        maxDate: "today",
+        allowInput: true,
+    });
 });
