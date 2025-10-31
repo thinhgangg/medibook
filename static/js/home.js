@@ -152,4 +152,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const specialties = await fetchSpecialties();
     renderSpecialties(specialties);
+
+    const searchInput = document.getElementById("searchInput");
+    const searchButton = document.getElementById("searchButton");
+
+    function goToSearch() {
+        const keyword = searchInput.value.trim();
+        if (keyword) {
+            window.location.href = `/appointments/?page=1&name=${encodeURIComponent(keyword)}`;
+        } else {
+            alert("Vui lòng nhập tên bác sĩ hoặc triệu chứng để tìm kiếm.");
+        }
+    }
+
+    searchButton.addEventListener("click", goToSearch);
+
+    searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            goToSearch();
+        }
+    });
 });

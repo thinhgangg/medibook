@@ -485,10 +485,11 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("q")) {
-        const q = urlParams.get("q");
-        doctorSearch.value = q;
-        activeFilters.name = normalize(q);
+    const nameParam = urlParams.get("name") || urlParams.get("q");
+
+    if (nameParam) {
+        doctorSearch.value = nameParam;
+        activeFilters.name = normalize(nameParam);
     }
 
     if (urlParams.get("specialty")) activeFilters.specialty = urlParams.get("specialty");
