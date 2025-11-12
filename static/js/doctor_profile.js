@@ -85,6 +85,7 @@ function renderDoctorProfile(doctor) {
             <h3 class="section-title">Thông tin liên hệ</h3>
             <p><strong>Điện thoại:</strong> ${doctor.user.phone_number || "Chưa cập nhật"}</p>
             <p><strong>Email:</strong> ${doctor.user.email || "Chưa cập nhật"}</p>
+            <p><strong>Phòng khám:</strong> ${doctor.room_number || "Chưa cập nhật"}</p>
         </div>
 
         <div class="card quick">
