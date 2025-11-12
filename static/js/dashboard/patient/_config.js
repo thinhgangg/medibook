@@ -99,3 +99,95 @@ export function showErrorModal(message) {
         };
     }
 }
+
+export async function showReviewModal(appointmentId) {
+    const existing = document.getElementById("reviewModal");
+    if (existing) existing.remove();
+
+    showLoadingOverlay("Đang kiểm tra đánh giá...");
+
+    try {
+        const checkRes = await fetchWithAuth(`${API_BASE_URL}/doctors/appointments/${appointmentId}/review/`, {
+            method: "GET",
+        });
+
+        hideLoadingOverlay();
+
+        if (checkRes.ok) {
+            const data = await checkRes.json();
+            showToast("Bạn đã đánh giá cuộc hẹn này rồi.", "error");
+            return;
+        }
+    } catch (err) {
+        hideLoadingOverlay();
+        if (!String(err).includes("404")) {
+            showErrorModal(`Không thể kiểm tra trạng thái đánh giá: ${err.message}`);
+            return;
+        }
+    }
+
+    const modal = document.createElement("div");
+    modal.id = "reviewModal";
+    modal.classList.add("modal");
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Đánh giá bác sĩ</h2>
+            <p>Vui lòng nhập đánh giá của bạn:</p>
+
+            <label for="reviewStars">Số sao (1–5):</label>
+            <input type="number" id="reviewStars" min="1" max="5" class="filter" style="width:100%;margin-bottom:10px;" />
+
+            <label for="reviewComment">Nhận xét:</label>
+            <textarea id="reviewComment" rows="4" class="filter" style="width:100%;margin-bottom:15px;"></textarea>
+
+            <div class="modal-actions">
+                <button id="reviewSubmitBtn" class="btn-primary">Gửi đánh giá</button>
+                <button id="reviewCloseBtn" class="btn-close">Đóng</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.style.display = "flex";
+
+    modal.addEventListener("click", (e) => {
+        if (e.target.id === "reviewModal" || e.target.id === "reviewCloseBtn") {
+            modal.remove();
+        }
+    });
+
+    modal.querySelector("#reviewSubmitBtn").addEventListener("click", async () => {
+        const stars = parseInt(document.getElementById("reviewStars").value);
+        const comment = document.getElementById("reviewComment").value.trim();
+
+        if (!stars || stars < 1 || stars > 5) {
+            showToast("Vui lòng nhập số sao hợp lệ (1–5)", "error");
+            return;
+        }
+
+        try {
+            showLoadingOverlay("Đang gửi đánh giá...");
+            const res = await fetchWithAuth(`${API_BASE_URL}/doctors/appointments/${appointmentId}/review/`, {
+                method: "POST",
+                body: JSON.stringify({ stars, comment }),
+            });
+            hideLoadingOverlay();
+
+            if (res.status === 400) {
+                const data = await res.json();
+                if (data?.non_field_errors?.[0]) {
+                    showToast(data.non_field_errors[0], "error");
+                    modal.remove();
+                    return;
+                }
+            }
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            showToast("Cảm ơn bạn đã đánh giá!", "success");
+            modal.remove();
+        } catch (err) {
+            hideLoadingOverlay();
+            showErrorModal(`Không thể gửi đánh giá: ${err.message}`);
+        }
+    });
+}

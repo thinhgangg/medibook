@@ -6,6 +6,7 @@ import {
     mockNotifications,
     formatDateVN,
     showErrorModal,
+    showReviewModal,
     showLoadingOverlay,
     hideLoadingOverlay,
     showToast,
@@ -246,8 +247,12 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             let actionsHtml = "";
             if (apt.status === "PENDING") {
                 actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Hủy</button>`;
-            } else {
-                actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Chi tiết</button>`;
+            } else if (apt.status === "COMPLETED") {
+                if (apt.has_review) {
+                    actionsHtml = `<span class="status status-confirmed">Đã đánh giá</span>`;
+                } else {
+                    actionsHtml = `<button class="btn-primary btn-small" data-action="review" data-id="${apt.id}">Viết đánh giá</button>`;
+                }
             }
 
             return `
@@ -270,8 +275,8 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             const aptId = e.target.dataset.appointmentId;
             if (e.target.textContent === "Hủy") {
                 cancelAppointment(aptId, e.target);
-            } else if (e.target.textContent === "Chi tiết") {
-                showErrorModal("Chức năng xem chi tiết lịch hẹn đang được phát triển.");
+            } else if (e.target.textContent === "Đánh giá") {
+                showReviewModal(aptId);
             }
         });
     });

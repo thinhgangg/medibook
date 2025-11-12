@@ -130,5 +130,5 @@ class DoctorReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Cuộc hẹn phải hoàn thành mới có thể đánh giá.")
         
         if hasattr(appointment, 'review'):
-            raise serializers.ValidationError("Cuộc hẹn này đã có đánh giá.")
+            raise serializers.ValidationError("Bạn đã đánh giá cuộc hẹn này rồi.")
         return data
