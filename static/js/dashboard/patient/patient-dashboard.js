@@ -251,7 +251,7 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
                 if (apt.has_review) {
                     actionsHtml = `<span class="status status-confirmed">Đã đánh giá</span>`;
                 } else {
-                    actionsHtml = `<button class="btn-primary btn-small" data-action="review" data-id="${apt.id}">Viết đánh giá</button>`;
+                    actionsHtml = `<button class="btn-primary btn-small" data-action="review" data-appointment-id="${apt.id}">Viết đánh giá</button>`;
                 }
             }
 
@@ -275,7 +275,7 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             const aptId = e.target.dataset.appointmentId;
             if (e.target.textContent === "Hủy") {
                 cancelAppointment(aptId, e.target);
-            } else if (e.target.textContent === "Đánh giá") {
+            } else if (e.target.textContent === "Viết đánh giá") {
                 showReviewModal(aptId);
             }
         });

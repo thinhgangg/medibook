@@ -185,6 +185,12 @@ export async function showReviewModal(appointmentId) {
 
             showToast("Cảm ơn bạn đã đánh giá!", "success");
             modal.remove();
+
+            const button = document.querySelector(`button[data-appointment-id="${appointmentId}"][data-action="review"]`);
+            if (button) {
+                const wrapper = button.parentElement;
+                wrapper.innerHTML = `<span class="status status-confirmed">Đã đánh giá</span>`;
+            }
         } catch (err) {
             hideLoadingOverlay();
             showErrorModal(`Không thể gửi đánh giá: ${err.message}`);
