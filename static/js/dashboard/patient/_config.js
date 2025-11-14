@@ -130,23 +130,50 @@ export async function showReviewModal(appointmentId) {
     modal.id = "reviewModal";
     modal.classList.add("modal");
     modal.innerHTML = `
-        <div class="modal-content">
-            <h2>Đánh giá bác sĩ</h2>
-            <p>Vui lòng nhập đánh giá của bạn:</p>
+    <div class="modal-content review-form">
+        <h2>Đánh giá bác sĩ</h2>
+        <p class="subtitle">Chia sẻ trải nghiệm của bạn để giúp cải thiện dịch vụ</p>
 
-            <label for="reviewStars">Số sao (1–5):</label>
-            <input type="number" id="reviewStars" min="1" max="5" class="filter" style="width:100%;margin-bottom:10px;" />
-
-            <label for="reviewComment">Nhận xét:</label>
-            <textarea id="reviewComment" rows="4" class="filter" style="width:100%;margin-bottom:15px;"></textarea>
-
-            <div class="modal-actions">
-                <button id="reviewSubmitBtn" class="btn-primary">Gửi đánh giá</button>
-                <button id="reviewCloseBtn" class="btn-close">Đóng</button>
-            </div>
+        <div class="form-section">
+        <label>Đánh giá của bạn</label>
+        <div class="star-rating" id="reviewStars">
+            <span data-value="5">★</span>
+            <span data-value="4">★</span>
+            <span data-value="3">★</span>
+            <span data-value="2">★</span>
+            <span data-value="1">★</span>
         </div>
+        </div>
+
+        <div class="form-section">
+        <label for="reviewComment">Nhận xét của bạn</label>
+        <textarea id="reviewComment" rows="5" placeholder="Chia sẻ chi tiết về trải nghiệm của bạn với bác sĩ..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+        <button id="reviewCloseBtn" class="btn-cancel">Hủy</button>
+        <button id="reviewSubmitBtn" class="btn-primary">Gửi</button>
+        </div>
+    </div>
     `;
     document.body.appendChild(modal);
+
+    let selectedStars = 0;
+    const starContainer = modal.querySelector("#reviewStars");
+
+    starContainer.querySelectorAll("span").forEach((star) => {
+        star.addEventListener("click", () => {
+            selectedStars = parseInt(star.dataset.value);
+            starContainer.querySelectorAll("span").forEach((s) => s.classList.remove("selected"));
+            star.classList.add("selected");
+            let next = star.nextElementSibling;
+            while (next) {
+                next.classList.add("selected");
+                next = next.nextElementSibling;
+            }
+        });
+    });
+
     modal.style.display = "flex";
 
     modal.addEventListener("click", (e) => {
@@ -156,11 +183,11 @@ export async function showReviewModal(appointmentId) {
     });
 
     modal.querySelector("#reviewSubmitBtn").addEventListener("click", async () => {
-        const stars = parseInt(document.getElementById("reviewStars").value);
+        const stars = selectedStars;
         const comment = document.getElementById("reviewComment").value.trim();
 
-        if (!stars || stars < 1 || stars > 5) {
-            showToast("Vui lòng nhập số sao hợp lệ (1–5)", "error");
+        if (!stars || stars < 1) {
+            showToast("Vui lòng chọn số sao đánh giá.", "error");
             return;
         }
 
