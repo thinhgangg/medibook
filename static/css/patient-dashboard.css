@@ -803,7 +803,7 @@ body {
     background: #fff;
     border-radius: 16px;
     padding: 25px 30px;
-    width: 500px;
+    width: 600px;
     max-width: 90%;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
     animation: fadeInUp 0.35s ease;
@@ -900,10 +900,10 @@ body {
 
 .modal-content {
     background: var(--bg-primary);
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-xl);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-xl);
-    max-width: 700px;
+    max-width: 600px;
     width: 90%;
     animation: slideUp 0.3s ease-out;
     z-index: 1001;
@@ -920,14 +920,39 @@ body {
     }
 }
 
-.modal-content h2 {
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
+.modal-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.modal-content p {
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-close-btn {
+    cursor: pointer;
+    font-size: 22px;
+    color: #6b7280;
+    transition: 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    color: #111827;
+}
+
+.modal-body {
+    padding: 0 20px;
+    overflow-y: auto;
+}
+
+.modal-body p {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.5;
     color: var(--text-secondary);
-    margin-bottom: var(--spacing-lg);
 }
 
 .modal-actions {

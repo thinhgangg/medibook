@@ -214,23 +214,21 @@
             <div id="ToastContainer" class="toast-container"></div>
         </section>
 
-        <!-- Appointment Detail Modal -->
         <div id="appointmentDetailModal" class="modal" style="display: none">
-            <div class="modal-content" style="max-width: 750px">
-                <h2>Chi tiết lịch hẹn</h2>
-
-                <div id="appointment-detail-body"></div>
-
-                <div class="modal-actions" style="margin-top: 20px">
-                    <button id="appointmentDetailCloseBtn" class="btn btn-close">Đóng</button>
-                </div>
-            </div>
+            <div class="modal-content"></div>
         </div>
 
         <div id="cancelModal" class="modal" style="display: none">
-            <div class="modal-content" style="max-width: 450px">
-                <h2>Xác nhận hủy lịch hẹn</h2>
-                <p>Bạn có chắc chắn muốn hủy lịch hẹn này không?</p>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Xác nhận hủy lịch hẹn</h2>
+                    <span class="modal-close-btn" id="cancelModalCloseBtn">✕</span>
+                </div>
+
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy lịch hẹn này không?</p>
+                </div>
+
                 <div class="modal-actions">
                     <button id="cancelCloseBtn" class="btn btn-close">Đóng</button>
                     <button id="cancelConfirmBtn" class="btn btn-cancel">Hủy</button>
@@ -239,9 +237,16 @@
         </div>
 
         <div id="errorModal" class="modal" style="display: none">
-            <div class="modal-content" style="max-width: 450px">
-                <h2>Thông báo</h2>
-                <p id="errorModalMessage"></p>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Thông báo</h2>
+                    <span class="modal-close-btn" id="errorModalCloseIcon">✕</span>
+                </div>
+
+                <div class="modal-body">
+                    <p id="errorModalMessage"></p>
+                </div>
+
                 <div class="modal-actions">
                     <button id="errorModalCloseBtn" class="btn btn-close">Đóng</button>
                 </div>

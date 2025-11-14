@@ -129,34 +129,42 @@ export async function showReviewModal(appointmentId) {
     const modal = document.createElement("div");
     modal.id = "reviewModal";
     modal.classList.add("modal");
+
     modal.innerHTML = `
     <div class="modal-content review-form">
-        <h2>Đánh giá bác sĩ</h2>
-        <p class="subtitle">Chia sẻ trải nghiệm của bạn để giúp cải thiện dịch vụ</p>
-
-        <div class="form-section">
-        <label>Đánh giá của bạn</label>
-        <div class="star-rating" id="reviewStars">
-            <span data-value="5">★</span>
-            <span data-value="4">★</span>
-            <span data-value="3">★</span>
-            <span data-value="2">★</span>
-            <span data-value="1">★</span>
-        </div>
+        <div class="modal-header">  
+            <h2>Đánh giá bác sĩ</h2>
+            <span class="modal-close-btn">✕</span>
         </div>
 
-        <div class="form-section">
-        <label for="reviewComment">Nhận xét của bạn</label>
-        <textarea id="reviewComment" rows="5" placeholder="Chia sẻ chi tiết về trải nghiệm của bạn với bác sĩ..."></textarea>
+        <div class="modal-body">
+            <p class="subtitle">Chia sẻ trải nghiệm của bạn để giúp cải thiện dịch vụ</p>
+
+            <div class="form-section">
+                <label>Đánh giá của bạn</label>
+                <div class="star-rating" id="reviewStars">
+                    <span data-value="5">★</span>
+                    <span data-value="4">★</span>
+                    <span data-value="3">★</span>
+                    <span data-value="2">★</span>
+                    <span data-value="1">★</span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label for="reviewComment">Nhận xét của bạn</label>
+                <textarea id="reviewComment" rows="5" placeholder="Chia sẻ chi tiết về trải nghiệm của bạn với bác sĩ..."></textarea>
+            </div>
         </div>
 
         <div class="modal-actions">
-        <button id="reviewCloseBtn" class="btn btn-close">Hủy</button>
-        <button id="reviewSubmitBtn" class="btn btn-primary">Gửi</button>
+            <button id="reviewCloseBtn" class="btn btn-close">Hủy</button>
+            <button id="reviewSubmitBtn" class="btn btn-primary">Gửi</button>
         </div>
     </div>
     `;
     document.body.appendChild(modal);
+    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
 
     let selectedStars = 0;
     const starContainer = modal.querySelector("#reviewStars");
@@ -245,6 +253,7 @@ export async function showAppointmentDetailModal(appointmentId) {
         const endDate = new Date(apt.end_at);
         apt.start_at = `${startDate.toLocaleDateString("vi-VN")} ${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
         apt.end_at = `${endDate.toLocaleDateString("vi-VN")} ${endDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+        const room_number = doctorsMap[apt.doctor_id]?.room_number || "Chưa cập nhật";
         let statusText;
         switch (apt.status) {
             case "PENDING":
@@ -268,17 +277,20 @@ export async function showAppointmentDetailModal(appointmentId) {
         modal.classList.add("modal");
 
         modal.innerHTML = `
-            <div class="modal-content" style="max-width:750px">
-                <h2>Chi tiết lịch hẹn</h2>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Chi tiết lịch hẹn</h2>
+                    <span class="modal-close-btn">✕</span>
+                </div>
 
-                <div id="appointment-detail-body">
+                <div class="modal-body" id="appointment-detail-body">
                     <p><strong>Bác sĩ:</strong> ${apt.doctor_name}</p>
                     <p><strong>Ngày: </strong> ${startDate.toLocaleDateString("vi-VN")}</p>
                     <p><strong>Thời gian:</strong> ${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - 
                     ${endDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</p>
+                    <p><strong>Phòng:</strong> ${room_number}</p>
                     <p><strong>Trạng thái:</strong> ${statusText}</p>
                     <p><strong>Ghi chú:</strong> ${apt.note || "Không có ghi chú"}</p>
-
                     <h3 style="margin-top:20px;">Hình ảnh đính kèm</h3>
                     ${
                         apt.images.length === 0
@@ -303,6 +315,7 @@ export async function showAppointmentDetailModal(appointmentId) {
         `;
 
         document.body.appendChild(modal);
+        modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
         modal.style.display = "flex";
 
         document.getElementById("appointmentDetailCloseBtn").onclick = () => {
