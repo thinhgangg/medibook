@@ -81,8 +81,10 @@ export function formatDateVN(dateStr) {
 
 export function showErrorModal(message) {
     const modal = document.getElementById("errorModal");
+
     const messageEl = document.getElementById("errorModalMessage");
     const closeBtn = document.getElementById("errorModalCloseBtn");
+    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
 
     if (modal && messageEl && closeBtn) {
         messageEl.textContent = message;

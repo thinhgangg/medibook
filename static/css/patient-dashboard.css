@@ -979,10 +979,6 @@ body {
     transition: transform 0.2s;
 }
 
-.detail-images img:hover {
-    transform: scale(1.05);
-}
-
 /* Error Messages */
 .error-message {
     background: #fee2e2;

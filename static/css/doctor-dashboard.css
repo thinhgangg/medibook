@@ -370,8 +370,72 @@ body {
     letter-spacing: 0.05em;
 }
 
-#all-appointments-table .row {
-    grid-template-columns: repeat(5, 1fr);
+/* Container */
+.appointments-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+/* Card */
+.appointment-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+}
+
+.appointment-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+/* Header - Ngày giờ */
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #f3f4f6;
+    font-size: 0.875rem;
+}
+
+.appointment-header strong {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Info - Thông tin chi tiết */
+.appointment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.appointment-info strong {
+    color: #6b7280;
+    font-weight: 500;
+    min-width: 100px;
+    display: inline-block;
+}
+
+/* Actions - Nút hành động */
+.appointment-actions {
+    display: flex;
+    justify-content: flex-start;
+    direction: rtl;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f3f4f6;
+}
+.appointment-actions > * {
+    direction: ltr;
 }
 
 .table-body .row:hover {
@@ -878,10 +942,10 @@ body {
 
 .modal-content {
     background: var(--bg-primary);
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-xl);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-xl);
-    max-width: 700px;
+    max-width: 600px;
     width: 90%;
     animation: slideUp 0.3s ease-out;
     z-index: 1001;
@@ -898,20 +962,63 @@ body {
     }
 }
 
-.modal-content h2 {
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
+.modal-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.modal-content p {
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-close-btn {
+    cursor: pointer;
+    font-size: 22px;
+    color: #6b7280;
+    transition: 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    color: #111827;
+}
+
+.modal-body {
+    padding: 0 20px;
+    overflow-y: auto;
+}
+
+.modal-body p {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.5;
     color: var(--text-secondary);
-    margin-bottom: var(--spacing-xl);
 }
 
 .modal-actions {
     display: flex;
     gap: var(--spacing-md);
     justify-content: flex-end;
+}
+
+/* Detail Images Grid */
+.detail-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.detail-images img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
 /* Error Messages */

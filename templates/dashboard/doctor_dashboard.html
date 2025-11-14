@@ -44,7 +44,7 @@
                     <div class="card-section">
                         <div class="section-header">
                             <h2>Lịch hẹn sắp tới</h2>
-                            <a href="#appointments" class="btn-primary" id="view-all-appointments-overview">Xem tất cả</a>
+                            <a href="#appointments" class="btn btn-primary btn-small" id="view-all-appointments-overview">Xem tất cả</a>
                         </div>
                         <div id="appointments-table" class="table table-overview">
                             <div class="row header">
@@ -89,7 +89,7 @@
                         <div class="card-section flex-item">
                             <div class="section-header">
                                 <h2>Thống kê lịch khám</h2>
-                                <a href="#stats" class="btn-primary" id="view-stats-overview">Xem chi tiết</a>
+                                <a href="#stats" class="btn btn-primary btn-small" id="view-stats-overview">Xem chi tiết</a>
                             </div>
                             <div id="stats-overview"></div>
                             <div id="stats-error-overview" class="error-message hidden"></div>
@@ -105,7 +105,7 @@
                         <div class="profile-info">
                             <h1 id="profile-name"></h1>
                             <p class="role">Bác sĩ</p>
-                            <a href="#" id="btn-edit-profile" class="btn-primary">Chỉnh sửa hồ sơ</a>
+                            <a href="#" id="btn-edit-profile" class="btn btn-primary">Chỉnh sửa hồ sơ</a>
                         </div>
                     </div>
 
@@ -141,9 +141,7 @@
                 <div class="card">
                     <div class="section-header">
                         <h1>Lịch hẹn của tôi</h1>
-                        <div>
-                            <a href="#appointments" id="btn-refresh-appointments" class="btn-secondary btn-secondary">Làm mới</a>
-                        </div>
+                        <a href="#appointments" id="btn-refresh-appointments" class="btn btn-secondary">Làm mới</a>
                     </div>
                     <div class="filter-section">
                         <div class="filter-group">
@@ -164,34 +162,14 @@
                             <label for="end-date-filter">Đến ngày:</label>
                             <input type="text" id="end-date-filter" placeholder="dd / mm / yyyy" />
                         </div>
-                        <button id="apply-filters" class="btn-primary">Áp dụng</button>
-                        <button id="clear-filters" class="btn-secondary">Xóa bộ lọc</button>
+                        <button id="apply-filters" class="btn btn-primary">Áp dụng</button>
+                        <button id="clear-filters" class="btn btn-secondary">Xóa bộ lọc</button>
                     </div>
-                    <div id="all-appointments-table" class="table">
-                        <div class="row header">
-                            <div>Ngày</div>
-                            <div>Giờ</div>
-                            <div>Bệnh nhân</div>
-                            <div>Trạng thái</div>
-                            <div>Thao tác</div>
-                        </div>
-                        <div id="all-appointments-loading" class="skeleton-table">
-                            <div class="row shimmer">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                            </div>
-                            <div class="row shimmer">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                            </div>
-                        </div>
-                        <div id="all-appointments-content" class="table-body hidden"></div>
+                    <div id="all-appointments-table">
+                        <div id="all-appointments-loading" class="skeleton-table">…</div>
+
+                        <div id="all-appointments-content" class="appointments-list hidden"></div>
+
                         <div id="all-appointments-error" class="error-message hidden"></div>
                     </div>
                 </div>
@@ -202,7 +180,7 @@
                     <div class="section-header">
                         <h1>Lịch làm việc</h1>
                         <div>
-                            <a href="#" id="btn-refresh-avail" class="btn-secondary btn-small">Làm mới</a>
+                            <a href="#" id="btn-refresh-avail" class="btn btn-secondary btn-small">Làm mới</a>
                         </div>
                     </div>
 
@@ -240,7 +218,7 @@
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-                                <button class="btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
+                                <button class="btn btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
                             </div>
                         </form>
                     </div>
@@ -278,7 +256,7 @@
                     <div class="section-header">
                         <h1>Ngày nghỉ</h1>
                         <div>
-                            <a href="#" id="btn-refresh-days-off" class="btn-secondary btn-small">Làm mới</a>
+                            <a href="#" id="btn-refresh-days-off" class="btn btn-secondary btn-small">Làm mới</a>
                         </div>
                     </div>
 
@@ -308,7 +286,7 @@
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-                                <button class="btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
+                                <button class="btn btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
                             </div>
                         </form>
                     </div>
@@ -341,7 +319,7 @@
                 <div class="card">
                     <div class="section-header">
                         <h1>Thông báo</h1>
-                        <a href="#" class="btn-secondary btn-small" id="btn-refresh-notifications">Làm mới</a>
+                        <a href="#" class="btn btn-secondary btn-small" id="btn-refresh-notifications">Làm mới</a>
                     </div>
                     <div id="notifications-table" class="table">
                         <div class="row header">
@@ -400,11 +378,18 @@
 
         <div id="cancelModal" class="modal" style="display: none">
             <div class="modal-content">
-                <h2>Xác nhận hủy lịch hẹn</h2>
-                <p>Bạn có chắc chắn muốn hủy lịch hẹn này không?</p>
+                <div class="modal-header">
+                    <h2>Xác nhận hủy lịch hẹn</h2>
+                    <span class="modal-close-btn">✕</span>
+                </div>
+
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy lịch hẹn này không?</p>
+                </div>
+
                 <div class="modal-actions">
-                    <button id="cancelConfirmBtn" class="btn-cancel">Hủy</button>
-                    <button id="cancelCloseBtn" class="btn-close">Đóng</button>
+                    <button id="cancelConfirmBtn" class="btn btn-cancel">Hủy</button>
+                    <button id="cancelCloseBtn" class="btn btn-close">Đóng</button>
                 </div>
             </div>
         </div>
@@ -414,18 +399,25 @@
                 <h2>Xác nhận xóa lịch làm việc</h2>
                 <p>Bạn có chắc chắn muốn xóa lịch làm việc này không?</p>
                 <div class="modal-actions">
-                    <button id="deleteConfirmBtn" class="btn-cancel">Xóa</button>
-                    <button id="deleteCloseBtn" class="btn-close">Đóng</button>
+                    <button id="deleteConfirmBtn" class="btn btn-cancel">Xóa</button>
+                    <button id="deleteCloseBtn" class="btn btn-close">Đóng</button>
                 </div>
             </div>
         </div>
 
         <div id="errorModal" class="modal" style="display: none">
             <div class="modal-content">
-                <h2>Thông báo</h2>
-                <p id="errorModalMessage"></p>
+                <div class="modal-header">
+                    <h2>Thông báo</h2>
+                    <span class="modal-close-btn">✕</span>
+                </div>
+
+                <div class="modal-body">
+                    <p id="errorModalMessage"></p>
+                </div>
+
                 <div class="modal-actions">
-                    <button id="errorModalCloseBtn" class="btn-close">Đóng</button>
+                    <button id="errorModalCloseBtn" class="btn btn-close">Đóng</button>
                 </div>
             </div>
         </div>

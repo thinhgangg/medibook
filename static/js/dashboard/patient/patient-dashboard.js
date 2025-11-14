@@ -314,6 +314,8 @@ function cancelAppointment(appointmentId, buttonEl) {
     const confirmBtn = document.getElementById("cancelConfirmBtn");
     const closeBtn = document.getElementById("cancelCloseBtn");
 
+    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
+
     modal.style.display = "flex";
 
     return new Promise((resolve, reject) => {

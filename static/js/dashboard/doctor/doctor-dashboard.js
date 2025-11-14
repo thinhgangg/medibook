@@ -8,6 +8,7 @@ import {
     mockNotifications,
     formatDateVN,
     showErrorModal,
+    showAppointmentDetailModal,
     showLoadingOverlay,
     hideLoadingOverlay,
     fetchWithAuth,
@@ -242,11 +243,11 @@ export function renderOverviewAppointments() {
                     ${
                         apt.status === "PENDING"
                             ? `
-                            <button class="btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>
-                            <button class="btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>
+                            <button class="btn btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>
+                            <button class="btn btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>
                           `
                             : `
-                            <button class="btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>
+                            <button class="btn btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>
                           `
                     }
                 </div>
@@ -382,71 +383,89 @@ export function renderAllAppointments() {
     const content = document.getElementById("all-appointments-content");
     const loading = document.getElementById("all-appointments-loading");
     if (!content) return;
+
+    content.classList.add("appointments-list");
+
     if (loading) loading.classList.add("hidden");
     content.classList.remove("hidden");
 
     const list = filterAppointments(allAppointments);
+
     if (!list.length) {
+        container.classList.remove("appointments-list");
         content.innerHTML = `<div class="no-data">Không có lịch hẹn phù hợp.</div>`;
         return;
     }
 
     content.innerHTML = list
         .map((apt) => {
-            const start = new Date(apt.start_at);
-            const end = apt.end_at ? new Date(apt.end_at) : null;
+            const startDate = new Date(apt.start_at);
+            const endDate = new Date(apt.end_at);
             const patientName = apt?.patient_name || `#${apt.patient_id || "?"}`;
             const statusClass = `status-${apt.status?.toLowerCase()}`;
-            let statusLabel = apt.status;
+            let statusText;
             switch (apt.status) {
-                case "PENDING":
-                    statusLabel = "Chờ xác nhận";
-                    break;
                 case "CONFIRMED":
-                    statusLabel = "Đã xác nhận";
+                    statusText = "Đã xác nhận";
+                    break;
+                case "PENDING":
+                    statusText = "Chờ xác nhận";
                     break;
                 case "COMPLETED":
-                    statusLabel = "Hoàn tất";
+                    statusText = "Hoàn thành";
                     break;
                 case "CANCELLED":
-                    statusLabel = "Đã hủy";
+                    statusText = "Đã hủy";
                     break;
+                default:
+                    statusText = apt.status;
             }
 
             const actions = [];
+
+            actions.push(`<button class="btn btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>`);
+
             if (apt.status === "PENDING") {
-                actions.push(`<button class="btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>`);
-                actions.push(`<button class="btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`);
+                actions.push(`<button class="btn btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>`);
+                actions.push(`<button class="btn btn-cancel btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`);
             } else if (apt.status === "CONFIRMED") {
-                actions.push(`<button class="btn-secondary btn-small" data-action="complete" data-id="${apt.id}">Hoàn tất</button>`);
-                actions.push(`<button class="btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`);
-            } else {
-                actions.push(`<button class="btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>`);
+                actions.push(`<button class="btn btn-secondary btn-small" data-action="complete" data-id="${apt.id}">Hoàn tất</button>`);
+                actions.push(`<button class="btn btn-cancel btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`);
             }
 
             return `
-                <div class="row" data-id="${apt.id}">
-                    <div data-label="Ngày">${start.toLocaleDateString("vi-VN")}</div>
-                    <div data-label="Giờ">
-                        ${start.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                        ${end ? " - " + end.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : ""}
+                <div class="appointment-card">
+
+                    <div class="appointment-header">
+                        <div><strong>Ngày:</strong> ${startDate.toLocaleDateString("vi-VN")}</div>
+                        <div><strong>Giờ:</strong> ${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - 
+                            ${endDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
                     </div>
-                    <div data-label="Bệnh nhân" class="patient-name">${patientName}</div>
-                    <div data-label="Trạng thái"><span class="status ${statusClass}">${statusLabel}</span></div>
-                    <div data-label="Thao tác">${actions.join(" ")}</div>
+
+                    <div class="appointment-info">
+                        <div><strong>Bệnh nhân:</strong> ${patientName}</div>
+                        <div><strong>Ghi chú:</strong> ${apt.note || "-"}</div>
+                        <div><strong>Trạng thái:</strong> <span class="status ${statusClass}">${statusText}</span></div>
+                    </div>
+
+                    <div class="appointment-actions">
+                        ${actions.join(" ")}
+                    </div>
                 </div>
             `;
         })
         .join("");
 
     content.querySelectorAll("button[data-action]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const id = btn.getAttribute("data-id");
-            const action = btn.getAttribute("data-action");
-            if (action === "confirm") confirmAppointment(id, btn);
-            else if (action === "complete") completeAppointment(id, btn);
-            else if (action === "cancel") cancelAppointment(id, btn);
-            else if (action === "detail") showErrorModal("Xem chi tiết đang được phát triển.");
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            const action = btn.dataset.action;
+
+            if (action === "confirm") return confirmAppointment(id, btn);
+            if (action === "complete") return completeAppointment(id, btn);
+            if (action === "cancel") return cancelAppointment(id, btn);
+            if (action === "detail") return showAppointmentDetailModal(id);
         });
     });
 }
@@ -526,6 +545,8 @@ function cancelAppointment(id, triggerBtn) {
     const confirmBtn = document.getElementById("cancelConfirmBtn");
     const closeBtn = document.getElementById("cancelCloseBtn");
     if (!modal || !confirmBtn || !closeBtn) return;
+
+    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
 
     modal.style.display = "flex";
 
@@ -657,9 +678,9 @@ export function renderAvailabilityList() {
                     <div>${a.slot_minutes} phút</div>
                     <div><span class="status ${statusClass}">${statusLabel}</span></div>
                     <div>
-                        <button class="btn-small btn-secondary" data-act="toggle" data-id="${a.id}">${a.is_active ? "Tắt" : "Bật"}</button>
-                        <button class="btn-small btn-secondary" data-act="update" data-id="${a.id}">Sửa</button>
-                        <button class="btn-small btn-secondary" data-act="delete" data-id="${a.id}">Xóa</button>
+                        <button class="btn btn-small btn-secondary" data-act="toggle" data-id="${a.id}">${a.is_active ? "Tắt" : "Bật"}</button>
+                        <button class="btn btn-small btn-secondary" data-act="update" data-id="${a.id}">Sửa</button>
+                        <button class="btn btn-small btn-secondary" data-act="delete" data-id="${a.id}">Xóa</button>
                     </div>
                 </div>
             `;
@@ -896,9 +917,9 @@ export function renderDaysOffList() {
                     <div data-label="Thời gian">${timeDisplay}</div>
                     <div data-label="Lý do">${d.reason || "-"}</div>
                     <div data-label="Thao tác">
-                        <button class="btn-small btn-secondary" data-act="detail" data-id="${d.id}">Chi tiết</button>
-                        <button class="btn-small btn-secondary" data-act="update" data-id="${d.id}">Sửa</button>
-                        <button class="btn-small btn-secondary" data-act="delete" data-id="${d.id}">Xóa</button>
+                        <button class="btn btn-small btn-secondary" data-act="detail" data-id="${d.id}">Chi tiết</button>
+                        <button class="btn btn-small btn-secondary" data-act="update" data-id="${d.id}">Sửa</button>
+                        <button class="btn btn-small btn-secondary" data-act="delete" data-id="${d.id}">Xóa</button>
                     </div>
                 </div>
             `;
