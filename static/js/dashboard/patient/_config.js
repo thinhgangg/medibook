@@ -151,8 +151,8 @@ export async function showReviewModal(appointmentId) {
         </div>
 
         <div class="modal-actions">
-        <button id="reviewCloseBtn" class="btn-cancel">Hủy</button>
-        <button id="reviewSubmitBtn" class="btn-primary">Gửi</button>
+        <button id="reviewCloseBtn" class="btn btn-close">Hủy</button>
+        <button id="reviewSubmitBtn" class="btn btn-primary">Gửi</button>
         </div>
     </div>
     `;
@@ -223,4 +223,97 @@ export async function showReviewModal(appointmentId) {
             showErrorModal(`Không thể gửi đánh giá: ${err.message}`);
         }
     });
+}
+
+export async function showAppointmentDetailModal(appointmentId) {
+    const existing = document.getElementById("appointmentDetailModal");
+    if (existing) existing.remove();
+
+    showLoadingOverlay("Đang tải chi tiết lịch hẹn...");
+
+    try {
+        const res = await fetchWithAuth(`${API_BASE_URL}/appointments/${appointmentId}/`);
+        hideLoadingOverlay();
+
+        if (!res.ok) {
+            showErrorModal("Không thể tải chi tiết lịch hẹn.");
+            return;
+        }
+
+        const apt = await res.json();
+        const startDate = new Date(apt.start_at);
+        const endDate = new Date(apt.end_at);
+        apt.start_at = `${startDate.toLocaleDateString("vi-VN")} ${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+        apt.end_at = `${endDate.toLocaleDateString("vi-VN")} ${endDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+        let statusText;
+        switch (apt.status) {
+            case "PENDING":
+                statusText = "Đang chờ xác nhận";
+                break;
+            case "CONFIRMED":
+                statusText = "Đã xác nhận";
+                break;
+            case "COMPLETED":
+                statusText = "Đã hoàn thành";
+                break;
+            case "CANCELLED":
+                statusText = "Đã hủy";
+                break;
+            default:
+                statusText = "Không xác định";
+        }
+
+        const modal = document.createElement("div");
+        modal.id = "appointmentDetailModal";
+        modal.classList.add("modal");
+
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width:750px">
+                <h2>Chi tiết lịch hẹn</h2>
+
+                <div id="appointment-detail-body">
+                    <p><strong>Bác sĩ:</strong> ${apt.doctor_name}</p>
+                    <p><strong>Ngày: </strong> ${startDate.toLocaleDateString("vi-VN")}</p>
+                    <p><strong>Thời gian:</strong> ${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - 
+                    ${endDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</p>
+                    <p><strong>Trạng thái:</strong> ${statusText}</p>
+                    <p><strong>Ghi chú:</strong> ${apt.note || "Không có ghi chú"}</p>
+
+                    <h3 style="margin-top:20px;">Hình ảnh đính kèm</h3>
+                    ${
+                        apt.images.length === 0
+                            ? `<p>Không có hình ảnh đính kèm</p>`
+                            : `<div class="detail-images">
+                                ${apt.images
+                                    .map(
+                                        (img) => `
+                                    <img src="${img.image}" alt="Ảnh" 
+                                         onclick="window.open('${img.image}', '_blank')" />
+                                `
+                                    )
+                                    .join("")}
+                               </div>`
+                    }
+                </div>
+
+                <div class="modal-actions" style="margin-top:20px;">
+                    <button id="appointmentDetailCloseBtn" class="btn btn-close">Đóng</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.style.display = "flex";
+
+        document.getElementById("appointmentDetailCloseBtn").onclick = () => {
+            modal.remove();
+        };
+
+        modal.onclick = (e) => {
+            if (e.target.id === "appointmentDetailModal") modal.remove();
+        };
+    } catch (err) {
+        hideLoadingOverlay();
+        showErrorModal("Không thể tải chi tiết lịch hẹn.");
+    }
 }
