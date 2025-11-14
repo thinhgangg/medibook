@@ -224,7 +224,7 @@ export async function showReviewModal(appointmentId) {
             const button = document.querySelector(`button[data-appointment-id="${appointmentId}"][data-action="review"]`);
             if (button) {
                 const wrapper = button.parentElement;
-                wrapper.innerHTML = `<span class="status status-confirmed">Đã đánh giá</span>`;
+                wrapper.innerHTML = `<span class="has-review">Đã đánh giá</span>`;
             }
         } catch (err) {
             hideLoadingOverlay();
