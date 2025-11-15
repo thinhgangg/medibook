@@ -403,6 +403,9 @@ export function renderAllAppointments() {
             const endDate = new Date(apt.end_at);
             const patientName = apt?.patient_name || `#${apt.patient_id || "?"}`;
             const statusClass = `status-${apt.status?.toLowerCase()}`;
+            const roomNumber = apt?.room_number || "-";
+            console.log(apt);
+
             let statusText;
             switch (apt.status) {
                 case "CONFIRMED":
@@ -423,14 +426,14 @@ export function renderAllAppointments() {
 
             const actions = [];
 
-            actions.push(`<button class="btn btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>`);
+            actions.push(`<button class="btn btn-detail" data-action="detail" data-id="${apt.id}">Chi tiết</button>`);
 
             if (apt.status === "PENDING") {
-                actions.push(`<button class="btn btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>`);
-                actions.push(`<button class="btn btn-cancel btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`);
+                actions.push(`<button class="btn btn-confirm" data-action="confirm" data-id="${apt.id}">Xác nhận</button>`);
+                actions.push(`<button class="btn btn-cancel" data-action="cancel" data-id="${apt.id}">Hủy lịch hẹn</button>`);
             } else if (apt.status === "CONFIRMED") {
-                actions.push(`<button class="btn btn-secondary btn-small" data-action="complete" data-id="${apt.id}">Hoàn tất</button>`);
-                actions.push(`<button class="btn btn-cancel btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>`);
+                actions.push(`<button class="btn btn-complete" data-action="complete" data-id="${apt.id}">Hoàn tất</button>`);
+                actions.push(`<button class="btn btn-cancel" data-action="cancel" data-id="${apt.id}">Hủy lịch hẹn</button>`);
             }
 
             return `
@@ -446,6 +449,7 @@ export function renderAllAppointments() {
                     <div class="appointment-info">
                         <div><strong>Bệnh nhân:</strong> ${patientName}</div>
                         <div><strong>Ghi chú:</strong> ${apt.note || "-"}</div>
+                        <div><strong>Phòng:</strong> ${roomNumber}</div>
                         <div><strong>Trạng thái:</strong> <span class="status ${statusClass}">${statusText}</span></div>
                     </div>
 
@@ -813,6 +817,8 @@ async function deleteAvailability(id, triggerBtn) {
     const closeBtn = document.getElementById("deleteCloseBtn");
     if (!modal || !confirmBtn || !closeBtn) return;
 
+    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
+
     modal.style.display = "flex";
 
     const cleanup = () => {
@@ -926,25 +932,16 @@ export function renderDaysOffList() {
         })
         .join("");
 
-    content.querySelectorAll("button[data-act='delete']").forEach((btn) => {
+    content.querySelectorAll("button[data-act]").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
+            const act = btn.getAttribute("data-act");
             const id = btn.getAttribute("data-id");
-            if (!confirm("Xóa ngày nghỉ này?")) return;
-            showLoadingOverlay("Đang xóa ngày nghỉ...");
-            try {
-                btn.disabled = true;
-                const res = await fetchWithAuth(`${apiBase}/doctors/days-off/${id}/`, { method: "DELETE" });
-                if (!res.ok) {
-                    const txt = await res.text();
-                    throw new Error(txt || `HTTP ${res.status}`);
-                }
-                await loadDaysOff(true);
-                showToast("Xóa ngày nghỉ thành công!", "success");
-            } catch (err) {
-                showErrorModal(`Xóa thất bại: ${err.message}`);
-                btn.disabled = false;
-            } finally {
-                hideLoadingOverlay();
+            if (act === "delete") {
+                await deleteDayOff(id, btn);
+            } else if (act === "update") {
+                showErrorModal("Chức năng sửa ngày nghỉ đang được phát triển.");
+            } else if (act === "detail") {
+                showErrorModal("Chức năng xem chi tiết ngày nghỉ đang được phát triển.");
             }
         });
     });
@@ -1001,6 +998,66 @@ async function submitDayOff() {
     } finally {
         hideLoadingOverlay();
     }
+}
+
+async function deleteDayOff(id, triggerBtn) {
+    const modal = document.getElementById("deleteModal");
+    const confirmBtn = document.getElementById("deleteConfirmBtn");
+    const closeBtn = document.getElementById("deleteCloseBtn");
+    if (!modal || !confirmBtn || !closeBtn) return;
+
+    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
+
+    modal.style.display = "flex";
+
+    const cleanup = () => {
+        modal.style.display = "none";
+        confirmBtn.onclick = null;
+        closeBtn.onclick = null;
+        window.onclick = null;
+    };
+
+    closeBtn.onclick = () => cleanup();
+    window.onclick = (e) => {
+        if (e.target === modal) cleanup();
+    };
+
+    confirmBtn.onclick = async () => {
+        cleanup();
+        showLoadingOverlay("Đang xóa lịch làm việc...");
+        if (triggerBtn) {
+            triggerBtn.disabled = true;
+        }
+
+        try {
+            const res = await fetchWithAuth(`${apiBase}/doctors/days-off/${id}/`, { method: "DELETE" });
+            if (!res.ok) {
+                let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+                try {
+                    const data = await res.json();
+                    if (data?.detail) {
+                        errorMessage = data.detail;
+                    } else if (data?.message) {
+                        errorMessage = data.message;
+                    }
+                } catch {
+                    const text = await res.text();
+                    if (text) errorMessage = text;
+                }
+                throw new Error(errorMessage);
+            }
+            await loadDaysOff(true);
+            showToast("Xóa ngày nghỉ thành công!", "success");
+        } catch (err) {
+            showErrorModal(err.message || "Không thể xóa ngày nghỉ. Vui lòng thử lại sau.");
+            if (triggerBtn) {
+                triggerBtn.disabled = false;
+                triggerBtn.textContent = "Xóa";
+            }
+        } finally {
+            hideLoadingOverlay();
+        }
+    };
 }
 
 export function generateMockNotifications() {

@@ -18,6 +18,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
     patient_avatar = serializers.ImageField(source="patient.user.avatar", read_only=True)
     images = AppointmentImageSerializer(many=True, read_only=True)
     has_review = serializers.SerializerMethodField()
+    room_number = serializers.CharField(source="doctor.room_number", read_only=True)
     
     class Meta:
         model  = Appointment
@@ -27,6 +28,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "start_at", "end_at", "note", "status", "created_at",
             "images",
             "has_review",
+            "room_number",
         ]
         read_only_fields = ["id", "doctor_id", "patient_id", "status", "created_at"]
 

@@ -250,14 +250,14 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             }
 
             let actionsHtml = "";
-            actionsHtml += `<button class="btn btn-secondary" data-appointment-id="${apt.id}">Chi tiết</button> `;
+            actionsHtml += `<button class="btn btn-detail" data-appointment-id="${apt.id}">Chi tiết</button> `;
             if (apt.status === "PENDING") {
                 actionsHtml += `<button class="btn btn-cancel" data-appointment-id="${apt.id}">Hủy lịch hẹn</button>`;
             } else if (apt.status === "COMPLETED") {
                 if (apt.has_review) {
                     actionsHtml += `<span class="has-review">Đã đánh giá</span>`;
                 } else {
-                    actionsHtml += `<button class="btn btn-primary" data-action="review" data-appointment-id="${apt.id}">Viết đánh giá</button>`;
+                    actionsHtml += `<button class="btn btn-review" data-action="review" data-appointment-id="${apt.id}">Viết đánh giá</button>`;
                 }
             }
 
@@ -301,7 +301,7 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
                 return;
             }
 
-            if (e.target.classList.contains("btn-secondary")) {
+            if (e.target.classList.contains("btn-detail")) {
                 showAppointmentDetailModal(aptId);
                 return;
             }

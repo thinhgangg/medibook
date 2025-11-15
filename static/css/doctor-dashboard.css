@@ -314,6 +314,34 @@ body {
     background: var(--bg-hover);
 }
 
+/* Chi tiết */
+.btn-detail {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.btn-detail:hover {
+    background: #bae6fd;
+}
+
+/* Xác nhận */
+.btn-confirm {
+    background: #4ade80;
+    color: #065f46;
+}
+.btn-confirm:hover {
+    background: #22c55e;
+}
+
+/* Hoàn tất */
+.btn-complete {
+    background: #3b82f6;
+    color: white;
+}
+.btn-complete:hover {
+    background: #2563eb;
+}
+
+/* Hủy */
 .btn-cancel {
     background: var(--danger-color);
     color: white;
@@ -323,6 +351,7 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
+/* Đóng */
 .btn-close {
     background: var(--bg-tertiary);
     color: var(--text-primary);
