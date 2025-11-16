@@ -139,7 +139,7 @@ export async function loadDaysOff(forceReload = false) {
         const eEl = document.getElementById("days-off-error");
         if (eEl) {
             eEl.classList.remove("hidden");
-            eEl.innerHTML = `<p>Lỗi tải ngày nghỉ: ${error.message}</p>`;
+            eEl.innerHTML = `<p>Lỗi tải lịch nghỉ: ${error.message}</p>`;
         }
     }
 }

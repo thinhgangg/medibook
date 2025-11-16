@@ -15,16 +15,16 @@
                         <a id="nav-profile" href="#profile" class="sidebar-nav-item"><span class="icon">👤</span> Hồ sơ cá nhân</a>
                     </li>
                     <li>
-                        <a id="nav-appointments" href="#appointments" class="sidebar-nav-item"><span class="icon">📅</span> Lịch khám</a>
+                        <a id="nav-appointments" href="#appointments" class="sidebar-nav-item"><span class="icon">🩺</span> Lịch khám</a>
                     </li>
                     <li>
                         <a id="nav-notifications" href="#notifications" class="sidebar-nav-item"><span class="icon">🔔</span> Thông báo</a>
                     </li>
                     <li>
-                        <a id="nav-availability" href="#availability" class="sidebar-nav-item"><span class="icon">⏰</span> Lịch làm việc</a>
+                        <a id="nav-availability" href="#availability" class="sidebar-nav-item"><span class="icon">🗓️</span> Lịch làm việc</a>
                     </li>
                     <li>
-                        <a id="nav-days-off" href="#days-off" class="sidebar-nav-item"><span class="icon">⏳</span> Lịch nghỉ</a>
+                        <a id="nav-days-off" href="#days-off" class="sidebar-nav-item"><span class="icon">🛌</span> Lịch nghỉ</a>
                     </li>
                     <li>
                         <a id="nav-stats" href="#stats" class="sidebar-nav-item"><span class="icon">📊</span> Thống kê</a>
@@ -305,7 +305,7 @@
                     </div>
 
                     <div class="card-section">
-                        <h2>Danh sách ngày nghỉ</h2>
+                        <h2>Danh sách lịch nghỉ</h2>
 
                         <div id="days-off-list" class="table">
                             <div class="row header">
@@ -420,6 +420,22 @@
                 <div class="modal-actions">
                     <button id="deleteConfirmBtn" class="btn btn-cancel">Xóa</button>
                     <button id="deleteCloseBtn" class="btn btn-close">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteDaysOffModal" class="modal" style="display: none">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Xác nhận xóa lịch nghỉ</h2>
+                    <span class="modal-close-btn">✕</span>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa lịch nghỉ này không?</p>
+                </div>
+                <div class="modal-actions">
+                    <button id="deleteDaysOffConfirmBtn" class="btn btn-cancel">Xóa</button>
+                    <button id="deleteDaysOffCloseBtn" class="btn btn-close">Đóng</button>
                 </div>
             </div>
         </div>

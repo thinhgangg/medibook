@@ -1137,11 +1137,18 @@ export function renderDaysOffList() {
     content.classList.remove("hidden");
 
     if (!daysOffList.length) {
-        content.innerHTML = `<div class="no-data">Chưa có ngày nghỉ.</div>`;
+        content.innerHTML = `<div class="no-data">Chưa có lịch nghỉ.</div>`;
         return;
     }
 
-    content.innerHTML = daysOffList
+    const sortedDaysOff = [...daysOffList].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+
+        return dateB.getTime() - dateA.getTime();
+    });
+
+    content.innerHTML = sortedDaysOff
         .map((d) => {
             const dateDisplay = d.date ? formatDateVN(d.date) : "—";
             const timeDisplay = d.start_time && d.end_time ? `${formatTimeHM(d.start_time)} - ${formatTimeHM(d.end_time)}` : "Cả ngày";
@@ -1156,7 +1163,7 @@ export function renderDaysOffList() {
                         <span class="reason-tooltip hidden">${reasonText}</span>
                     </div>
                     <div data-label="Thao tác">
-                        <button class="btn btn-small btn-secondary" data-act="delete" data-id="${d.id}">Xóa</button>
+                        <button class="btn btn-small btn-cancel" data-act="delete" data-id="${d.id}">Xóa</button>
                     </div>
                 </div>
             `;
@@ -1184,15 +1191,13 @@ export function renderDaysOffList() {
             const id = btn.getAttribute("data-id");
             if (act === "delete") {
                 await deleteDayOff(id, btn);
-            } else if (act === "detail") {
-                showErrorModal("Chức năng xem chi tiết ngày nghỉ đang được phát triển.");
             }
         });
     });
 }
 
 async function submitDayOff() {
-    showLoadingOverlay("Đang thêm ngày nghỉ...");
+    showLoadingOverlay("Đang thêm lịch nghỉ...");
     const dateStr = document.getElementById("dayoff-date")?.value;
     const start = document.getElementById("dayoff-start")?.value;
     const end = document.getElementById("dayoff-end")?.value;
@@ -1229,8 +1234,19 @@ async function submitDayOff() {
     try {
         const res = await fetchWithAuth(`${apiBase}/doctors/days-off/`, { method: "POST", body: JSON.stringify(payload) });
         if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(txt || `HTTP ${res.status}`);
+            let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+            try {
+                const data = await res.json();
+                if (data?.detail) {
+                    errorMessage = data.detail;
+                } else if (data?.message) {
+                    errorMessage = data.message;
+                }
+            } catch {
+                const text = await res.text();
+                if (text) errorMessage = text;
+            }
+            throw new Error(errorMessage);
         }
         await loadDaysOff(true);
         document.getElementById("dayoff-date").value = "";
@@ -1238,16 +1254,16 @@ async function submitDayOff() {
         document.getElementById("dayoff-end").value = "";
         document.getElementById("dayoff-reason").value = "";
     } catch (err) {
-        showErrorModal(`Thêm ngày nghỉ thất bại: ${err.message}`);
+        showErrorModal(err.message || "Không thể thêm lịch nghỉ. Vui lòng thử lại sau.");
     } finally {
         hideLoadingOverlay();
     }
 }
 
 async function deleteDayOff(id, triggerBtn) {
-    const modal = document.getElementById("deleteModal");
-    const confirmBtn = document.getElementById("deleteConfirmBtn");
-    const closeBtn = document.getElementById("deleteCloseBtn");
+    const modal = document.getElementById("deleteDaysOffModal");
+    const confirmBtn = document.getElementById("deleteDaysOffConfirmBtn");
+    const closeBtn = document.getElementById("deleteDaysOffCloseBtn");
     if (!modal || !confirmBtn || !closeBtn) return;
 
     modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
@@ -1268,7 +1284,7 @@ async function deleteDayOff(id, triggerBtn) {
 
     confirmBtn.onclick = async () => {
         cleanup();
-        showLoadingOverlay("Đang xóa lịch làm việc...");
+        showLoadingOverlay("Đang xóa lịch nghỉ...");
         if (triggerBtn) {
             triggerBtn.disabled = true;
         }
@@ -1291,9 +1307,9 @@ async function deleteDayOff(id, triggerBtn) {
                 throw new Error(errorMessage);
             }
             await loadDaysOff(true);
-            showToast("Xóa ngày nghỉ thành công!", "success");
+            showToast("Xóa lịch nghỉ thành công!", "success");
         } catch (err) {
-            showErrorModal(err.message || "Không thể xóa ngày nghỉ. Vui lòng thử lại sau.");
+            showErrorModal(err.message || "Không thể xóa lịch nghỉ. Vui lòng thử lại sau.");
             if (triggerBtn) {
                 triggerBtn.disabled = false;
                 triggerBtn.textContent = "Xóa";

@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
 from django.shortcuts import get_object_or_404
@@ -214,7 +214,22 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         if not hasattr(self.request.user, 'doctor_profile'):
             raise PermissionDenied("Chỉ bác sĩ mới thiết lập lịch làm việc.")
-        serializer.save(doctor=self.request.user.doctor_profile)
+        
+        doctor_profile = self.request.user.doctor_profile
+        weekday = serializer.validated_data['weekday']
+        start_time = serializer.validated_data['start_time']
+        end_time = serializer.validated_data['end_time']
+        
+        overlapping_avails = DoctorAvailability.objects.filter(
+            doctor=doctor_profile,
+            weekday=weekday,
+            end_time__gt=start_time,
+            start_time__lt=end_time
+        )
+        if overlapping_avails.exists():
+            raise ValidationError("Lịch làm việc bị trùng lặp với lịch đã có.")
+
+        serializer.save(doctor=doctor_profile)
 
     def perform_update(self, serializer):
         if not hasattr(self.request.user, 'doctor_profile'):
@@ -254,14 +269,31 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         u = self.request.user
         if not hasattr(u, 'doctor_profile'):
-            raise PermissionDenied("Chỉ bác sĩ mới tạo ngày nghỉ.")
+            raise PermissionDenied("Chỉ bác sĩ mới tạo lịch nghỉ.")
+        
+        today = timezone.localdate()
+        if serializer.validated_data['date'] < today:
+            raise ValidationError({'detail': 'Không thể thêm lịch nghỉ trong quá khứ.'})
+
         serializer.save(doctor=u.doctor_profile)
 
     def perform_update(self, serializer):
         u = self.request.user
         if not hasattr(u, 'doctor_profile'):
-            raise PermissionDenied("Chỉ bác sĩ mới sửa ngày nghỉ.")
+            raise PermissionDenied("Chỉ bác sĩ mới sửa lịch nghỉ.")
+
+        today = timezone.localdate()
+        if serializer.validated_data['date'] < today:
+            raise ValidationError("Không thể sửa lịch nghỉ trong quá khứ.")
+
         serializer.save(doctor=u.doctor_profile)
+
+    def perform_destroy(self, instance):
+        today = timezone.localdate()
+        if instance.date < today:
+            raise PermissionDenied("Không thể xóa lịch nghỉ trong quá khứ.")
+        
+        instance.delete()
 
 class SpecialtyViewSet(viewsets.ModelViewSet):
     queryset = Specialty.objects.all().order_by("id")

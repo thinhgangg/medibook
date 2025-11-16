@@ -369,7 +369,7 @@ body {
 .table {
     background: var(--bg-primary);
     border-radius: var(--border-radius-sm);
-    overflow: hidden;
+    /* overflow: hidden; */
     border: 1px solid var(--border-color);
 }
 
