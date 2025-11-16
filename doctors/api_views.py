@@ -10,7 +10,7 @@ from rest_framework import filters
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Avg
-from datetime import datetime, timedelta, date as date_cls
+from datetime import datetime, timedelta, date as date_cls, time
 from django.db.models import F, ExpressionWrapper, IntegerField
 
 from .models import Doctor, DoctorAvailability, DoctorDayOff, Specialty, DoctorReview
@@ -253,13 +253,11 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
         df = p.get('date_from')
         dt = p.get('date_to')
         if df:
-            from datetime import date as date_cls
             try:
                 qs = qs.filter(date__gte=date_cls.fromisoformat(df))
             except ValueError:
                 pass
         if dt:
-            from datetime import date as date_cls
             try:
                 qs = qs.filter(date__lte=date_cls.fromisoformat(dt))
             except ValueError:
@@ -273,9 +271,11 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
         
         today = timezone.localdate()
         if serializer.validated_data['date'] < today:
-            raise ValidationError({'detail': 'Không thể thêm lịch nghỉ trong quá khứ.'})
-
-        serializer.save(doctor=u.doctor_profile)
+            raise ValidationError("Không thể thêm lịch nghỉ trong quá khứ.")
+        
+        day_off_instance = serializer.save(doctor=u.doctor_profile)
+        
+        self._adjust_doctor_availability_for_day_off_creation(day_off_instance)
 
     def perform_update(self, serializer):
         u = self.request.user
@@ -294,6 +294,49 @@ class DoctorDayOffViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Không thể xóa lịch nghỉ trong quá khứ.")
         
         instance.delete()
+
+    def _adjust_doctor_availability_for_day_off_creation(self, day_off_instance):
+        doctor = day_off_instance.doctor
+        day_of_week = day_off_instance.date.weekday()
+        
+        day_off_start_time = day_off_instance.start_time if day_off_instance.start_time is not None else time.min
+        day_off_end_time = day_off_instance.end_time if day_off_instance.end_time is not None else time.max
+
+        overlapping_avails = DoctorAvailability.objects.filter(
+            doctor=doctor,
+            weekday=day_of_week,
+            is_active=True,
+            end_time__gt=day_off_start_time,
+            start_time__lt=day_off_end_time
+        ).order_by('start_time') 
+
+        for av in list(overlapping_avails):
+            av.delete()
+
+            new_segments = []
+
+            if av.start_time < day_off_start_time:
+                new_segments.append({
+                    'start_time': av.start_time,
+                    'end_time': day_off_start_time,
+                })
+
+            if av.end_time > day_off_end_time:
+                new_segments.append({
+                    'start_time': day_off_end_time,
+                    'end_time': av.end_time,
+                })
+            
+            for segment in new_segments:
+                if segment['start_time'] < segment['end_time']:
+                    DoctorAvailability.objects.create(
+                        doctor=doctor,
+                        weekday=day_of_week,
+                        start_time=segment['start_time'],
+                        end_time=segment['end_time'],
+                        slot_minutes=av.slot_minutes, 
+                        is_active=True 
+                    )
 
 class SpecialtyViewSet(viewsets.ModelViewSet):
     queryset = Specialty.objects.all().order_by("id")
