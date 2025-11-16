@@ -995,6 +995,43 @@ body {
     grid-template-columns: 1fr 1fr 1fr;
 }
 
+/* Reason Tooltip */
+.reason-container {
+    position: relative;
+}
+
+.reason-cell-display {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.reason-tooltip {
+    background-color: var(--bg-sidebar);
+    color: var(--text-light);
+    text-align: center;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    max-width: 300px;
+    white-space: normal;
+    box-shadow: var(--shadow-md);
+}
+
+.reason-tooltip.hidden {
+    display: none;
+}
+
+.table-body .row {
+    overflow: visible;
+}
+
 #avail-weekday,
 #status-filter {
     -webkit-appearance: none;
@@ -1063,15 +1100,29 @@ body {
 }
 
 .filter-group select:hover,
-.filter-group input:hover {
+.filter-group input:hover,
+.filter-group textarea:hover {
     border-color: #a5b4fc;
 }
 
 .filter-group select:focus,
-.filter-group input:focus {
+.filter-group input:focus,
+.filter-group textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-group textarea {
+    box-sizing: border-box;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    border: 2px solid var(--border-color);
+    font-size: 0.95rem;
+    transition: all var(--transition-base);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 /* Profile Styles */
@@ -1524,7 +1575,7 @@ body {
 
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid #fff; /* White spinner */
+    border-top: 4px solid #fff;
     border-radius: 50%;
     width: 40px;
     height: 40px;

@@ -24,7 +24,7 @@
                         <a id="nav-availability" href="#availability" class="sidebar-nav-item"><span class="icon">⏰</span> Lịch làm việc</a>
                     </li>
                     <li>
-                        <a id="nav-days-off" href="#days-off" class="sidebar-nav-item"><span class="icon">⏳</span> Ngày nghỉ</a>
+                        <a id="nav-days-off" href="#days-off" class="sidebar-nav-item"><span class="icon">⏳</span> Lịch nghỉ</a>
                     </li>
                     <li>
                         <a id="nav-stats" href="#stats" class="sidebar-nav-item"><span class="icon">📊</span> Thống kê</a>
@@ -185,7 +185,7 @@
                     </div>
 
                     <div class="card-section">
-                        <h2>Thêm lịch làm việc</h2>
+                        <h2>Đăng ký lịch làm việc</h2>
                         <form id="availability-form">
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px">
                                 <div class="filter-group">
@@ -218,7 +218,7 @@
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-                                <button class="btn btn-primary" id="btn-add-availability">Thêm</button>
+                                <button class="btn btn-primary" id="btn-add-availability">Hoàn tất</button>
                             </div>
                         </form>
                     </div>
@@ -267,14 +267,14 @@
             <div id="panel-days-off" class="panel hidden">
                 <div class="card">
                     <div class="section-header">
-                        <h1>Ngày nghỉ</h1>
+                        <h1>Quản lý lịch nghỉ</h1>
                         <div>
                             <a href="#" id="btn-refresh-days-off" class="btn btn-secondary btn-small">Làm mới</a>
                         </div>
                     </div>
 
                     <div class="card-section">
-                        <h2>Thêm ngày nghỉ</h2>
+                        <h2>Đăng ký lịch nghỉ</h2>
                         <form id="dayoff-form" class="dayoff-form">
                             <div class="row">
                                 <div class="filter-group">
@@ -295,17 +295,18 @@
 
                             <div class="filter-group" style="flex: 1">
                                 <label for="dayoff-reason">Lý do</label>
-                                <input type="text" id="dayoff-reason" placeholder="Ví dụ: nghỉ ốm, công tác..." />
+                                <textarea id="dayoff-reason" rows="4" placeholder="Ví dụ: nghỉ ốm, công tác..."></textarea>
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-                                <button class="btn btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
+                                <button class="btn btn-primary" id="btn-add-availability">Hoàn tất</button>
                             </div>
                         </form>
                     </div>
 
                     <div class="card-section">
                         <h2>Danh sách ngày nghỉ</h2>
+
                         <div id="days-off-list" class="table">
                             <div class="row header">
                                 <div>Ngày</div>

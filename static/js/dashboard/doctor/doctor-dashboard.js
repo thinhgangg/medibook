@@ -1145,14 +1145,17 @@ export function renderDaysOffList() {
         .map((d) => {
             const dateDisplay = d.date ? formatDateVN(d.date) : "—";
             const timeDisplay = d.start_time && d.end_time ? `${formatTimeHM(d.start_time)} - ${formatTimeHM(d.end_time)}` : "Cả ngày";
+            const reasonText = d.reason || "Không có lý do";
+
             return `
                 <div class="row">
                     <div data-label="Ngày">${dateDisplay}</div>
                     <div data-label="Thời gian">${timeDisplay}</div>
-                    <div data-label="Lý do">${d.reason || "-"}</div>
+                    <div data-label="Lý do" class="reason-container">
+                        <div class="reason-cell-display">${reasonText}</div>
+                        <span class="reason-tooltip hidden">${reasonText}</span>
+                    </div>
                     <div data-label="Thao tác">
-                        <button class="btn btn-small btn-secondary" data-act="detail" data-id="${d.id}">Chi tiết</button>
-                        <button class="btn btn-small btn-secondary" data-act="update" data-id="${d.id}">Sửa</button>
                         <button class="btn btn-small btn-secondary" data-act="delete" data-id="${d.id}">Xóa</button>
                     </div>
                 </div>
@@ -1160,14 +1163,27 @@ export function renderDaysOffList() {
         })
         .join("");
 
+    content.querySelectorAll(".reason-container").forEach((container) => {
+        const displayCell = container.querySelector(".reason-cell-display");
+        const tooltip = container.querySelector(".reason-tooltip");
+
+        container.addEventListener("mouseenter", () => {
+            if (displayCell.offsetWidth < displayCell.scrollWidth) {
+                tooltip.classList.remove("hidden");
+            }
+        });
+
+        container.addEventListener("mouseleave", () => {
+            tooltip.classList.add("hidden");
+        });
+    });
+
     content.querySelectorAll("button[data-act]").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
             const act = btn.getAttribute("data-act");
             const id = btn.getAttribute("data-id");
             if (act === "delete") {
                 await deleteDayOff(id, btn);
-            } else if (act === "update") {
-                showErrorModal("Chức năng sửa ngày nghỉ đang được phát triển.");
             } else if (act === "detail") {
                 showErrorModal("Chức năng xem chi tiết ngày nghỉ đang được phát triển.");
             }
