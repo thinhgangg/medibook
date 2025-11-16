@@ -77,6 +77,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         } else {
                             myAppointmentsLink.style.display = "none";
                         }
+
+                        const myWorkScheduleLink = document.getElementById("myWorkScheduleLink");
+                        if (data.role === "DOCTOR") {
+                            myWorkScheduleLink.style.display = "block";
+                            myWorkScheduleLink.href = "/dashboard/#availability";
+                        } else {
+                            myWorkScheduleLink.style.display = "none";
+                        }
+
+                        const myDaysOffLink = document.getElementById("myDaysOffLink");
+                        if (data.role === "DOCTOR") {
+                            myDaysOffLink.style.display = "block";
+                            myDaysOffLink.href = "/dashboard/#days-off";
+                        } else {
+                            myDaysOffLink.style.display = "none";
+                        }
                     }
                 })
                 .catch(() => {

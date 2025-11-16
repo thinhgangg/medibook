@@ -178,14 +178,14 @@
             <div id="panel-availability" class="panel hidden">
                 <div class="card">
                     <div class="section-header">
-                        <h1>Lịch làm việc</h1>
+                        <h1>Quản lý lịch làm việc</h1>
                         <div>
                             <a href="#" id="btn-refresh-avail" class="btn btn-secondary btn-small">Làm mới</a>
                         </div>
                     </div>
 
                     <div class="card-section">
-                        <h2>Thêm / Cập nhật thời gian làm việc</h2>
+                        <h2>Thêm lịch làm việc</h2>
                         <form id="availability-form">
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px">
                                 <div class="filter-group">
@@ -218,37 +218,50 @@
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-                                <button class="btn btn-primary" id="btn-add-availability">Thêm / Cập nhật</button>
+                                <button class="btn btn-primary" id="btn-add-availability">Thêm</button>
                             </div>
                         </form>
                     </div>
 
                     <div class="card-section">
                         <h2>Lịch làm việc hiện tại</h2>
-                        <div id="availability-list" class="table table-availability">
-                            <div class="row header">
-                                <div>Ngày</div>
-                                <div>Ca</div>
-                                <div>Bắt đầu</div>
-                                <div>Kết thúc</div>
-                                <div>Slot</div>
-                                <div>Trạng thái</div>
-                                <div>Thao tác</div>
+                        <div id="availability-calendar" class="availability-calendar">
+                            <div class="calendar-header-row">
+                                <div class="time-column-header">GMT+7</div>
+                                <div class="calendar-weekday-header">Thứ 2</div>
+                                <div class="calendar-weekday-header">Thứ 3</div>
+                                <div class="calendar-weekday-header">Thứ 4</div>
+                                <div class="calendar-weekday-header">Thứ 5</div>
+                                <div class="calendar-weekday-header">Thứ 6</div>
+                                <div class="calendar-weekday-header">Thứ 7</div>
+                                <div class="calendar-weekday-header">Chủ nhật</div>
                             </div>
-                            <div id="availability-loading" class="skeleton-table">
-                                <div class="row shimmer">
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                </div>
+
+                            <div id="availability-calendar-grid" class="availability-calendar-grid">
+                                <div id="availability-loading" class="skeleton-calendar"></div>
+                                <div id="availability-error" class="error-message-calendar hidden"></div>
                             </div>
-                            <div id="availability-content" class="table-body hidden"></div>
-                            <div id="availability-error" class="error-message hidden"></div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div id="availabilityActionsPopup" class="availability-actions-popup hidden">
+                <button class="btn btn-small btn-popup-action" data-action="toggle"><span class="icon"></span> <span class="text">Tắt</span></button>
+                <button class="btn btn-small btn-popup-action" data-action="edit"><span class="icon"></span> <span class="text">Sửa</span></button>
+                <button class="btn btn-small btn-popup-action" data-action="delete"><span class="icon"></span> <span class="text">Xóa</span></button>
+            </div>
+
+            <div id="appointmentActionsPopup" class="availability-actions-popup hidden">
+                <button class="btn btn-small btn-popup-action" data-action="detail">
+                    <span class="icon">🔍</span> <span class="text">Xem chi tiết</span>
+                </button>
+                <button class="btn btn-small btn-popup-action action-confirm hidden" data-action="confirm">
+                    <span class="icon">✅</span> <span class="text">Xác nhận</span>
+                </button>
+                <button class="btn btn-small btn-popup-action action-cancel hidden" data-action="cancel">
+                    <span class="icon">❌</span> <span class="text">Hủy</span>
+                </button>
             </div>
 
             <div id="panel-days-off" class="panel hidden">

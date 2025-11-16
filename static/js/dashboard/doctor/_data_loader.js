@@ -20,7 +20,6 @@ import {
     renderOverviewAppointments,
     renderOverviewStats,
     renderAvailabilityList,
-    renderAvailabilityOverview,
     renderDaysOffList,
     generateMockNotifications,
     renderNotifications,
@@ -90,7 +89,6 @@ export async function loadAvailability(forceReload = false) {
 
     if (!forceReload && availabilityList.length > 0) {
         renderAvailabilityList();
-        renderAvailabilityOverview(availabilityList);
         return;
     }
 
@@ -104,7 +102,6 @@ export async function loadAvailability(forceReload = false) {
         let data = await res.json();
         setAvailabilityList(Array.isArray(data.results) ? data.results : data);
         renderAvailabilityList();
-        renderAvailabilityOverview(availabilityList);
     } catch (error) {
         console.error("loadAvailability error:", error);
         if (loading) loading.classList.add("hidden");
@@ -113,7 +110,6 @@ export async function loadAvailability(forceReload = false) {
             eEl.classList.remove("hidden");
             eEl.innerHTML = `<p>Lỗi tải lịch làm việc: ${error.message}</p>`;
         }
-        document.getElementById("availability-overview").innerHTML = `<div class="no-data">Lỗi tải lịch.</div>`;
     }
 }
 

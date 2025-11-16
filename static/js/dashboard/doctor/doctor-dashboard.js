@@ -231,7 +231,7 @@ export function renderOverviewAppointments() {
             const statusClass = `status-${apt.status.toLowerCase()}`;
 
             return `
-            <div class="row">
+            <div class="row" data-id="${apt.id}" data-status="${apt.status}">
                 <div>${startDate.toLocaleDateString("vi-VN")}</div>
                 <div>${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleTimeString("vi-VN", {
                 hour: "2-digit",
@@ -239,43 +239,83 @@ export function renderOverviewAppointments() {
             })}</div>
                 <div>${patientName}</div>
                 <div><span class="status ${statusClass}">${statusText}</span></div>
-                <div>
-                    ${
-                        apt.status === "PENDING"
-                            ? `
-                            <button class="btn btn-secondary btn-small" data-action="confirm" data-id="${apt.id}">Xác nhận</button>
-                            <button class="btn btn-secondary btn-small" data-action="cancel" data-id="${apt.id}">Hủy</button>
-                          `
-                            : `
-                            <button class="btn btn-secondary btn-small" data-action="detail" data-id="${apt.id}">Chi tiết</button>
-                          `
-                    }
+                <div class="action-cell">
+                    <button class="btn-action-menu" data-id="${apt.id}" data-status="${apt.status}">⋮</button>
                 </div>
             </div>`;
         })
         .join("");
-
-    container.querySelectorAll("button[data-action]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const id = btn.getAttribute("data-id");
-            const action = btn.getAttribute("data-action");
-
-            if (action === "confirm") confirmAppointment(id, btn);
-            else if (action === "cancel") cancelAppointment(id, btn);
-            else if (action === "detail") {
-                showErrorModal("Xem chi tiết đang được phát triển.");
-            }
-        });
-    });
 }
 
-export function renderAvailabilityOverview(list) {
-    const container = document.getElementById("stats-overview");
-    if (!container) return;
+function setupAppointmentActionsPopup() {
+    const popup = document.getElementById("appointmentActionsPopup");
+    const container = document.getElementById("appointments-content");
 
-    if (!list || list.length === 0) {
-        return;
-    }
+    let currentAppointmentId = null;
+
+    document.addEventListener("click", (e) => {
+        if (!popup.contains(e.target)) {
+            popup.classList.add("hidden");
+        }
+    });
+
+    container.addEventListener("click", (e) => {
+        const menuButton = e.target.closest(".btn-action-menu");
+        if (!menuButton) {
+            popup.classList.add("hidden");
+            return;
+        }
+
+        e.stopPropagation();
+
+        currentAppointmentId = menuButton.dataset.id;
+        const status = menuButton.dataset.status;
+
+        // 1. Cập nhật các nút hành động trong popup dựa trên trạng thái
+        const confirmBtn = popup.querySelector('[data-action="confirm"]');
+        const cancelBtn = popup.querySelector('[data-action="cancel"]');
+
+        if (status === "PENDING") {
+            confirmBtn.classList.remove("hidden");
+            cancelBtn.classList.remove("hidden");
+        } else {
+            confirmBtn.classList.add("hidden");
+            cancelBtn.classList.add("hidden");
+        }
+
+        // 2. Tính toán vị trí Popup
+        const rect = menuButton.getBoundingClientRect();
+        let popupLeft = rect.right + window.scrollX + 5;
+        let popupTop = rect.top + window.scrollY;
+
+        const popupWidth = popup.offsetWidth || 140;
+        if (popupLeft + popupWidth > window.innerWidth + window.scrollX - 10) {
+            popupLeft = rect.left + window.scrollX - popupWidth - 5;
+        }
+
+        // 3. Hiển thị Popup
+        popup.style.top = `${popupTop}px`;
+        popup.style.left = `${popupLeft}px`;
+        popup.classList.remove("hidden");
+
+        e.stopPropagation();
+    });
+
+    // 4. Lắng nghe sự kiện trong Popup
+    popup.addEventListener("click", (e) => {
+        const actionBtn = e.target.closest("button[data-action]");
+        if (!actionBtn || !currentAppointmentId) return;
+
+        e.stopPropagation();
+        const action = actionBtn.dataset.action;
+        const targetButton = document.querySelector(`.btn-action-menu[data-id="${currentAppointmentId}"]`);
+
+        popup.classList.add("hidden");
+
+        if (action === "confirm") confirmAppointment(currentAppointmentId, targetButton);
+        else if (action === "cancel") cancelAppointment(currentAppointmentId, targetButton);
+        else if (action === "detail") showAppointmentDetailModal(currentAppointmentId);
+    });
 }
 
 export function renderDoctorProfilePanel(doc) {
@@ -635,63 +675,158 @@ function renderAvailabilityPanelInit() {
 }
 
 export function renderAvailabilityList() {
-    const content = document.getElementById("availability-content");
+    const calendarContainer = document.getElementById("availability-calendar-grid");
     const loading = document.getElementById("availability-loading");
-    if (loading) loading.classList.add("hidden");
-    if (!content) return;
-    content.classList.remove("hidden");
+    const errorEl = document.getElementById("availability-error");
 
-    if (!availabilityList.length) {
-        content.innerHTML = `<div class="no-data">Chưa có lịch làm việc.</div>`;
+    if (!calendarContainer) {
+        console.error("Availability calendar grid container not found.");
         return;
     }
 
-    const weekdayLabel = (n) => {
-        switch (Number(n)) {
-            case 0:
-                return "Thứ 2";
-            case 1:
-                return "Thứ 3";
-            case 2:
-                return "Thứ 4";
-            case 3:
-                return "Thứ 5";
-            case 4:
-                return "Thứ 6";
-            case 5:
-                return "Thứ 7";
-            case 6:
-                return "Chủ nhật";
-            default:
-                return `Thứ ${n}`;
+    const existingTimeLabels = calendarContainer.querySelectorAll(".time-label");
+    const existingDayColumns = calendarContainer.querySelectorAll(".calendar-day-column");
+    const existingNoData = calendarContainer.querySelector(".no-data-calendar");
+
+    existingTimeLabels.forEach((el) => el.remove());
+    existingDayColumns.forEach((el) => el.remove());
+    if (existingNoData) existingNoData.remove();
+
+    if (loading) loading.classList.remove("hidden");
+    if (errorEl) errorEl.classList.add("hidden");
+
+    const weekdaysFull = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"];
+    const now = new Date();
+    const currentDayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
+
+    const headerCells = document.querySelectorAll(".calendar-weekday-header");
+    headerCells.forEach((header, index) => {
+        if (header.classList.contains("time-column-header")) return;
+
+        const dayDate = new Date(now);
+        dayDate.setDate(now.getDate() + (index - currentDayOfWeek));
+
+        header.innerHTML = `
+            <span class="day-of-week">${weekdaysFull[index]}</span>
+            <span class="date-number">${dayDate.getDate()}</span>
+        `;
+        header.classList.remove("today");
+        if (index === currentDayOfWeek) {
+            header.classList.add("today");
         }
-    };
+    });
 
-    content.innerHTML = availabilityList
-        .map((a) => {
-            const statusLabel = a.is_active ? "Đang bật" : "Đã tắt";
-            const statusClass = a.is_active ? "status-confirmed" : "status-cancelled";
-            const [hour, minute] = a.start_time.split(":").map(Number);
-            const shift = hour < 12 ? `<span class="shift shift-morning">Sáng</span>` : `<span class="shift shift-afternoon">Chiều</span>`;
-            return `
-                <div class="row">
-                    <div>${weekdayLabel(a.weekday)}</div>
-                    <div>${shift}</div>
-                    <div>${a.start_time}</div>
-                    <div>${a.end_time}</div>
-                    <div>${a.slot_minutes} phút</div>
-                    <div><span class="status ${statusClass}">${statusLabel}</span></div>
-                    <div>
-                        <button class="btn btn-small btn-secondary" data-act="toggle" data-id="${a.id}">${a.is_active ? "Tắt" : "Bật"}</button>
-                        <button class="btn btn-small btn-secondary" data-act="update" data-id="${a.id}">Sửa</button>
-                        <button class="btn btn-small btn-secondary" data-act="delete" data-id="${a.id}">Xóa</button>
-                    </div>
-                </div>
-            `;
-        })
-        .join("");
+    const startHourDisplay = 6; // Bắt đầu từ 6 AM
+    const endHourDisplay = 21; // Kết thúc vào 9 PM
+    const numberOfHoursToDisplay = endHourDisplay - startHourDisplay + 1;
 
-    content.querySelectorAll("button[data-act]").forEach((btn) => {
+    calendarContainer.style.gridTemplateRows = `repeat(${numberOfHoursToDisplay}, 1fr)`;
+
+    for (let hour = startHourDisplay; hour <= endHourDisplay; hour++) {
+        const timeLabel = document.createElement("div");
+        timeLabel.classList.add("time-label");
+        timeLabel.style.gridRow = `${hour - startHourDisplay + 1}`;
+        timeLabel.textContent = `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour} ${hour < 12 ? "AM" : "PM"}`;
+        calendarContainer.appendChild(timeLabel);
+    }
+
+    const groupedAvailabilities = weekdaysFull.map(() => []);
+    availabilityList.forEach((a) => {
+        if (a.weekday >= 0 && a.weekday <= 6) {
+            groupedAvailabilities[a.weekday].push(a);
+        }
+    });
+
+    groupedAvailabilities.forEach((dayList) => {
+        dayList.sort((a, b) => {
+            const timeA = a.start_time.split(":").map(Number);
+            const timeB = b.start_time.split(":").map(Number);
+            if (timeA[0] !== timeB[0]) return timeA[0] - timeB[0];
+            return timeA[1] - timeB[1];
+        });
+    });
+
+    let allDaysEmpty = true;
+
+    groupedAvailabilities.forEach((dayAvailabilities, index) => {
+        const dayColumn = document.createElement("div");
+        dayColumn.classList.add("calendar-day-column");
+        dayColumn.style.gridColumn = `${index + 2}`;
+        dayColumn.style.gridRow = `1 / ${numberOfHoursToDisplay + 1}`;
+
+        for (let i = 0; i < numberOfHoursToDisplay; i++) {
+            const cell = document.createElement("div");
+            cell.classList.add("calendar-grid-cell");
+            dayColumn.appendChild(cell);
+        }
+
+        if (dayAvailabilities.length > 0) {
+            allDaysEmpty = false;
+            dayAvailabilities.forEach((a) => {
+                const statusClass = a.is_active ? "" : "inactive";
+
+                const startHour = parseInt(a.start_time.split(":")[0]);
+                const startMinute = parseInt(a.start_time.split(":")[1]);
+                const endHour = parseInt(a.end_time.split(":")[0]);
+                const endMinute = parseInt(a.end_time.split(":")[1]);
+
+                if (endHour < startHourDisplay || startHour > endHourDisplay) {
+                    return;
+                }
+
+                const effectiveStartHour = Math.max(startHour, startHourDisplay);
+                const effectiveStartMinute = startHour < startHourDisplay ? 0 : startMinute;
+
+                const effectiveEndHour = Math.min(endHour, endHourDisplay);
+                const effectiveEndMinute = endHour > endHourDisplay ? 59 : endMinute;
+
+                const startOffsetMinutes = effectiveStartHour * 60 + effectiveStartMinute;
+                const endOffsetMinutes = effectiveEndHour * 60 + effectiveEndMinute;
+                const durationMinutes = endOffsetMinutes - startOffsetMinutes;
+
+                const top = (startOffsetMinutes / 60 - startHourDisplay) * 90;
+                const height = (durationMinutes / 60) * 90;
+
+                const eventDiv = document.createElement("div");
+                eventDiv.classList.add("availability-event");
+                if (!a.is_active) {
+                    eventDiv.classList.add("inactive");
+                }
+
+                if (height > 0) {
+                    eventDiv.style.top = `${top}px`;
+                    eventDiv.style.height = `${height}px`;
+                    eventDiv.style.zIndex = 10 + effectiveStartHour;
+
+                    eventDiv.innerHTML = `
+                        <div class="event-header">
+                            <div class="event-time">${formatTimeHM(a.start_time)} - ${formatTimeHM(a.end_time)}</div>
+                            <div class="event-actions-wrapper">
+                                <button class="btn-menu" data-id="${a.id}" data-active="${a.is_active}">⋮</button>
+                            </div>
+                        </div>
+                        <div class="event-details">
+                            <span>Slot: ${a.slot_minutes} phút</span>
+                            <span class="event-status ${statusClass}">${a.is_active ? "Đang hoạt động" : "Đã tắt"}</span>
+                        </div>
+                    `;
+                    dayColumn.appendChild(eventDiv);
+                }
+            });
+        }
+        calendarContainer.appendChild(dayColumn);
+    });
+
+    if (allDaysEmpty) {
+        const noDataEl = document.createElement("div");
+        noDataEl.classList.add("no-data-calendar");
+        noDataEl.textContent = "Chưa có lịch làm việc.";
+        calendarContainer.appendChild(noDataEl);
+    }
+
+    if (loading) loading.classList.add("hidden");
+
+    calendarContainer.querySelectorAll("button[data-act]").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
             const act = btn.getAttribute("data-act");
             const id = btn.getAttribute("data-id");
@@ -703,6 +838,94 @@ export function renderAvailabilityList() {
                 await deleteAvailability(id, btn);
             }
         });
+    });
+
+    const skeletonLoader = document.getElementById("availability-loading");
+    if (skeletonLoader) {
+        skeletonLoader.innerHTML = "";
+        for (let i = 0; i < numberOfHoursToDisplay * 7; i++) {
+            const shimmerCell = document.createElement("div");
+            shimmerCell.classList.add("shimmer-cell");
+            skeletonLoader.appendChild(shimmerCell);
+        }
+    }
+}
+
+function setupAvailabilityPopup() {
+    const popup = document.getElementById("availabilityActionsPopup");
+    let currentAvailabilityId = null;
+    let currentActiveState = null;
+
+    document.addEventListener("click", (e) => {
+        const isMenuButton = e.target.closest(".availability-event .btn-menu");
+        const isEventDiv = e.target.closest(".availability-event");
+
+        if (!popup.contains(e.target) && !isMenuButton && !isEventDiv) {
+            popup.classList.add("hidden");
+        }
+    });
+
+    document.getElementById("availability-calendar-grid").addEventListener("click", (e) => {
+        // 1. Xác định phần tử sự kiện chính
+        const eventDiv = e.target.closest(".availability-event");
+        if (!eventDiv) {
+            popup.classList.add("hidden");
+            return;
+        }
+
+        // 2. Tìm nút menu thực tế bên trong sự kiện đó
+        const actualMenuButton = eventDiv.querySelector(".btn-menu");
+        if (!actualMenuButton) return;
+
+        // 3. Lấy dữ liệu ID và trạng thái từ nút menu
+        currentAvailabilityId = actualMenuButton.dataset.id;
+        currentActiveState = actualMenuButton.dataset.active === "true";
+
+        const toggleActionBtn = popup.querySelector('[data-action="toggle"]');
+        toggleActionBtn.setAttribute("data-active", currentActiveState);
+        toggleActionBtn.querySelector(".text").textContent = currentActiveState ? "Tắt" : "Bật";
+
+        // 4. Tính toán vị trí popup
+        const rect = actualMenuButton.getBoundingClientRect();
+
+        let popupLeft = rect.right + window.scrollX + 5;
+        let popupTop = rect.top + window.scrollY;
+
+        // 5. Kiểm tra tràn màn hình (Tràn lề phải)
+        const popupWidth = popup.offsetWidth || 140;
+        if (popupLeft + popupWidth > window.innerWidth + window.scrollX - 10) {
+            popupLeft = rect.left + window.scrollX - popupWidth - 5;
+        }
+
+        // 6. Hiển thị popup tại vị trí đã tính
+        popup.style.top = `${popupTop}px`;
+        popup.style.left = `${popupLeft}px`;
+        popup.classList.remove("hidden");
+
+        e.stopPropagation();
+    });
+
+    popup.querySelector('[data-action="toggle"]').addEventListener("click", async () => {
+        if (currentAvailabilityId) {
+            const actualMenuButton = document.querySelector(`.btn-menu[data-id="${currentAvailabilityId}"]`);
+            await toggleAvailability(currentAvailabilityId, actualMenuButton);
+            popup.classList.add("hidden");
+        }
+    });
+
+    popup.querySelector('[data-action="edit"]').addEventListener("click", () => {
+        if (currentAvailabilityId) {
+            showErrorModal("Chức năng sửa lịch làm việc đang được phát triển.");
+            popup.classList.add("hidden");
+        }
+    });
+
+    popup.querySelector('[data-action="delete"]').addEventListener("click", async () => {
+        if (currentAvailabilityId) {
+            const actualMenuButton = document.querySelector(`.btn-menu[data-id="${currentAvailabilityId}"]`);
+            await deleteAvailability(currentAvailabilityId, actualMenuButton);
+            popup.classList.add("hidden");
+        }
     });
 }
 
@@ -803,9 +1026,14 @@ async function toggleAvailability(id, btn) {
         }
         await loadAvailability(true);
         showToast("Cập nhật lịch làm việc thành công!", "success");
+
+        const newIsActive = !target.is_active;
+        if (btn) {
+            btn.setAttribute("data-active", newIsActive);
+        }
     } catch (err) {
         showErrorModal(`Cập nhật thất bại: ${err.message}`);
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     } finally {
         hideLoadingOverlay();
     }
@@ -1247,5 +1475,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchDoctorProfile();
     loadAppointments();
     loadAvailability();
+    setupAvailabilityPopup();
+    setupAppointmentActionsPopup();
     generateMockNotifications();
 });

@@ -314,6 +314,7 @@ body {
     font-size: 1.5rem;
     cursor: pointer;
     color: var(--text-secondary);
+    user-select: none;
 }
 .modal-body p {
     margin-bottom: 0.5rem;

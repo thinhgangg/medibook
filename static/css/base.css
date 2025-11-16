@@ -230,9 +230,9 @@ body {
     display: none;
     position: absolute;
     top: 100%;
-    right: -80px;
+    right: -100px;
     background: linear-gradient(135deg, #fff 80%, #f3f4f6 100%);
-    min-width: 200px;
+    min-width: 215px;
     box-shadow: 0 12px 32px rgba(102, 126, 234, 0.18), 0 2px 8px rgba(118, 75, 162, 0.10);
     border-radius: 14px;
     z-index: 1000;
