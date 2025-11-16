@@ -674,6 +674,7 @@ body {
     transition: all 0.2s ease;
     cursor: pointer;
     justify-content: space-between;
+    gap: 10px;
     height: calc(100% - 8px);
 }
 
@@ -1033,7 +1034,8 @@ body {
 }
 
 #avail-weekday,
-#status-filter {
+#status-filter,
+#edit-avail-weekday {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -1046,12 +1048,14 @@ body {
 }
 
 #avail-weekday:hover,
-#status-filter:hover {
+#status-filter:hover,
+#edit-avail-weekday:hover {
     border-color: #a5b4fc;
 }
 
 #avail-weekday:focus,
-#status-filter:focus {
+#status-filter:focus,
+#edit-avail-weekday:focus {
     outline-color: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -1505,6 +1509,17 @@ body {
     display: flex;
     gap: var(--spacing-md);
     justify-content: flex-end;
+}
+
+.edit-availability-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xl);
+}
+
+.edit-availability-body .filter-group {
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
 }
 
 /* Detail Images Grid */

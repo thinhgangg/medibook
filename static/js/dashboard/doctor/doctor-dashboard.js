@@ -590,7 +590,9 @@ function cancelAppointment(id, triggerBtn) {
     const closeBtn = document.getElementById("cancelCloseBtn");
     if (!modal || !confirmBtn || !closeBtn) return;
 
-    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
+    modal.querySelector(".modal-close-btn").onclick = () => {
+        modal.style.display = "none";
+    };
 
     modal.style.display = "flex";
 
@@ -915,7 +917,7 @@ function setupAvailabilityPopup() {
 
     popup.querySelector('[data-action="edit"]').addEventListener("click", () => {
         if (currentAvailabilityId) {
-            showErrorModal("Chức năng sửa lịch làm việc đang được phát triển.");
+            openEditAvailabilityModal(currentAvailabilityId);
             popup.classList.add("hidden");
         }
     });
@@ -1039,13 +1041,162 @@ async function toggleAvailability(id, btn) {
     }
 }
 
+function openEditAvailabilityModal(id) {
+    const modal = document.getElementById("editAvailabilityModal");
+    const form = document.getElementById("edit-availability-form");
+    const closeBtn = document.getElementById("editAvailabilityCloseBtn");
+
+    modal.querySelector(".modal-close-btn").onclick = () => {
+        modal.style.display = "none";
+    };
+
+    if (!modal || !form) return;
+
+    const availability = availabilityList.find((a) => String(a.id) === String(id));
+    if (!availability) {
+        showErrorModal("Không tìm thấy lịch làm việc để chỉnh sửa.");
+        return;
+    }
+
+    document.getElementById("edit-avail-id").value = availability.id;
+    document.getElementById("edit-avail-weekday").value = availability.weekday;
+    document.getElementById("edit-avail-start").value = availability.start_time.substring(0, 5);
+    document.getElementById("edit-avail-end").value = availability.end_time.substring(0, 5);
+    document.getElementById("edit-avail-slot").value = availability.slot_minutes;
+
+    modal.style.display = "flex";
+
+    const cleanup = () => {
+        modal.style.display = "none";
+        form.removeEventListener("submit", submitHandler);
+        closeBtn.onclick = null;
+        window.onclick = null;
+    };
+
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        await submitEditAvailability(id);
+        cleanup();
+    };
+
+    form.addEventListener("submit", submitHandler);
+    closeBtn.onclick = () => cleanup();
+    window.onclick = (e) => {
+        if (e.target === modal) cleanup();
+    };
+}
+
+async function submitEditAvailability(id) {
+    showLoadingOverlay("Đang cập nhật lịch làm việc...");
+
+    const w = document.getElementById("edit-avail-weekday")?.value;
+    const start = document.getElementById("edit-avail-start")?.value;
+    const end = document.getElementById("edit-avail-end")?.value;
+    const slot = document.getElementById("edit-avail-slot")?.value;
+
+    if (!w || start.trim() === "" || end.trim() === "") {
+        showErrorModal("Vui lòng nhập đầy đủ thông tin lịch làm việc.");
+        hideLoadingOverlay();
+        return;
+    }
+
+    const startTime = new Date(`2000/01/01 ${start}`);
+    const endTime = new Date(`2000/01/01 ${end}`);
+    if (startTime >= endTime) {
+        showErrorModal("Thời gian bắt đầu phải trước thời gian kết thúc.");
+        hideLoadingOverlay();
+        return;
+    }
+
+    const payload = {
+        weekday: Number(w),
+        start_time: `${start.trim()}:00`,
+        end_time: `${end.trim()}:00`,
+        slot_minutes: Number(slot),
+    };
+
+    // 1. Lấy dữ liệu gốc của lịch làm việc đang được chỉnh sửa
+    const originalAvailability = availabilityList.find((a) => String(a.id) === String(id));
+
+    // 2. So sánh payload mới với dữ liệu gốc để kiểm tra xem có thay đổi nào không
+    let hasChanges = false;
+    if (originalAvailability) {
+        const originalStartTime = originalAvailability.start_time.substring(0, 5);
+        const originalEndTime = originalAvailability.end_time.substring(0, 5);
+
+        if (
+            payload.weekday !== originalAvailability.weekday ||
+            payload.start_time.substring(0, 5) !== originalStartTime ||
+            payload.end_time.substring(0, 5) !== originalEndTime ||
+            payload.slot_minutes !== originalAvailability.slot_minutes
+        ) {
+            hasChanges = true;
+        }
+    }
+
+    // 3. Nếu không có thay đổi, hiển thị toast và thoát mà không gọi API hay kiểm tra trùng lặp
+    if (!hasChanges) {
+        hideLoadingOverlay();
+        showToast("Cập nhật lịch làm việc thành công!", "success");
+        return;
+    }
+
+    const hasOverlap = availabilityList.some((a) => {
+        if (String(a.id) === String(id)) return false;
+        if (a.weekday !== Number(w)) return false;
+        const s1 = new Date(`2000/01/01 ${a.start_time}`);
+        const e1 = new Date(`2000/01/01 ${a.end_time}`);
+        return !(endTime <= s1 || startTime >= e1);
+    });
+
+    if (hasOverlap) {
+        showErrorModal(
+            "Khung giờ bị chồng lấp với lịch làm việc khác trong cùng ngày. Hãy chỉnh sửa hoặc xóa lịch cũ trước khi cập nhật.",
+            "warning"
+        );
+        hideLoadingOverlay();
+        return;
+    }
+
+    try {
+        const res = await fetchWithAuth(`${apiBase}/doctors/availability/${id}/`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            let errorMessage = `Đã xảy ra lỗi (HTTP ${res.status})`;
+            try {
+                const data = await res.json();
+                if (data?.detail) errorMessage = data.detail;
+                else if (data?.message) errorMessage = data.message;
+                else if (Array.isArray(data?.non_field_errors)) errorMessage = data.non_field_errors.join(" ");
+                else if (typeof data === "object") errorMessage = Object.values(data).flat().join(" ");
+            } catch {
+                const text = await res.text();
+                if (text) errorMessage = text;
+            }
+            throw new Error(errorMessage);
+        }
+
+        await loadAvailability(true);
+        showToast("Cập nhật lịch làm việc thành công!", "success");
+    } catch (err) {
+        showErrorModal(err.message || "Không thể cập nhật lịch làm việc. Vui lòng thử lại sau.", "error");
+    } finally {
+        hideLoadingOverlay();
+    }
+}
+
 async function deleteAvailability(id, triggerBtn) {
     const modal = document.getElementById("deleteModal");
     const confirmBtn = document.getElementById("deleteConfirmBtn");
     const closeBtn = document.getElementById("deleteCloseBtn");
     if (!modal || !confirmBtn || !closeBtn) return;
 
-    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
+    modal.querySelector(".modal-close-btn").onclick = () => {
+        modal.style.display = "none";
+    };
 
     modal.style.display = "flex";
 
@@ -1266,7 +1417,9 @@ async function deleteDayOff(id, triggerBtn) {
     const closeBtn = document.getElementById("deleteDaysOffCloseBtn");
     if (!modal || !confirmBtn || !closeBtn) return;
 
-    modal.querySelector(".modal-close-btn").onclick = () => modal.remove();
+    modal.querySelector(".modal-close-btn").onclick = () => {
+        modal.style.display = "none";
+    };
 
     modal.style.display = "flex";
 
