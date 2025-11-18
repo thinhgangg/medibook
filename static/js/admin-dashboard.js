@@ -203,9 +203,8 @@
                         .map(
                             (r) => `
                     <tr>
-                        <td>${r.patient_name || "N/A"}</td><td>${r.doctor_name || "N/A"}</td><td>${"★".repeat(r.rating)}${"☆".repeat(
-                                5 - r.rating
-                            )}</td>
+                        <td>${r.patient_name || "N/A"}</td><td>${r.doctor_name || "N/A"}</td>
+                        <td>${"⭐".repeat(r.stars)}</td>
                         <td>${r.comment.substring(0, 50)}...</td><td><span class="status-badge status-${r.is_active}">${
                                 r.is_active ? "Hiện" : "Ẩn"
                             }</span></td>
