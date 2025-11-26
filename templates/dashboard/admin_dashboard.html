@@ -1,71 +1,64 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Admin Dashboard{% endblock %}
-
-{% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+{% extends 'base.html' %} {% load static %} {% block title %}Hệ thống Quản trị - Medibook{% endblock %} {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
 
-<main class="dashboard-wrapper">
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>Admin Panel</h3>
-                <p>Quản lý Bệnh viện</p>
-            </div>
-            <nav>
-                <ul>
-                    <li><a id="nav-overview" href="#overview" class="sidebar-nav-item active"><i class="fas fa-chart-pie icon"></i> Tổng quan</a></li>
-                    <li><a id="nav-users" href="#users" class="sidebar-nav-item"><i class="fas fa-users icon"></i> Quản lý Users</a></li>
-                    <li><a id="nav-doctors" href="#doctors" class="sidebar-nav-item"><i class="fas fa-user-md icon"></i> Quản lý Bác sĩ</a></li>
-                    <li><a id="nav-appointments" href="#appointments" class="sidebar-nav-item"><i class="fas fa-calendar-alt icon"></i> Lịch hẹn</a></li>
-                    <li><a id="nav-specialties" href="#specialties" class="sidebar-nav-item"><i class="fas fa-stethoscope icon"></i> Chuyên khoa</a></li>
-                    <li><a id="nav-reviews" href="#reviews" class="sidebar-nav-item"><i class="fas fa-star icon"></i> Đánh giá</a></li>
-                    <li><a id="nav-reports" href="#reports" class="sidebar-nav-item"><i class="fas fa-chart-line icon"></i> Báo cáo</a></li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Content Area -->
-        <section class="content">
-            <div id="panel-overview" class="panel"></div>
-            <div id="panel-users" class="panel hidden"></div>
-            <div id="panel-doctors" class="panel hidden"></div>
-            <div id="panel-appointments" class="panel hidden"></div>
-            <div id="panel-specialties" class="panel hidden"></div>
-            <div id="panel-reviews" class="panel hidden"></div>
-            <div id="panel-reports" class="panel hidden"></div>
-        </section>
-
-        <!-- Modals -->
-        <div id="form-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header"><h2 id="form-modal-title"></h2><button class="modal-close-btn">&times;</button></div>
-                <form id="modal-form">
-                    <input type="hidden" id="edit-id">
-                    <div id="form-modal-body" class="modal-body"></div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary modal-close-btn">Hủy</button>
-                        <button type="submit" class="btn-primary">Lưu</button>
-                    </div>
-                </form>
-            </div>
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>MEDIBOOK ADMIN</h3>
+            <small style="color: #6b7280">Bảng điều khiển</small>
         </div>
+        <nav class="sidebar-nav">
+            <a href="#overview" class="sidebar-nav-item active" data-target="overview"> <i class="fas fa-chart-pie"></i> Tổng quan </a>
+            <a href="#appointments" class="sidebar-nav-item" data-target="appointments"> <i class="fas fa-calendar-check"></i> Quản lý Lịch hẹn </a>
+            <a href="#doctors" class="sidebar-nav-item" data-target="doctors"> <i class="fas fa-user-md"></i> Đội ngũ Bác sĩ </a>
+            <a href="#users" class="sidebar-nav-item" data-target="users"> <i class="fas fa-users"></i> Người dùng </a>
+            <a href="#specialties" class="sidebar-nav-item" data-target="specialties"> <i class="fas fa-stethoscope"></i> Chuyên khoa </a>
+            <a href="#reviews" class="sidebar-nav-item" data-target="reviews"> <i class="fas fa-star"></i> Đánh giá </a>
+            <a href="#reports" class="sidebar-nav-item" data-target="reports"> <i class="fas fa-file-invoice"></i> Báo cáo </a>
+        </nav>
+    </aside>
 
-        <div id="confirm-modal" class="modal hidden">
-             <div class="modal-content" style="max-width: 400px;">
-                <h2 id="confirm-modal-title">Xác nhận</h2>
-                <p id="confirm-modal-body"></p>
-                <div class="modal-actions">
-                    <button id="confirm-cancel-btn" class="btn-secondary">Hủy</button>
-                    <button id="confirm-ok-btn" class="btn-danger">Xác nhận</button>
-                </div>
+    <main class="main-content">
+        <div id="panel-container"></div>
+    </main>
+</div>
+
+<div id="main-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-title">Tiêu đề</h3>
+            <button class="btn-icon close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="modal-form">
+            <div id="modal-body" class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
             </div>
+        </form>
+    </div>
+</div>
+
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 400px">
+        <div class="modal-body" style="text-align: center; padding-top: 32px">
+            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--warning); margin-bottom: 16px"></i>
+            <h3 id="confirm-title" style="margin-bottom: 8px">Xác nhận</h3>
+            <p id="confirm-desc" style="color: var(--text-muted)">Bạn có chắc chắn muốn thực hiện?</p>
+        </div>
+        <div class="modal-footer" style="justify-content: center">
+            <button type="button" class="btn btn-secondary close-confirm">Không</button>
+            <button type="button" id="btn-confirm-yes" class="btn btn-danger">Đồng ý</button>
         </div>
     </div>
-</main>
+</div>
+
+<div id="toast-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/admin-dashboard.js' %}"></script>

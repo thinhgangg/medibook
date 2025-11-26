@@ -6,6 +6,8 @@ import {
     mockNotifications,
     formatDateVN,
     showErrorModal,
+    showReviewModal,
+    showAppointmentDetailModal,
     showLoadingOverlay,
     hideLoadingOverlay,
     showToast,
@@ -207,6 +209,7 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
     const container = document.getElementById("all-appointments-content");
     const loading = document.getElementById("all-appointments-loading");
     const errorEl = document.getElementById("all-appointments-error");
+    container.classList.add("appointments-list");
 
     loading.classList.add("hidden");
     container.classList.remove("hidden");
@@ -215,6 +218,7 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
     const filteredAppointments = filterAppointments(appointments, statusFilter, startDate, endDate);
 
     if (filteredAppointments.length === 0) {
+        container.classList.remove("appointments-list");
         container.innerHTML = `<div class="no-data">Không tìm thấy lịch hẹn phù hợp.</div>`;
         return;
     }
@@ -224,6 +228,8 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             const startDate = new Date(apt.start_at);
             const endDate = new Date(apt.end_at);
             const doctor = doctorsMap[apt.doctor_id]?.user?.full_name || `Doctor ID: ${apt.doctor_id}`;
+            const specialty = doctorsMap[apt.doctor_id]?.specialty?.name || "N/A";
+            const room_number = doctorsMap[apt.doctor_id]?.room_number || "Chưa cập nhật";
             const statusClass = `status-${apt.status.toLowerCase()}`;
             let statusText;
             switch (apt.status) {
@@ -244,34 +250,60 @@ export function renderAllAppointments(appointments, statusFilter = "all", startD
             }
 
             let actionsHtml = "";
+            actionsHtml += `<button class="btn btn-detail" data-appointment-id="${apt.id}">Chi tiết</button> `;
             if (apt.status === "PENDING") {
-                actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Hủy</button>`;
-            } else {
-                actionsHtml = `<button class="btn-secondary btn-small" data-appointment-id="${apt.id}">Chi tiết</button>`;
+                actionsHtml += `<button class="btn btn-cancel" data-appointment-id="${apt.id}">Hủy lịch hẹn</button>`;
+            } else if (apt.status === "COMPLETED") {
+                if (apt.has_review) {
+                    actionsHtml += `<span class="has-review">Đã đánh giá</span>`;
+                } else {
+                    actionsHtml += `<button class="btn btn-review" data-action="review" data-appointment-id="${apt.id}">Viết đánh giá</button>`;
+                }
             }
 
             return `
-            <div class="row">
-                <div>${startDate.toLocaleDateString("vi-VN")}</div>
-                <div>${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleTimeString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-            })}</div>
-                <div>${doctor}</div>
-                <div><span class="status ${statusClass}">${statusText}</span></div>
-                <div>${actionsHtml}</div>
-            </div>
-        `;
+                <div class="appointment-card">
+                    
+                    <div class="appointment-header">
+                        <div><strong>Ngày:</strong> ${startDate.toLocaleDateString("vi-VN")}</div>
+                        <div><strong>Giờ:</strong> ${startDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - 
+                            ${endDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                    </div>
+
+                    <div class="appointment-info">
+                        <div><strong>Bác sĩ:</strong> ${doctor}</div>
+                        <div><strong>Chuyên khoa:</strong> ${specialty}</div>
+                        <div><strong>Phòng:</strong> ${room_number}</div>
+                        <div><strong>Trạng thái:</strong> <span class="status ${statusClass}">${statusText}</span></div>
+                    </div>
+
+                    <div class="appointment-actions">
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `;
         })
         .join("");
 
-    container.querySelectorAll(".btn-small").forEach((button) => {
+    container.querySelectorAll(".appointment-actions button").forEach((button) => {
         button.addEventListener("click", (e) => {
             const aptId = e.target.dataset.appointmentId;
-            if (e.target.textContent === "Hủy") {
+            const action = e.target.dataset.action;
+
+            if (action === "review") {
+                showReviewModal(aptId);
+                return;
+            }
+
+            if (e.target.classList.contains("btn-cancel")) {
                 cancelAppointment(aptId, e.target);
-            } else if (e.target.textContent === "Chi tiết") {
-                showErrorModal("Chức năng xem chi tiết lịch hẹn đang được phát triển.");
+                return;
+            }
+
+            if (e.target.classList.contains("btn-detail")) {
+                showAppointmentDetailModal(aptId);
+                return;
             }
         });
     });
@@ -281,6 +313,10 @@ function cancelAppointment(appointmentId, buttonEl) {
     const modal = document.getElementById("cancelModal");
     const confirmBtn = document.getElementById("cancelConfirmBtn");
     const closeBtn = document.getElementById("cancelCloseBtn");
+
+    modal.querySelector(".modal-close-btn").onclick = () => {
+        modal.style.display = "none";
+    };
 
     modal.style.display = "flex";
 

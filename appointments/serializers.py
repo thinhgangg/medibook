@@ -17,6 +17,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
     patient_email = serializers.CharField(source="patient.user.email", read_only=True)
     patient_avatar = serializers.ImageField(source="patient.user.avatar", read_only=True)
     images = AppointmentImageSerializer(many=True, read_only=True)
+    has_review = serializers.SerializerMethodField()
+    room_number = serializers.CharField(source="doctor.room_number", read_only=True)
     
     class Meta:
         model  = Appointment
@@ -25,6 +27,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "patient_id", "patient_name", "patient_phone", "patient_email", "patient_avatar",
             "start_at", "end_at", "note", "status", "created_at",
             "images",
+            "has_review",
+            "room_number",
         ]
         read_only_fields = ["id", "doctor_id", "patient_id", "status", "created_at"]
 
@@ -39,6 +43,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
             return obj.doctor.user.full_name
         except AttributeError:
             return "Không rõ"
+        
+    def get_has_review(self, obj):
+        return hasattr(obj, "review")
 
 def _ensure_within_availability_and_grid(doctor, start_at, end_at):
     tz = timezone.get_current_timezone()

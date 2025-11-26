@@ -19,17 +19,33 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById("guest-buttons").style.display = "none";
                         const avatarContainer = document.getElementById("user-avatar");
                         const userNameEl = document.getElementById("user-name");
-                        avatarContainer.style.display = "flex";
                         const avatarImg = avatarContainer.querySelector(".user-avatar");
+
+                        avatarContainer.style.display = "flex";
+
+                        let userFullName = "";
+                        let profilePic = "";
+
                         if (data.role === "PATIENT") {
-                            avatarImg.src = data.patient?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
-                            userNameEl.textContent = data.patient?.user?.full_name || "Bệnh nhân";
+                            userFullName = data.patient?.user?.full_name || "Bệnh nhân";
+                            profilePic = data.patient?.profile_picture_thumbs?.small;
                         } else if (data.role === "DOCTOR") {
-                            avatarImg.src = data.doctor?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
-                            userNameEl.textContent = data.doctor?.user?.full_name || "Bác sĩ";
+                            userFullName = data.doctor?.user?.full_name || "Bác sĩ";
+                            profilePic = data.doctor?.profile_picture_thumbs?.small;
                         } else if (data.role === "ADMIN") {
-                            avatarImg.src = data.admin?.profile_picture_thumbs?.small || "/static/img/default-avatar.jpg";
-                            userNameEl.textContent = data.user?.full_name || "Admin";
+                            userFullName = data.user?.full_name || "Admin";
+                            profilePic = data.admin?.profile_picture_thumbs?.small;
+                        }
+
+                        userNameEl.textContent = userFullName;
+
+                        if (profilePic) {
+                            avatarImg.outerHTML = `<img src="${profilePic}" alt="Avatar" class="user-avatar">`;
+                        } else {
+                            const firstChar = userFullName.charAt(0).toUpperCase();
+                            avatarImg.outerHTML = `
+                            <div class="avatar-placeholder">${firstChar}</div>
+                        `;
                         }
 
                         const profileLink = document.getElementById("profileLink");
@@ -60,6 +76,22 @@ document.addEventListener("DOMContentLoaded", () => {
                             myAppointmentsLink.href = "/dashboard/#appointments";
                         } else {
                             myAppointmentsLink.style.display = "none";
+                        }
+
+                        const myWorkScheduleLink = document.getElementById("myWorkScheduleLink");
+                        if (data.role === "DOCTOR") {
+                            myWorkScheduleLink.style.display = "block";
+                            myWorkScheduleLink.href = "/dashboard/#availability";
+                        } else {
+                            myWorkScheduleLink.style.display = "none";
+                        }
+
+                        const myDaysOffLink = document.getElementById("myDaysOffLink");
+                        if (data.role === "DOCTOR") {
+                            myDaysOffLink.style.display = "block";
+                            myDaysOffLink.href = "/dashboard/#days-off";
+                        } else {
+                            myDaysOffLink.style.display = "none";
                         }
                     }
                 })

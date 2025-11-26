@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
@@ -43,9 +44,28 @@ class Doctor(models.Model):
     def experience_years(self):
         if not self.started_practice:
             return None
+
+        started = self.started_practice
+
+        # Nếu là string → parse về date
+        if isinstance(started, str):
+            try:
+                started = datetime.strptime(started, "%Y-%m-%d").date()
+            except:
+                return None
+
+        # Nếu là datetime → convert sang date
+        if isinstance(started, datetime):
+            started = started.date()
+
+        # Nếu sau cùng vẫn không phải date
+        if not isinstance(started, date):
+            return None
+
         today = timezone.now().date()
-        return today.year - self.started_practice.year - (
-            (today.month, today.day) < (self.started_practice.month, self.started_practice.day)
+
+        return today.year - started.year - (
+            (today.month, today.day) < (started.month, started.day)
         )
 
     @property

@@ -13,5 +13,9 @@
     <a id="cta-booking" href="#" class="btn btn-primary">ĐẶT KHÁM NGAY</a>
 </div>
 
+<script>
+    window.isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+</script>
+
 <script src="{% static 'js/doctor_profile.js' %}"></script>
 {% endblock %}

@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{% block title %}MediBook{% endblock %}</title>
         <link rel="stylesheet" href="{% static 'css/base.css' %}?v=7" />
+        <link rel="icon" href="{% static 'img/favicon.ico' %}" />
     </head>
     <body>
         <!-- HEADER -->
@@ -33,8 +34,10 @@
                         <img src="" alt="User Avatar" class="user-avatar" />
                         <span id="user-name" class="user-name"></span>
                         <div id="avatar-dropdown" class="dropdown-content">
-                            <a href="#" id="profileLink">Hồ sơ</a>
+                            <a href="#" id="profileLink">Trang quản lý</a>
                             <a href="#" id="myAppointmentsLink">Quản lý lịch khám</a>
+                            <a href="#" id="myWorkScheduleLink">Quản lý lịch làm việc</a>
+                            <a href="#" id="myDaysOffLink">Quản lý lịch nghỉ</a>
                             <a href="#" id="newAppointmentsLink">Lịch khám mới</a>
                             <a href="#" id="logoutLink">Đăng xuất</a>
                         </div>

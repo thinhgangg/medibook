@@ -272,43 +272,101 @@ body {
 }
 
 /* Button Styles */
-.btn-primary,
-.btn-secondary {
+.btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: var(--spacing-sm);
+
     padding: var(--spacing-sm) var(--spacing-lg);
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-weight: 600;
     font-size: 0.95rem;
+    font-weight: 600;
+
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+
     cursor: pointer;
-    transition: all var(--transition-base);
     text-decoration: none;
     white-space: nowrap;
+
+    transition: transform var(--transition-base), background var(--transition-base), box-shadow var(--transition-base),
+        border-color var(--transition-base);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: var(--text-light);
-    box-shadow: var(--shadow-md);
 }
-
 .btn-primary:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
     background: var(--bg-tertiary);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
 }
-
 .btn-secondary:hover {
     background: var(--bg-hover);
-    border-color: var(--secondary-color);
-    transform: translateY(-2px);
+}
+
+/* Chi tiết */
+.btn-detail {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.btn-detail:hover {
+    background: #bae6fd;
+}
+
+/* Xác nhận */
+.btn-confirm {
+    background: #4ade80;
+    color: #065f46;
+}
+.btn-confirm:hover {
+    background: #22c55e;
+}
+
+/* Hoàn tất */
+.btn-complete {
+    background: #3b82f6;
+    color: white;
+}
+.btn-complete:hover {
+    background: #2563eb;
+}
+
+/* Đánh giá */
+.btn-review {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-review:hover {
+    background: #e68900;
+}
+
+/* Hủy */
+.btn-cancel {
+    background: var(--danger-color);
+    color: white;
+}
+.btn-cancel:hover {
+    background: #dc2626;
+}
+
+/* Đóng */
+.btn-close {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+.btn-close:hover {
+    background: var(--bg-hover);
 }
 
 .btn-small {
@@ -316,32 +374,26 @@ body {
     font-size: 0.875rem;
 }
 
-.btn-cancel,
-.btn-close {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border: none;
-    border-radius: var(--border-radius-sm);
+.has-review {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--spacing-lg);
+    font-size: 0.85rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-base);
-}
 
-.btn-cancel {
-    background: var(--danger-color);
-    color: var(--text-light);
-}
+    border-radius: var(--border-radius-sm);
+    background: #e3f9f1;
+    color: #059669;
+    border: 1px solid #a7f3d0;
 
-.btn-cancel:hover {
-    background: #dc2626;
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
 }
-
-.btn-close {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-}
-
-.btn-close:hover {
-    background: var(--bg-hover);
+.has-review::before {
+    content: "✔";
+    font-size: 0.85rem;
+    margin-right: 6px;
 }
 
 /* Table Styles */
@@ -370,8 +422,72 @@ body {
     letter-spacing: 0.05em;
 }
 
-#all-appointments-table .row {
-    grid-template-columns: repeat(5, 1fr);
+/* Container */
+.appointments-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+/* Card */
+.appointment-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+}
+
+.appointment-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+/* Header - Ngày giờ */
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #f3f4f6;
+    font-size: 0.875rem;
+}
+
+.appointment-header strong {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Info - Thông tin chi tiết */
+.appointment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.appointment-info strong {
+    color: #6b7280;
+    font-weight: 500;
+    min-width: 100px;
+    display: inline-block;
+}
+
+/* Actions - Nút hành động */
+.appointment-actions {
+    display: flex;
+    justify-content: flex-start;
+    direction: rtl;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f3f4f6;
+}
+.appointment-actions > * {
+    direction: ltr;
 }
 
 .table-body .row:hover {
@@ -386,12 +502,12 @@ body {
 .status {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .status-confirmed {
@@ -720,6 +836,90 @@ body {
     width: 50%;
 }
 
+/* Review Modal */
+#reviewModal .review-form {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px 30px;
+    width: 600px;
+    max-width: 90%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 0.35s ease;
+}
+
+.review-form .form-section textarea {
+    margin-top: 8px;
+    font-size: 1em;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #333;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.review-form h2 {
+    text-align: center;
+    margin-bottom: 5px;
+    font-size: 1.5em;
+    color: #222;
+}
+
+.review-form .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    flex-direction: row-reverse;
+    gap: 5px;
+    font-size: 32px;
+    margin: 8px 0 16px;
+    cursor: pointer;
+}
+
+.star-rating span {
+    color: #ccc;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.star-rating span:hover,
+.star-rating span:hover ~ span {
+    color: #ffd700;
+    transform: scale(1.2);
+}
+
+.star-rating .selected,
+.star-rating .selected ~ span {
+    color: #ffd700;
+}
+
+/* === Textarea === */
+.review-form textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.95em;
+    resize: none;
+    transition: border-color 0.3s;
+}
+
+.review-form textarea:focus {
+    border-color: #3b82f6;
+    outline: none;
+}
+
 /* Modal Styles */
 .modal {
     position: fixed;
@@ -738,10 +938,10 @@ body {
 
 .modal-content {
     background: var(--bg-primary);
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-xl);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-xl);
-    max-width: 700px;
+    max-width: 600px;
     width: 90%;
     animation: slideUp 0.3s ease-out;
     z-index: 1001;
@@ -758,20 +958,64 @@ body {
     }
 }
 
-.modal-content h2 {
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
+.modal-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.modal-content p {
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-close-btn {
+    cursor: pointer;
+    font-size: 22px;
+    color: #6b7280;
+    transition: 0.2s ease;
+    user-select: none;
+}
+
+.modal-close-btn:hover {
+    color: #111827;
+}
+
+.modal-body {
+    padding: 0 20px;
+    overflow-y: auto;
+}
+
+.modal-body p {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.5;
     color: var(--text-secondary);
-    margin-bottom: var(--spacing-xl);
 }
 
 .modal-actions {
     display: flex;
     gap: var(--spacing-md);
     justify-content: flex-end;
+}
+
+/* Detail Images Grid */
+.detail-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.detail-images img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
 /* Error Messages */
@@ -927,5 +1171,14 @@ body {
 
     .chart-container.full-width {
         height: 250px;
+    }
+
+    .appointments-list {
+        grid-template-columns: 1fr;
+    }
+
+    .appointment-header {
+        flex-direction: column;
+        gap: 0.25rem;
     }
 }
