@@ -123,6 +123,12 @@ class AdminDoctorViewSet(viewsets.ModelViewSet):
         serializer = AdminReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
+    def perform_destroy(self, instance):
+        if instance.user:
+            instance.user.delete()
+        else:
+            instance.delete()
+
 class AdminAppointmentViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AdminAppointmentSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -159,6 +165,17 @@ class AdminSpecialtyViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
             
         return queryset.order_by('name')
+    
+    @action(detail=True, methods=['post'])
+    def toggle_active(self, request, pk=None):
+        specialty = self.get_object()
+        specialty.is_active = not specialty.is_active
+        specialty.save()
+
+        return Response({
+            "message": f"Specialty {'activated' if specialty.is_active else 'deactivated'} successfully",
+            "is_active": specialty.is_active
+        })
 
 class AdminReviewViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AdminReviewSerializer

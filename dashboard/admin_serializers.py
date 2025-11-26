@@ -8,8 +8,9 @@ from appointments.models import Appointment
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'full_name', 'phone_number', 'role', 
-                 'is_active', 'date_joined', 'last_login']
+        fields = ['id', 'email', 'full_name', 'id_number', 'dob', 'phone_number', 'role', 
+                 'is_active', 'date_joined', 'last_login',
+                 'address_detail', 'ward', 'district', 'city',]
         read_only_fields = ['id', 'date_joined', 'last_login']
 
 class AdminDoctorSerializer(serializers.ModelSerializer):
@@ -20,7 +21,7 @@ class AdminDoctorSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Doctor
-        fields = ['id', 'user', 'specialty_name', 'bio', 'experience_years', 
+        fields = ['id', 'user', 'specialty_name', 'bio', 'experience_detail', 'experience_years', 
                  'average_rating', 'is_active', 'is_featured', 'started_practice', 'room_number',]
 
 class AdminAppointmentSerializer(serializers.ModelSerializer):
