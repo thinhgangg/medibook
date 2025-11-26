@@ -132,15 +132,20 @@
             const container = document.getElementById("panel-container");
             container.innerHTML = "<p>Đang tải dữ liệu...</p>";
 
-            const statusMap = {
-                PENDING: "Đang chờ xác nhận",
-                CONFIRMED: "Đã xác nhận",
-                COMPLETED: "Đã hoàn thành",
-                CANCELLED: "Đã hủy",
-            };
-
             try {
                 const [stats, apptStats] = await Promise.all([API.fetch("/statistics/"), API.fetch("/appointments/statistics/")]);
+
+                const statusOrder = ["CANCELLED", "COMPLETED", "CONFIRMED", "PENDING"];
+                const statusConfig = {
+                    CANCELLED: { label: "Đã hủy", color: "#ef4444" },
+                    COMPLETED: { label: "Đã hoàn thành", color: "#10b981" },
+                    CONFIRMED: { label: "Đã xác nhận", color: "#4361ee" },
+                    PENDING: { label: "Đang chờ xác nhận", color: "#f59e0b" },
+                };
+
+                const labels = statusOrder.map((key) => statusConfig[key].label);
+                const data = statusOrder.map((key) => apptStats[key] || 0);
+                const colors = statusOrder.map((key) => statusConfig[key].color);
 
                 container.innerHTML = `
                     ${UI.renderHeader("Tổng quan Hệ thống")}
@@ -168,9 +173,6 @@
                     </div>
                 `;
 
-                const labels = Object.keys(apptStats).map((key) => statusMap[key] || key);
-                const data = Object.values(apptStats);
-
                 new Chart(document.getElementById("chartOverview"), {
                     type: "doughnut",
                     data: {
@@ -178,7 +180,8 @@
                         datasets: [
                             {
                                 data: data,
-                                backgroundColor: ["#4361ee", "#3a0ca3", "#10b981", "#ef4444", "#f59e0b"],
+                                backgroundColor: colors,
+                                borderWidth: 0,
                             },
                         ],
                     },
@@ -475,6 +478,7 @@
         async reports() {
             const container = document.getElementById("panel-container");
 
+            // 1. Khung sườn giao diện (Layout)
             container.innerHTML = `
                 ${UI.renderHeader("Báo cáo & Thống kê")}
                 
@@ -496,6 +500,7 @@
                 </div>
             `;
 
+            // 2. Hàm xử lý logic & Vẽ biểu đồ
             const renderReportData = (appointments, range) => {
                 const dashboard = document.getElementById("report-dashboard");
 
@@ -521,27 +526,45 @@
                     return d >= start && d <= end;
                 });
 
-                // --- B. Tính toán chỉ số (KPIs) ---
-                const total = filtered.length;
-                const completed = filtered.filter((a) => a.status === "COMPLETED" || a.status === "CONFIRMED").length;
-                const cancelled = filtered.filter((a) => a.status === "CANCELLED").length;
-                const cancelRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+                // --- B. Chuẩn bị số liệu ---
 
-                // --- C. Chuẩn bị dữ liệu biểu đồ ---
-                // 1. Xu hướng theo ngày (Line Chart)
+                // Cấu hình hiển thị (Thứ tự và Màu sắc)
+                const statusOrder = ["CANCELLED", "COMPLETED", "CONFIRMED", "PENDING"];
+                const statusConfig = {
+                    CANCELLED: { label: "Đã hủy", color: "#ef4444" }, // Đỏ
+                    COMPLETED: { label: "Đã hoàn thành", color: "#10b981" }, // Xanh lá
+                    CONFIRMED: { label: "Đã xác nhận", color: "#4361ee" }, // Xanh dương
+                    PENDING: { label: "Chờ xác nhận", color: "#f59e0b" }, // Vàng/Cam
+                };
+
+                // Đếm số lượng từng trạng thái
+                const counts = { CANCELLED: 0, COMPLETED: 0, CONFIRMED: 0, PENDING: 0 };
                 const trendMap = {};
+                const doctorMap = {};
+
                 filtered.forEach((a) => {
+                    // 1. Đếm trạng thái
+                    if (counts[a.status] !== undefined) {
+                        counts[a.status]++;
+                    }
+
+                    // 2. Xu hướng theo ngày
                     const date = new Date(a.start_at).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
                     trendMap[date] = (trendMap[date] || 0) + 1;
-                });
 
-                // 2. Top Bác sĩ (Bar Chart)
-                const doctorMap = {};
-                filtered.forEach((a) => {
+                    // 3. Top Bác sĩ
                     const name = a.doctor_name || "Chưa phân công";
                     doctorMap[name] = (doctorMap[name] || 0) + 1;
                 });
-                // Sắp xếp lấy Top 5
+
+                // --- C. Tính toán KPI Cards ---
+                const total = filtered.length;
+                // Thành công = Hoàn thành + Xác nhận (đã chốt lịch)
+                const successCount = counts.COMPLETED + counts.CONFIRMED;
+                const cancelledCount = counts.CANCELLED;
+                const cancelRate = total > 0 ? ((cancelledCount / total) * 100).toFixed(1) : 0;
+
+                // Top Bác sĩ (Sort)
                 const topDoctors = Object.entries(doctorMap)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 5);
@@ -555,11 +578,11 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon" style="background: #d1fae5; color: #10b981;"><i class="fas fa-check-circle"></i></div>
-                            <div class="stat-info"><h4>${completed}</h4><p>Thành công</p></div>
+                            <div class="stat-info"><h4>${successCount}</h4><p>Thành công</p></div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-times-circle"></i></div>
-                            <div class="stat-info"><h4>${cancelled}</h4><p>Đã hủy</p></div>
+                            <div class="stat-info"><h4>${cancelledCount}</h4><p>Đã hủy</p></div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-percent"></i></div>
@@ -591,7 +614,7 @@
                     </div>
                 `;
 
-                // Helper hủy chart cũ nếu có để tránh lỗi hiển thị đè
+                // --- E. Vẽ Biểu đồ (Chart.js) ---
                 const destroyChart = (id) => {
                     const chartStatus = Chart.getChart(id);
                     if (chartStatus) chartStatus.destroy();
@@ -621,21 +644,31 @@
                     },
                 });
 
-                // 2. Status Chart
+                // 2. Status Chart (Đã cập nhật hiển thị đủ 4 trạng thái)
                 destroyChart("statusChart");
+
+                // Map dữ liệu theo đúng thứ tự đã config
+                const statusLabels = statusOrder.map((key) => statusConfig[key].label);
+                const statusData = statusOrder.map((key) => counts[key]);
+                const statusColors = statusOrder.map((key) => statusConfig[key].color);
+
                 new Chart(document.getElementById("statusChart"), {
                     type: "doughnut",
                     data: {
-                        labels: ["Thành công", "Hủy", "Chờ xác nhận"],
+                        labels: statusLabels,
                         datasets: [
                             {
-                                data: [completed, cancelled, total - completed - cancelled],
-                                backgroundColor: ["#10b981", "#ef4444", "#f59e0b"],
+                                data: statusData,
+                                backgroundColor: statusColors,
                                 borderWidth: 0,
                             },
                         ],
                     },
-                    options: { maintainAspectRatio: false, cutout: "70%", plugins: { legend: { position: "bottom" } } },
+                    options: {
+                        maintainAspectRatio: false,
+                        cutout: "70%",
+                        plugins: { legend: { position: "bottom" } },
+                    },
                 });
 
                 // 3. Doctor Chart
