@@ -18,11 +18,12 @@ class AdminDoctorSerializer(serializers.ModelSerializer):
     specialty_name = serializers.CharField(source='specialty.name', read_only=True)
     experience_years = serializers.ReadOnlyField()
     average_rating = serializers.ReadOnlyField()
+    profile_picture = serializers.ImageField(required=False, allow_null=True)
     
     class Meta:
         model = Doctor
         fields = ['id', 'user', 'specialty_name', 'bio', 'experience_detail', 'experience_years', 
-                 'average_rating', 'is_active', 'is_featured', 'started_practice', 'room_number',]
+                 'average_rating', 'is_active', 'is_featured', 'started_practice', 'room_number', 'profile_picture']
 
 class AdminAppointmentSerializer(serializers.ModelSerializer):
     doctor_name = serializers.CharField(source='doctor.user.full_name', read_only=True)
