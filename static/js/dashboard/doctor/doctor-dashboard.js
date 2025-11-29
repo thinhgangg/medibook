@@ -20,6 +20,96 @@ import {
 } from "./_config.js";
 
 import { fetchDoctorProfile, loadAppointments, loadAvailability, loadDaysOff, loadNotifications } from "./_data_loader.js";
+const AddressAPI = {
+    async getProvinces() {
+        try {
+            return (await fetch("https://provinces.open-api.vn/api/p/")).json();
+        } catch {
+            return [];
+        }
+    },
+    async getDistricts(code) {
+        try {
+            return (await fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`)).json();
+        } catch {
+            return null;
+        }
+    },
+    async getWards(code) {
+        try {
+            return (await fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`)).json();
+        } catch {
+            return null;
+        }
+    },
+};
+
+async function setupAddressSelectors(oldCity, oldDist, oldWard) {
+    const citySel = document.getElementById("edit-city");
+    const distSel = document.getElementById("edit-district");
+    const wardSel = document.getElementById("edit-ward");
+
+    if (!citySel || !distSel || !wardSel) return;
+
+    // Reset
+    citySel.innerHTML = '<option value="">-- Tỉnh / Thành phố --</option>';
+    distSel.innerHTML = '<option value="">-- Quận / Huyện --</option>';
+    wardSel.innerHTML = '<option value="">-- Phường / Xã --</option>';
+
+    // Load Tỉnh
+    const provinces = await AddressAPI.getProvinces();
+    provinces.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.code;
+        opt.textContent = p.name;
+        opt.dataset.name = p.name;
+        if (p.name === oldCity) opt.selected = true;
+        citySel.appendChild(opt);
+    });
+
+    const loadDistricts = async (pCode, selectedName = null) => {
+        distSel.innerHTML = '<option value="">-- Quận / Huyện --</option>';
+        if (!pCode) return;
+        const data = await AddressAPI.getDistricts(pCode);
+        data?.districts?.forEach((d) => {
+            const opt = document.createElement("option");
+            opt.value = d.code;
+            opt.textContent = d.name;
+            opt.dataset.name = d.name;
+            if (d.name === selectedName) opt.selected = true;
+            distSel.appendChild(opt);
+        });
+    };
+
+    const loadWards = async (dCode, selectedName = null) => {
+        wardSel.innerHTML = '<option value="">-- Phường / Xã --</option>';
+        if (!dCode) return;
+        const data = await AddressAPI.getWards(dCode);
+        data?.wards?.forEach((w) => {
+            const opt = document.createElement("option");
+            opt.value = w.code;
+            opt.textContent = w.name;
+            opt.dataset.name = w.name;
+            if (w.name === selectedName) opt.selected = true;
+            wardSel.appendChild(opt);
+        });
+    };
+
+    // Load dữ liệu cũ
+    if (citySel.value) {
+        await loadDistricts(citySel.value, oldDist);
+        if (distSel.value) await loadWards(distSel.value, oldWard);
+    }
+
+    // Sự kiện thay đổi
+    citySel.onchange = () => {
+        loadDistricts(citySel.value);
+        wardSel.innerHTML = '<option value="">-- Phường / Xã --</option>';
+    };
+    distSel.onchange = () => {
+        loadWards(distSel.value);
+    };
+}
 
 export function showPanel(name) {
     const panels = {
@@ -317,11 +407,12 @@ function setupAppointmentActionsPopup() {
         else if (action === "detail") showAppointmentDetailModal(currentAppointmentId);
     });
 }
-
 export function renderDoctorProfilePanel(doc) {
+    // 1. Render thông tin cơ bản (Code cũ của bạn)
     document.getElementById("profile-name").textContent = doc.user?.full_name || "Bác sĩ";
     document.querySelector("#panel-profile .profile-info .role").textContent = doc.specialty?.name || "Chưa cập nhật";
 
+    // Render Avatar
     const pic = document.querySelector("#panel-profile .profile-pic");
     if (pic) {
         if (doc.profile_picture) pic.innerHTML = `<img src="${doc.profile_picture}" alt="Ảnh bác sĩ" />`;
@@ -331,6 +422,7 @@ export function renderDoctorProfilePanel(doc) {
         }
     }
 
+    // Render thông tin chi tiết
     const basic = document.getElementById("basic-info");
     if (basic) {
         basic.innerHTML = `
@@ -338,36 +430,220 @@ export function renderDoctorProfilePanel(doc) {
             <li><strong>Số điện thoại:</strong> <span>${doc.user?.phone_number || "Chưa cập nhật"}</span></li>
             <li><strong>Ngày sinh:</strong> <span>${formatDateVN(doc.user?.dob) || "Chưa cập nhật"}</span></li>
             <li><strong>Giới tính:</strong> <span>${doc.user?.gender ? (doc.user.gender === "MALE" ? "Nam" : "Nữ") : "Chưa cập nhật"}</span></li>
-            <li><strong>Dân tộc:</strong> <span>${doc.user?.ethnicity || "Chưa cập nhật"}</span></li>
             <li><strong>Địa chỉ:</strong> <span>${doc.user?.full_address || "Chưa cập nhật"}</span></li>
         `;
     }
 
-    const bioEl = document.getElementById("doctor-bio");
-    if (bioEl) {
-        bioEl.textContent = doc.bio || "Bác sĩ chưa có thông tin giới thiệu chung.";
-    }
-
-    const experienceEl = document.getElementById("doctor-experience");
-    if (experienceEl) {
-        experienceEl.innerHTML = `<p>${doc.experience_detail || "Bác sĩ chưa có chi tiết kinh nghiệm chuyên môn."}</p>`;
-    }
+    document.getElementById("doctor-bio").textContent = doc.bio || "Bác sĩ chưa có thông tin giới thiệu chung.";
+    document.getElementById("doctor-experience").innerHTML = `<p>${doc.experience_detail || "Bác sĩ chưa có chi tiết kinh nghiệm chuyên môn."}</p>`;
 
     const extra = document.getElementById("extra-info");
     if (extra) {
         extra.innerHTML = `
             <li><strong>Chuyên khoa:</strong> <span>${doc.specialty?.name || "Chưa cập nhật"}</span></li>
-            <li><strong>Kinh nghiệm:</strong> <span>${doc.experience_years ? `${doc.experience_years} năm` : "Chưa cập nhật"}</li>
+            <li><strong>Kinh nghiệm:</strong> <span>${doc.experience_years ? `${doc.experience_years} năm` : "Chưa cập nhật"}</span></li>
             <li><strong>Mã phòng:</strong> <span>${doc.room_number || "Chưa cập nhật"}</span></li>
             <li><strong>Trạng thái:</strong> <span>${doc.is_active ? "Đang hoạt động" : "Đã khóa"}</span></li>
         `;
     }
 
     document.getElementById("profile-error")?.classList.add("hidden");
-    document.getElementById("btn-edit-profile")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        showErrorModal("Chức năng chỉnh sửa hồ sơ đang được phát triển.");
-    });
+
+    const editBtn = document.getElementById("btn-edit-profile");
+    if (editBtn) {
+        const newEditBtn = editBtn.cloneNode(true);
+        editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+
+        newEditBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("Button Edit Clicked!");
+            openEditProfileModal();
+        });
+    } else {
+        console.error("Lỗi: Không tìm thấy nút có ID 'btn-edit-profile' trong HTML");
+    }
+}
+
+function openEditProfileModal() {
+    const modal = document.getElementById("editProfileModal");
+    if (!modal) return;
+
+    if (doctorProfile) {
+        const user = doctorProfile.user || {};
+
+        // --- 1. ĐIỀN THÔNG TIN CƠ BẢN ---
+        document.getElementById("edit-fullname").value = user.full_name || "";
+        document.getElementById("edit-email").value = user.email || "";
+        document.getElementById("edit-phone").value = user.phone_number || "";
+        document.getElementById("edit-gender").value = user.gender || "MALE";
+
+        // Xử lý hiển thị Ngày sinh (Flatpickr)
+        const dobInput = document.getElementById("edit-dob");
+        if (dobInput._flatpickr) {
+            dobInput._flatpickr.setDate(user.dob || "");
+        } else {
+            dobInput.value = formatDateVN(user.dob);
+        }
+
+        // --- 2. ĐIỀN THÔNG TIN HÀNH NGHỀ ---
+        document.getElementById("edit-specialty-display").value = doctorProfile.specialty?.name || "Chưa cập nhật";
+        document.getElementById("edit-room").value = doctorProfile.room_number || "";
+        document.getElementById("edit-id-number").value = user.id_number || "";
+
+        // Xử lý hiển thị Ngày bắt đầu
+        const startInput = document.getElementById("edit-started-practice");
+        if (startInput._flatpickr) {
+            // Flatpickr cần format YYYY-MM-DD để hiển thị đúng
+            startInput._flatpickr.setDate(doctorProfile.started_practice || "");
+        } else {
+            startInput.value = formatDateVN(doctorProfile.started_practice);
+        }
+
+        // --- 3. ĐIỀN THÔNG TIN BỔ SUNG ---
+        document.getElementById("edit-bio").value = doctorProfile.bio || "";
+        document.getElementById("edit-experience-detail").value = doctorProfile.experience_detail || "";
+
+        // --- 4. XEM TRƯỚC ẢNH ---
+        const previewDiv = document.getElementById("preview-avatar");
+        if (doctorProfile.profile_picture) {
+            previewDiv.innerHTML = `<img src="${doctorProfile.profile_picture}" style="width:100%; height:100%; object-fit:cover;">`;
+            previewDiv.style.border = "2px solid #4361ee";
+        } else {
+            previewDiv.innerHTML = `<i class="fas fa-camera"></i>`;
+        }
+
+        // --- 5. ĐIỀN ĐỊA CHỈ & GỌI API ---
+        document.getElementById("edit-address-detail").value = user.address_detail || user.full_address || "";
+
+        setupAddressSelectors(user.city, user.district, user.ward);
+    }
+
+    // Hiển thị Modal
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+    modal.style.opacity = "1";
+    modal.style.visibility = "visible";
+
+    // Xử lý đóng/hủy
+    const closeModal = () => {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    };
+    document.getElementById("closeEditProfileBtn").onclick = closeModal;
+    document.getElementById("cancelEditProfileBtn").onclick = closeModal;
+
+    // Xử lý khi chọn file ảnh mới
+    document.getElementById("edit-avatar").onchange = function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById(
+                    "preview-avatar"
+                ).innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Gắn sự kiện cho nút Lưu
+    document.getElementById("saveProfileBtn").onclick = saveDoctorProfile;
+}
+async function saveDoctorProfile() {
+    showLoadingOverlay("Đang cập nhật hồ sơ...");
+
+    try {
+        const formData = new FormData();
+
+        // Helper lấy text từ select box
+        const getText = (id) => {
+            const sel = document.getElementById(id);
+            return sel.options[sel.selectedIndex]?.dataset?.name || "";
+        };
+
+        // --- 1. THÔNG TIN CƠ BẢN ---
+        formData.append("full_name", document.getElementById("edit-fullname").value.trim());
+        formData.append("phone_number", document.getElementById("edit-phone").value.trim());
+        formData.append("gender", document.getElementById("edit-gender").value);
+
+        // --- 2. XỬ LÝ NGÀY THÁNG (DOB) ---
+        const dobEl = document.getElementById("edit-dob");
+        let dobVal = "";
+        if (dobEl._flatpickr) {
+            dobVal = dobEl._flatpickr.input.value;
+        } else {
+            dobVal = dobEl.value;
+        }
+        if (dobVal) formData.append("dob", dobVal);
+
+        // --- 3. XỬ LÝ NGÀY BẮT ĐẦU (Started Practice) ---
+        const startPracEl = document.getElementById("edit-started-practice");
+        let startPracVal = "";
+        if (startPracEl._flatpickr) {
+            startPracVal = startPracEl._flatpickr.input.value;
+        } else {
+            startPracVal = startPracEl.value;
+        }
+        // Chỉ gửi nếu có giá trị (tránh gửi chuỗi rỗng gây lỗi backend)
+        if (startPracVal) formData.append("started_practice", startPracVal);
+
+        // --- 4. THÔNG TIN KHÁC ---
+        const roomNum = document.getElementById("edit-room").value.trim();
+        if (roomNum) formData.append("room_number", roomNum);
+
+        const idNum = document.getElementById("edit-id-number").value.trim();
+        if (idNum) formData.append("id_number", idNum);
+
+        formData.append("bio", document.getElementById("edit-bio").value.trim());
+        formData.append("experience_detail", document.getElementById("edit-experience-detail").value.trim());
+
+        // --- 6. ĐỊA CHỈ (Gửi 4 trường) ---
+        formData.append("address_detail", document.getElementById("edit-address-detail").value.trim());
+
+        const city = getText("edit-city");
+        if (city) formData.append("city", city);
+
+        const dist = getText("edit-district");
+        if (dist) formData.append("district", dist);
+
+        const ward = getText("edit-ward");
+        if (ward) formData.append("ward", ward);
+
+        // --- 7. ẢNH ĐẠI DIỆN ---
+        const avatarFile = document.getElementById("edit-avatar").files[0];
+        if (avatarFile) {
+            formData.append("profile_picture", avatarFile);
+        }
+
+        // --- 8. GỬI REQUEST ---
+        const token = localStorage.getItem("access");
+        if (!token) throw new Error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+
+        const response = await fetch(`${apiBase}/accounts/me/`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.detail || JSON.stringify(errData));
+        }
+
+        showToast("Cập nhật hồ sơ thành công!", "success");
+
+        // Ẩn Modal
+        const modal = document.getElementById("editProfileModal");
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+
+        fetchDoctorProfile(); // Tải lại dữ liệu mới
+    } catch (err) {
+        console.error(err);
+        showErrorModal("Cập nhật thất bại: " + err.message);
+    } finally {
+        hideLoadingOverlay();
+    }
 }
 
 function renderAppointmentsPanelInit() {
@@ -1656,7 +1932,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
+    if (typeof flatpickr !== "undefined") {
+        flatpickr("#edit-dob", { locale: "vn", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", allowInput: true });
+        flatpickr("#edit-started-practice", { locale: "vn", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y", allowInput: true });
+    }
     fetchDoctorProfile();
     loadAppointments();
     loadAvailability();

@@ -482,6 +482,125 @@
             </div>
         </div>
 
+        <div id="editProfileModal" class="modal-overlay hidden" style="z-index: 9999">
+            <div class="modal-content" style="max-width: 900px; width: 95%; max-height: 90vh; display: flex; flex-direction: column">
+                <div class="modal-header">
+                    <h3>Cập nhật thông tin</h3>
+                    <span class="modal-close-btn" id="closeEditProfileBtn">✕</span>
+                </div>
+
+                <div class="modal-body" style="overflow-y: auto; padding: 10px 20px">
+                    <form id="edit-profile-form">
+                        <div class="form-grid-2">
+                            <div>
+                                <h5 class="form-section-title">Thông tin tài khoản</h5>
+
+                                <div class="image-preview-wrapper">
+                                    <label for="edit-avatar" class="image-preview-box" id="preview-avatar">
+                                        <i class="fas fa-camera"></i>
+                                    </label>
+                                    <input type="file" id="edit-avatar" name="avatar" accept="image/*" style="display: none" />
+                                    <small class="text-muted">Nhấn để đổi ảnh đại diện</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Họ và tên <span style="color: red">*</span></label>
+                                    <input type="text" id="edit-fullname" class="form-control" required />
+                                </div>
+                                <div class="form-group">
+                                    <label>Email đăng nhập</label>
+                                    <input
+                                        type="email"
+                                        id="edit-email"
+                                        class="form-control"
+                                        readonly
+                                        style="background-color: #f3f4f6"
+                                        title="Không thể thay đổi email"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label>Giới tính</label>
+                                    <select id="edit-gender" class="form-control">
+                                        <option value="MALE">Nam</option>
+                                        <option value="FEMALE">Nữ</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngày sinh</label>
+                                    <input type="text" id="edit-dob" class="form-control" placeholder="dd/mm/yyyy" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Số điện thoại <span style="color: red">*</span></label>
+                                    <input type="text" id="edit-phone" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="form-section-title">Thông tin hành nghề</h5>
+
+                                <div class="form-group">
+                                    <label>Chuyên khoa</label>
+                                    <input type="text" id="edit-specialty-display" class="form-control" readonly style="background-color: #f3f4f6" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Số phòng</label>
+                                    <input type="text" id="edit-room" class="form-control" placeholder="VD: P.201" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>CMND/CCCD</label>
+                                    <input type="text" id="edit-id-number" class="form-control" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Ngày bắt đầu</label>
+                                    <input type="text" id="edit-started-practice" class="form-control" placeholder="dd/mm/yyyy" />
+                                </div>
+
+                                <h5 class="form-section-title">Địa chỉ liên hệ</h5>
+                                <div class="form-group">
+                                    <select id="edit-city" class="form-control">
+                                        <option value="">-- Tỉnh / Thành phố --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <select id="edit-district" class="form-control">
+                                        <option value="">-- Quận / Huyện --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <select id="edit-ward" class="form-control">
+                                        <option value="">-- Phường / Xã --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" id="edit-address-detail" class="form-control" placeholder="Số nhà, tên đường..." />
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="form-section-title">Chi tiết bổ sung</h5>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label>Giới thiệu / Tiểu sử</label>
+                                <textarea id="edit-bio" class="form-control" rows="5" placeholder="Giới thiệu ngắn gọn..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Chi tiết kinh nghiệm</label>
+                                <textarea id="edit-experience-detail" class="form-control" rows="5" placeholder="Các nơi từng công tác..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelEditProfileBtn">Hủy bỏ</button>
+                    <button class="btn btn-primary" id="saveProfileBtn">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+
         <div id="errorModal" class="modal" style="display: none">
             <div class="modal-content">
                 <div class="modal-header">
