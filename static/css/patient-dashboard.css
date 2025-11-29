@@ -1096,6 +1096,179 @@ body {
     }
 }
 
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-content {
+    background: white;
+    padding: 0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+#editProfileModal .modal-content {
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+}
+
+#editProfileModal .modal-header {
+    padding: 15px 25px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#editProfileModal .modal-body {
+    padding: 25px;
+    overflow-y: auto;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.form-section-title {
+    border-left: 4px solid #4361ee;
+    padding-left: 10px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 20px 0 15px 0;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: #4361ee;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.form-control[readonly] {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.image-preview-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.image-preview-box {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 2px dashed #cbd5e1;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.image-preview-box:hover {
+    border-color: #4361ee;
+    background-color: #eef2ff;
+}
+
+.image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview-box i {
+    font-size: 2.5rem;
+    color: #94a3b8;
+}
+
+.modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background-color: #f9fafb;
+    border-radius: 0 0 12px 12px;
+    margin-top: auto;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+#editProfileModal .modal-content {
+    padding: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .dashboard-container {
@@ -1116,6 +1289,34 @@ body {
         flex: 1;
         min-width: 120px;
         justify-content: center;
+    }
+
+    .profile-main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-info-list li strong {
+        min-width: 100px;
+        flex: 0 0 100px;
+    }
+
+    .calendar-header-row,
+    .availability-calendar-grid {
+        grid-template-columns: 60px repeat(7, 1fr);
+    }
+
+    .time-column-header,
+    .time-label {
+        font-size: 0.7rem;
+        padding-right: 8px;
+    }
+
+    .calendar-weekday-header .day-of-week {
+        font-size: 0.7rem;
+    }
+
+    .calendar-weekday-header .date-number {
+        font-size: 1.1rem;
     }
 }
 
@@ -1173,12 +1374,29 @@ body {
         height: 250px;
     }
 
-    .appointments-list {
-        grid-template-columns: 1fr;
+    .availability-calendar-grid {
+        grid-auto-rows: 50px;
+        max-height: 600px;
     }
 
-    .appointment-header {
-        flex-direction: column;
-        gap: 0.25rem;
+    .calendar-grid-cell {
+        height: 50px;
+    }
+
+    .event-time {
+        font-size: 0.75rem;
+    }
+
+    .event-details {
+        font-size: 0.7rem;
+    }
+
+    .event-actions .btn-small {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr;
     }
 }

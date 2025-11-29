@@ -21,11 +21,7 @@ import {
     renderAllAppointments,
     generateMockNotifications,
     renderNotifications,
-} from "./patient-dashboard.js"; // Import render functions from main file
-
-/* -------------------------
-   API Data Fetchers
-   ------------------------- */
+} from "./patient-dashboard.js"; 
 
 export async function fetchPatientProfile() {
     try {

@@ -18,6 +18,94 @@ import {
 } from "./_config.js";
 
 import { fetchPatientProfile, fetchAppointmentsAndDoctors, loadNotificationsData } from "./_data_loader.js";
+const AddressAPI = {
+    async getProvinces() {
+        try {
+            return (await fetch("https://provinces.open-api.vn/api/p/")).json();
+        } catch {
+            return [];
+        }
+    },
+    async getDistricts(code) {
+        try {
+            return (await fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`)).json();
+        } catch {
+            return null;
+        }
+    },
+    async getWards(code) {
+        try {
+            return (await fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`)).json();
+        } catch {
+            return null;
+        }
+    },
+};
+
+async function setupAddressSelectors(oldCity, oldDist, oldWard) {
+    const citySel = document.getElementById("edit-city");
+    const distSel = document.getElementById("edit-district");
+    const wardSel = document.getElementById("edit-ward");
+
+    if (!citySel || !distSel || !wardSel) return;
+
+    // Reset
+    citySel.innerHTML = '<option value="">-- Tỉnh / Thành phố --</option>';
+    distSel.innerHTML = '<option value="">-- Quận / Huyện --</option>';
+    wardSel.innerHTML = '<option value="">-- Phường / Xã --</option>';
+
+    // Load Tỉnh
+    const provinces = await AddressAPI.getProvinces();
+    provinces.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.code;
+        opt.textContent = p.name;
+        opt.dataset.name = p.name;
+        if (p.name === oldCity) opt.selected = true;
+        citySel.appendChild(opt);
+    });
+
+    const loadDistricts = async (pCode, selectedName = null) => {
+        distSel.innerHTML = '<option value="">-- Quận / Huyện --</option>';
+        if (!pCode) return;
+        const data = await AddressAPI.getDistricts(pCode);
+        data?.districts?.forEach((d) => {
+            const opt = document.createElement("option");
+            opt.value = d.code;
+            opt.textContent = d.name;
+            opt.dataset.name = d.name;
+            if (d.name === selectedName) opt.selected = true;
+            distSel.appendChild(opt);
+        });
+    };
+
+    const loadWards = async (dCode, selectedName = null) => {
+        wardSel.innerHTML = '<option value="">-- Phường / Xã --</option>';
+        if (!dCode) return;
+        const data = await AddressAPI.getWards(dCode);
+        data?.wards?.forEach((w) => {
+            const opt = document.createElement("option");
+            opt.value = w.code;
+            opt.textContent = w.name;
+            opt.dataset.name = w.name;
+            if (w.name === selectedName) opt.selected = true;
+            wardSel.appendChild(opt);
+        });
+    };
+
+    if (citySel.value) {
+        await loadDistricts(citySel.value, oldDist);
+        if (distSel.value) await loadWards(distSel.value, oldWard);
+    }
+
+    citySel.onchange = () => {
+        loadDistricts(citySel.value);
+        wardSel.innerHTML = '<option value="">-- Phường / Xã --</option>';
+    };
+    distSel.onchange = () => {
+        loadWards(distSel.value);
+    };
+}
 
 export function showPanel(name) {
     const panels = {
@@ -56,8 +144,9 @@ export function showPanel(name) {
             break;
     }
 }
-
 export function renderPatientProfile(patient) {
+    window.patientProfile = patient;
+
     const profileSummary = document.getElementById("profile-summary");
     if (profileSummary) {
         profileSummary.classList.remove("skeleton-bars");
@@ -112,6 +201,195 @@ export function renderPatientProfile(patient) {
         `;
     }
     document.getElementById("profile-error")?.classList.add("hidden");
+
+    const editBtn = document.getElementById("btn-edit-profile");
+    if (editBtn) {
+        const newEditBtn = editBtn.cloneNode(true);
+        editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+
+        newEditBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openEditProfileModal();
+        });
+    }
+}
+function openEditProfileModal() {
+    const modal = document.getElementById("editProfileModal");
+    if (!modal) return;
+
+    const patient = window.patientProfile || {};
+    const user = patient.user || {};
+
+    // 1. Điền thông tin cá nhân
+    document.getElementById("edit-fullname").value = user.full_name || "";
+    document.getElementById("edit-email").value = user.email || "";
+    document.getElementById("edit-phone").value = user.phone_number || "";
+    document.getElementById("edit-gender").value = user.gender || "MALE";
+
+    // Ngày sinh (Flatpickr)
+    const dobInput = document.getElementById("edit-dob");
+    if (dobInput._flatpickr) dobInput._flatpickr.setDate(user.dob || "");
+    else dobInput.value = formatDateVN(user.dob);
+
+    // 2. Điền thông tin bổ sung
+    document.getElementById("edit-id-number").value = user.id_number || "";
+    document.getElementById("edit-ethnicity").value = user.ethnicity || "";
+    document.getElementById("edit-insurance").value = patient.insurance_no || "";
+    document.getElementById("edit-occupation").value = patient.occupation || "";
+
+    // 3. Ảnh đại diện
+    const previewDiv = document.getElementById("preview-avatar");
+    if (patient.profile_picture) {
+        previewDiv.innerHTML = `<img src="${patient.profile_picture}" style="width:100%; height:100%; object-fit:cover;">`;
+        previewDiv.style.border = "2px solid #4361ee";
+    } else {
+        previewDiv.innerHTML = `<i class="fas fa-camera"></i>`;
+    }
+
+    // 4. Địa chỉ
+    document.getElementById("edit-address-detail").value = user.address_detail || "";
+    setupAddressSelectors(user.city, user.district, user.ward);
+
+    // Hiển thị Modal
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+    modal.style.opacity = "1";
+    modal.style.visibility = "visible";
+
+    // Đóng
+    const closeModal = () => {
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+    };
+    document.getElementById("closeEditProfileBtn").onclick = closeModal;
+    document.getElementById("cancelEditProfileBtn").onclick = closeModal;
+
+    // Preview ảnh
+    document.getElementById("edit-avatar").onchange = function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById(
+                    "preview-avatar"
+                ).innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    document.getElementById("saveProfileBtn").onclick = savePatientProfile;
+}
+
+async function savePatientProfile() {
+    showLoadingOverlay("Đang cập nhật hồ sơ...");
+
+    try {
+        const token = localStorage.getItem("access");
+        if (!token) {
+            alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+            window.location.href = "/login";
+            return;
+        }
+
+        // CẬP NHẬT THÔNG TIN TÀI KHOẢN (USER)
+        const userData = new FormData();
+        const fullName = document.getElementById("edit-fullname").value.trim();
+
+        userData.append("full_name", fullName);
+        userData.append("phone_number", document.getElementById("edit-phone").value.trim());
+        userData.append("gender", document.getElementById("edit-gender").value);
+        userData.append("id_number", document.getElementById("edit-id-number").value.trim());
+        userData.append("ethnicity", document.getElementById("edit-ethnicity").value.trim());
+        userData.append("address_detail", document.getElementById("edit-address-detail").value.trim());
+
+        const dobEl = document.getElementById("edit-dob");
+        if (dobEl._flatpickr) {
+            userData.append("dob", dobEl._flatpickr.input.value);
+        } else if (dobEl.value) {
+            userData.append("dob", dobEl.value);
+        }
+
+        const getText = (id) => {
+            const sel = document.getElementById(id);
+            return sel.options[sel.selectedIndex]?.dataset?.name || "";
+        };
+        const city = getText("edit-city");
+        if (city) userData.append("city", city);
+        const dist = getText("edit-district");
+        if (dist) userData.append("district", dist);
+        const ward = getText("edit-ward");
+        if (ward) userData.append("ward", ward);
+
+        const userResponse = await fetch("/api/accounts/me/", {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+            body: userData,
+        });
+
+        if (!userResponse.ok) {
+            const err = await userResponse.json();
+            throw new Error("Lỗi cập nhật User: " + (err.detail || JSON.stringify(err)));
+        }
+
+        // CẬP NHẬT THÔNG TIN BỆNH NHÂN & ẢNH (PATIENT)
+        const patientData = new FormData();
+        patientData.append("insurance_no", document.getElementById("edit-insurance").value.trim());
+        patientData.append("occupation", document.getElementById("edit-occupation").value.trim());
+
+        const avatarFile = document.getElementById("edit-avatar").files[0];
+        if (avatarFile) {
+            patientData.append("profile_picture", avatarFile);
+        }
+
+        const patientResponse = await fetch("/api/patients/me/", {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` },
+            body: patientData,
+        });
+
+        if (!patientResponse.ok) {
+            const err = await patientResponse.json();
+            console.warn("Lỗi cập nhật Patient:", err);
+        }
+
+        showToast("Cập nhật hồ sơ thành công!", "success");
+
+        // Ẩn Modal
+        const modal = document.getElementById("editProfileModal");
+        modal.classList.add("hidden");
+        modal.style.display = "none";
+
+        // 1. Cập nhật Tên ngay lập tức
+        if (fullName) {
+            document.getElementById("profile-name").textContent = fullName;
+            const headerName = document.querySelector(".header-user-name, header .user-name");
+            if (headerName) headerName.textContent = fullName;
+        }
+
+        // 2. Cập nhật Ảnh ngay lập tức
+        if (avatarFile) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const newSrc = e.target.result;
+
+                const bigAvatar = document.querySelector("#panel-profile .profile-pic img");
+                if (bigAvatar) bigAvatar.src = newSrc;
+
+                const headerAvatar = document.querySelector("header img.user-avatar, .header-user-info img");
+                if (headerAvatar) headerAvatar.src = newSrc;
+            };
+            reader.readAsDataURL(avatarFile);
+        }
+
+        // Gọi fetch ngầm để đồng bộ dữ liệu
+        fetchPatientProfile();
+    } catch (err) {
+        console.error(err);
+        showErrorModal(err.message);
+    } finally {
+        hideLoadingOverlay();
+    }
 }
 
 export function renderOverviewAppointments(appointments) {
@@ -670,30 +948,34 @@ document.addEventListener("DOMContentLoaded", () => {
             const panel = nav.getAttribute("href").slice(1);
             history.replaceState(null, "", `#${panel}`);
             showPanel(panel);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         });
     });
 
-    document.getElementById("btn-edit-profile")?.addEventListener("click", (e) => {
+    document.getElementById("view-all-appointments-overview")?.addEventListener("click", (e) => {
         e.preventDefault();
-        showErrorModal("Chuyển đến trang chỉnh sửa hồ sơ bệnh nhân!");
+        window.location.hash = "#appointments";
     });
 
-    window.addEventListener("hashchange", applyHash);
+    document.getElementById("view-stats-overview")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.hash = "#stats";
+    });
 
-    document.querySelectorAll('a[href^="#"]').forEach((link) => {
-        link.addEventListener("click", (e) => {
-            const target = link.getAttribute("href").substring(1);
-            if (["overview", "profile", "appointments", "notifications", "stats", "messages"].includes(target)) {
-                e.preventDefault();
+    window.addEventListener("hashchange", () => {
+        const h = location.hash.slice(1) || "overview";
+        showPanel(h);
+    });
 
-                showPanel(target);
-
-                window.location.hash = `#${target}`;
-
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            }
+    if (typeof flatpickr !== "undefined") {
+        flatpickr("#edit-dob", {
+            locale: "vn",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true,
         });
-    });
+    }
 
     fetchPatientProfile();
     fetchAppointmentsAndDoctors();

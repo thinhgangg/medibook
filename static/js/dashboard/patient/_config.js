@@ -1,14 +1,9 @@
-// static/js/patient/_config.js
-
 export const API_BASE_URL = "http://127.0.0.1:8000/api";
-
-// Global state variables (mutable)
 export let doctorsMap = {};
 export let allAppointments = [];
 export let allDoctors = [];
 export let mockNotifications = [];
 
-// State setters
 export const setDoctorsMap = (map) => (doctorsMap = map);
 export const setAllAppointments = (data) => (allAppointments = data);
 export const setAllDoctors = (data) => (allDoctors = data);
@@ -16,14 +11,12 @@ export const setMockNotifications = (data) => (mockNotifications = data);
 
 export function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem("access");
-    return fetch(url, {
-        ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...options.headers,
-        },
-    });
+    const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return fetch(url, { ...options, headers });
 }
 
 export const showLoadingOverlay = (message = "Đang xử lý...", subMessage = "Quá trình này có thể mất một chút thời gian.") => {
